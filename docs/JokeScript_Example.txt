@@ -1,0 +1,69 @@
+$sys?=import "sys";
+$itr?=import "iterator";
+
+//$普通の変数宣言
+//$$メンバ関数型変数(暗黙の第一引数)
+//$$$プライベートメンバ関数型変数(暗黙の第一引数)
+
+
+@operator+?int($num1?int,$num2?int)=>{
+    return num1+num2;
+}
+
+!it?<!?
+    <!?
+    <!?
+    itr.iterator()
+    >
+    ()
+    >
+    ($?u8,$?u32);
+
+
+
+$its?it;
+
+!id1?;
+!id2?dll();
+!id3?=>{};
+!id4?dll;
+!id5?();
+!id6?<!?<!?int()>()>();
+!id7?<!?int()>();
+!id9?<!color?=>{
+    $R?u8;
+    $G?u8;
+    $B?u8;
+    $A?u8;
+}>();
+
+$v?=id9();
+
+v.R=0;
+v.G=255;
+v.B=127;
+
+$vp?=&v;
+
+$v2?!?int($?u8,$?u32)*,$f?!?<!?<!rot?=>{}*>()>()[9]*=null;
+
+
+$kernel?=@func1?dll($param1?int)=>{
+    return LoadLibrary("");
+}
+
+
+$msgbox?=kernel.func("MessageBoxW");
+
+msgbox(null,"Hello World!","Test",MB_OK);
+
+loop!?true?=>{
+    
+}
+
+!long?s64;
+!int?s32;
+!FILE?=>{
+    $filep?!?*;
+};
+!boolean?bool;

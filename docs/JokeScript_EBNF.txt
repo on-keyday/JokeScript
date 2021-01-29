@@ -1,0 +1,23 @@
+program:=statments
+statments:="{"statments"}"|(statment";")*
+degit:=["0"-"9"]
+alphabet:=["a"-"z" "A"-"Z"]
+identifier:=(alphabet|"_") (degit|alphabet|"_")*
+identifiers:=identifier ("," identifiers)?
+typedef:="!" typedef_detail
+typedef_detail:=identifier? "?" 
+                (identifier ("<"typedefs|identifier">")?|
+                (identifier|"<"typedef">")? "("paramlist?") funcopts?"|
+                "="("<"identifiers)?">"var_block)? 
+                typesuffix?
+funcopts:=funcopt*
+funcopt:="ccnv("identifier")"|"capt("(typedef|identifier)")"|"co("co_opt")"
+co_opt:="must"|"not"|"default"
+typedefs:=typedef(","typedefs)?
+typesuffix:=("["ineger?"]"|"*") typesuffix?
+paramlist:=param ("," paramlist)?
+param:="$" identifier? "?" (identifier|typedef)?
+variabledef:="$" identifier "?" (identifier typesuffix?|typedef)? ("=" (expr|param_block|function))?
+functiondef:="@" identifier? "?" (identifier|"<"typedef">") "("paramlist")=>" block
+block:="{"sentence*"}"
+var_block:="{"(variable|typedef)*"}"

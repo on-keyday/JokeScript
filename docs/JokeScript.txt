@@ -1,0 +1,48 @@
+Joke Script
+
+!type?=>{
+    $variable?builtin;
+    $variable?othertype;
+    $variable?=>{
+        
+    }
+}
+!type?builtin;
+!type?othertype;
+!type?resulttype!($parametor1?type,$parametor2?type,$?type);
+!type?restype!($param1?!type?restype!($?type,$?!type?!restype!($?type)),$param2?type);
+$variable?type;
+$variable?=>{
+    
+}
+@function?type!parametor1,parametor2 => {
+    
+}
+
+!type?!();
+!type?resulttype!();
+
+$variable?type[][][];
+@func?res!()=>{
+    
+}
+!type?!($?type1,$?!?res!());
+
+$var?type=>{
+   
+}
+
+type:=identifier_t typesuffix?|"!" identifier? "?" (identifier_t|"!("paramlist")"|"=>"block)? typesuffix?
+typesuffix:=("["ineger"]"|"*") typesuffix?
+
+!id?;//null_t
+!id?type!();
+!id?=>{
+    
+}
+!id?[4];
+!id?dll[5];
+!id?dll!($v?dll*);
+!id?!();
+!?!();
+
