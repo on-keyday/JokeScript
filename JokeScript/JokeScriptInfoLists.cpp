@@ -1,0 +1,145 @@
+/*
+    JokeScript
+
+    Copyright (c) 2021 on-keyday
+
+    This software is released under the MIT License.
+    http://opensource.org/licenses/mit-license.php
+
+*/
+
+#include"JokeScriptInfoLists.h"
+#include"JokeScriptType.h"
+#include"JokeScriptCommon.h"
+#include<string.h>
+#include <map>
+using namespace jokescript;
+
+
+jokescript::JokeDefinitionList::~JokeDefinitionList() {
+    this->types.remove_each(DeleteJokeTypeInfo);
+}
+
+
+JokeDefinitionList* CCNV jokescript::CreateJokeDefinitionList(JokeFile* file, JokeLogger* log) {
+    if (!file)return nullptr;
+    JokeDefinitionList* ret = nullptr;
+    try {
+        ret = new JokeDefinitionList;
+    }
+    catch (...) {
+        AddJokeSysErr(log, "memory is full", nullptr);
+        return nullptr;
+    }
+    ret->file = file;
+    /*unsigned long long i = 0;
+    bool prevtype = true;
+    unsigned int in_block = 0;
+    const char* prevp = "", * tmp = nullptr;
+    while (file->loglines[i]) {
+        auto p = file->loglines[i];
+        if (p[0] == '!' || p[0] == '$' || p[0] == '@') {
+            ret->lines.add_nz(p);
+            prevtype = true;
+        }
+        else if (tmp = strstr(p, "@")) {
+            ret->lines.add_nz(tmp);
+            prevtype = true;
+        }
+        else if (p[0] == '{') {
+            ret->lines.add_nz(p);
+            in_block++;
+        }
+        else if (p[0] == '}') {
+            if (in_block == 0) {
+                delete ret;
+                AddJokeSynErr(log, "too many \"}\". \"{\" and \"}\" have to be pair.", nullptr, i, 1);
+                return nullptr;
+            }
+            ret->lines.add_nz(p);
+            in_block--;
+        }
+        else if (prevp[0] == '}' && (p[0] == '>' || p[0] == '[' || p[0] == '*' || p[0] == '=' || p[0] == ';')) {
+            ret->lines.add_nz(p);
+        }
+        else if (!in_block) {
+            prevtype = false;
+        }
+        i++;
+        prevp = p;
+    }
+    if (in_block) {
+        delete ret;
+        AddJokeSynErr(log, "too many \"{\". \"{\" and \"}\" have to be pair.", nullptr, i - 1, 1);
+        return nullptr;
+    }*/
+    return ret;
+}
+
+JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLogger* log) {
+    if (!list)return false;
+    JokeBlockList* ret = nullptr;
+    JokeBlock* root = nullptr, * undef = nullptr;
+    try {
+        ret = new JokeBlockList;
+    }
+    catch (...) {
+        return nullptr;
+    }
+    try {
+        root = new JokeBlock;
+        undef = new JokeBlock;
+    }
+    catch (...) {
+        delete ret;
+        delete root;
+        AddJokeSysErr(log, "memory is full", nullptr);
+        return nullptr;
+    }
+    ret->list.add(root);
+    ret->list.add(undef);
+    ret->current = root;
+    ret->undefinedlist = undef;
+    std::map<const char*, unsigned long long> builtin;
+    builtin.emplace("null_t", 0);
+    builtin.emplace("s8",1);
+    builtin.emplace("u8",1);
+    builtin.emplace("s16",2);
+    builtin.emplace("u16",2);
+    builtin.emplace("s32",4);
+    builtin.emplace("u32",4);
+    builtin.emplace("s64",8);
+    builtin.emplace("u64",8);
+    //builtin.emplace("s128",16);//for future
+    //builtin.emplace("u128",16);
+    builtin.emplace("f32",4);
+    builtin.emplace("f64",8);
+    builtin.emplace("string", 0);
+
+    for (auto b : builtin) {
+        JokeTypeInfo* info = CreateJokeTypeInfo(StringFilter() = b.first, list);
+        if (!info) {
+            delete ret;
+            AddJokeSysErr(log, "memory is full", nullptr);
+            return false;
+        }
+        info->type = JokeType::builtin;
+        info->size = b.second;
+        info->ch_types.unuse();
+        info->ch_vars.unuse();
+        root->types.add(info);
+    }
+    return ret;
+}
+
+/*
+bool CCNV jokescript::ParseDefinition(JokeDefinitionList* list) {
+    if (!list)return false;
+    unsigned long long i = 0, u = 0;
+    while (list->lines[i]) {
+        if (list->lines[i][0] == '!') {
+            auto check = ParseTypedef(i, u, list, nullptr, nullptr);
+        }
+    }
+    return false;
+}*/
