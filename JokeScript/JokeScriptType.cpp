@@ -208,9 +208,7 @@ JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigne
             return nullptr;
         }
     }
-
-
-    if (nowline[u] == '(') {
+    else if (nowline[u] == '(') {
         if (info->root) {
             if (info->root->type == JokeType::structure_template) {
                 return nullptr;
