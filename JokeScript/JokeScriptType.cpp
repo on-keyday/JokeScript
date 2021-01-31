@@ -49,7 +49,6 @@ JokeTypeInfo* CCNV jokescript::CreateJokeTypeInfo(char* name,JokeDefinitionList*
 }
 
 JokeTypeInfo* CCNV jokescript::ParseTypedef(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
-    if (!list || !block)return nullptr;
     if (!list->file->loglines[i])return nullptr;
     if (list->file->loglines[i][u] != '!')return nullptr;
     u++;
@@ -83,7 +82,7 @@ JokeTypeInfo* CCNV jokescript::ParseTypedef_detail(unsigned long long& i,unsigne
     if (!info)return nullptr;
     info = tmpinfo;
     
-    if (info->type==JokeType::unset) {
+    if (info->type==JokeType::unset||info->type==JokeType::type_alias) {
         if (info->name[0]=='\0') {
             tmpinfo = info->root;
             list->types.remove_if(info);
@@ -98,6 +97,14 @@ JokeTypeInfo* CCNV jokescript::ParseTypedef_detail(unsigned long long& i,unsigne
         }
     }
 
+    if (info->type==JokeType::type_alias) {
+        info = info->root;
+        if (!info) {
+            AddJokeCompilerBrokenErr(log, "unexpected nullptr on \'info->root\' while \'info->type==JokeType::type_alias\'.");
+            return nullptr;
+        }
+    }
+
     return info;
 }
 
@@ -108,18 +115,23 @@ JokeTypeInfo* CCNV jokescript::GetIdSemantics(unsigned long long& i,unsigned lon
     if (nowline[u] != '?') {
         return nullptr;
     }
+    auto d = id[0];
     u++;
-    tmpinfo = SearchTypeOnUndefined(id.get_const(), block);
-    if (tmpinfo) {
-        if (tmpinfo->type == JokeType::not_defined) {
-            block->undefinedlist->types.remove_if(tmpinfo);
-            info = tmpinfo;
-            tmpinfo = nullptr;
-            info->type = JokeType::unset;
+    if (d) {
+        tmpinfo = SearchTypeOnUndefined(id.get_const(), block);
+        if (tmpinfo) {
+            if (tmpinfo->type == JokeType::not_defined) {
+                block->undefinedlist->types.remove_if(tmpinfo);
+                info = tmpinfo;
+                tmpinfo = nullptr;
+                info->type = JokeType::unset;
+            }
         }
     }
     if (!info) {
-        if (IsJokeReserved(id.get_const()))return nullptr;
+        if (IsJokeReserved(id.get_const())) {
+            return nullptr;
+        }
         tmpinfo = SearchTypeOnBlock(id.get_const(), block);
         if (tmpinfo) {
             AddJokeSemErr(log, "type \"*\" is already defined", id.get_const(), i, u);
@@ -127,12 +139,14 @@ JokeTypeInfo* CCNV jokescript::GetIdSemantics(unsigned long long& i,unsigned lon
         }
         info = CreateJokeTypeInfo(id.get_raw_z(), list);
         if (!info) {
-            AddJokeSysErr(log, "memory is full", nullptr);
+            AddJokeMemoryFullErr(log);
             return nullptr;
         }
     }
-    info->depends.block = block->current;
-    block->current->types.add(info);
+    if (d) {
+        info->depends.block = block->current;
+        block->current->types.add(info);
+    }
     return info;
 }
 
@@ -185,6 +199,17 @@ JokeTypeInfo* CCNV jokescript::SetRootInfo(JokeTypeInfo* info, unsigned long lon
 
 JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
     JokeTypeInfo* tmpinfo=nullptr;
+    if (nowline[u] == '<') {//template arguments
+        tmpinfo = SetTemplateInfo(info, i, u, nowline, list, block, log);
+        if (!tmpinfo)return nullptr;
+        nowline = list->file->lines[i];
+        if (!nowline) {
+            AddJokeUnexpectedEOFErr(log, i, u);
+            return nullptr;
+        }
+    }
+
+
     if (nowline[u] == '(') {
         if (info->root) {
             if (info->root->type == JokeType::structure_template) {
@@ -203,7 +228,7 @@ JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigne
             info->ch_vars.add(var);
             nowline = list->file->loglines[i];
             if (!nowline) {
-                AddJokeSynErr(log, "unexpected end of file", nullptr, i, u);
+                AddJokeUnexpectedEOFErr(log, i, u);
                 return nullptr;
             }
         }
@@ -214,7 +239,7 @@ JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigne
         info->ch_types.pack();
         u++;
     }
-    else if (nowline[u] == '<') {//template arguments
+    /*if (nowline[u] == '<') {//template arguments
         if (info->type != JokeType::unset)return nullptr;
         JokeType types = info->root->type;
         unsigned long long size = 0;
@@ -263,14 +288,14 @@ JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigne
         info->ch_vars.unuse();
         info->size = counter;
         u++;
-    }
+    }*/
     return info;
 }
 
 JokeTypeInfo* CCNV jokescript::SetFuncOpts(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
     JokeTypeInfo* tmpinfo=nullptr;
     EasyVector<char> id(nullptr);
-    bool capt = false, ccnv = false, co = false;
+    bool capt = false, ccnv = false, co = false,va_args=false;
 
     if (isalpha((unsigned char)nowline[u])||nowline[u]=='_') {
         if (info->type != JokeType::function)return nullptr;
@@ -287,6 +312,9 @@ JokeTypeInfo* CCNV jokescript::SetFuncOpts(JokeTypeInfo* info, unsigned long lon
                 info->ch_types.add(tmpinfo);
                 while (nowline[u]) {
                     u++;
+                    if (nowline[u] == ')') {
+                        break;
+                    }
                     id = CollectId(u, nowline, log);
                     JokeVariableInfo* var = SearchVarOnBlock(id.get_const(), block);
                     if (!var) {
@@ -299,14 +327,38 @@ JokeTypeInfo* CCNV jokescript::SetFuncOpts(JokeTypeInfo* info, unsigned long lon
                         return nullptr;
                     }
                     tmpinfo->ch_vars.add(var);
-                    if (nowline[u] == ',') {
-                        continue;
+                    if (nowline[u] != ','&&nowline[u]!=')') {
+                        AddJokeUnexpectedTokenErr(log, ",)", nowline[u], i, u);
+                        return nullptr;
                     }
-                    else if (nowline[u] == ')') {
-                        break;
-                    }
+                }
+                tmpinfo->ch_types.pack_f();
+                tmpinfo->ch_vars.pack_f();
+            }
+            else if (!va_args && strcmp(id.get_const(),"va_args") == 0) {
+                tmpinfo = CreateJokeTypeInfo(StringFilter() = "va_args", list);
+                if (!tmpinfo) {
                     return nullptr;
                 }
+                tmpinfo->type = JokeType::function_options;
+                info->ch_types.add(tmpinfo);
+                while (nowline[u]) {
+                    u++;
+                    if (nowline[u] == ')') {
+                        break;
+                    }
+                    JokeTypeInfo* type = GetTypebyName(i,u,nowline,list,block,log);
+                    if (!type) {
+                        return nullptr;
+                    }
+                    tmpinfo->ch_types.add(type);
+                    if (nowline[u] != ',' && nowline[u] != ')') {
+                        AddJokeUnexpectedTokenErr(log, ",)", nowline[u], i, u);
+                        return nullptr;
+                    }
+                }
+                tmpinfo->ch_types.pack_f();
+                tmpinfo->ch_vars.pack_f();
             }
             else if ((!ccnv && !capt && strcmp(id.get_const(), "ccnv") == 0) || (!co && strcmp(id.get_const(), "co") == 0)) {
                 tmpinfo = CreateJokeTypeInfo(id.get_raw_z(), list);
@@ -356,7 +408,7 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
         }
         tmpinfo = CreateJokeTypeInfo(name, list);
         if (!tmpinfo) {
-            AddJokeSysErr(log, "memory is full", nullptr);
+            AddJokeMemoryFullErr(log);
             return nullptr;
         }
         block->current->types.add(tmpinfo);
@@ -379,7 +431,7 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
         if (nowline[u] == '*') {
             tmpinfo = CreateJokeTypeInfo(StringFilter() = "*", list);
             if (!tmpinfo) {
-                AddJokeSysErr(log, "memory is full", nullptr);
+                AddJokeMemoryFullErr(log);
                 return nullptr;
             }
             tmpinfo->type = JokeType::pointer;
@@ -408,7 +460,7 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
                         base = 2;
                         u += 2;
                     }
-                    else {
+                    else if(nowline[u+1]>='0'&&nowline[u+1]<='7'){
                         base = 8;
                         u++;
                     }
@@ -425,7 +477,7 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
             }
             tmpinfo = CreateJokeTypeInfo(StringFilter() = "[]", list);
             if (!tmpinfo) {
-                AddJokeSysErr(log, "memory is full", nullptr);
+                AddJokeMemoryFullErr(log);
                 return nullptr;
             }
             tmpinfo->type = willtype;
@@ -462,7 +514,7 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
                 }
                 tmpinfo = CreateJokeTypeInfo(id.get_raw_z(), list);
                 if (!tmpinfo) {
-                    AddJokeSysErr(log, "memory is full", nullptr);
+                    AddJokeMemoryFullErr(log);
                     return nullptr;
                 }
                 tmpinfo->type = JokeType::template_param;
@@ -495,11 +547,9 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
     }
 
     JokeBlock* tmpblock = nullptr, * holdblock = nullptr;
-    try {
-        tmpblock = new JokeBlock;
-    }
-    catch (...) {
-        AddJokeSysErr(log, "memory is full", nullptr);
+    tmpblock = CreateJokeBlock();
+    if (!tmpblock) {
+        AddJokeMemoryFullErr(log);
         return nullptr;
     }
     holdblock = block->current;
@@ -524,7 +574,6 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
                 block->current = holdblock;
                 return nullptr;
             }
-            //block->current->types.remove_if(ch_type); //remove from blocks -> make tmpblock then delete once
             ch_type->intype = true;
             ch_type->depends.type = info;
             info->ch_types.add(ch_type);
@@ -536,7 +585,6 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
                 block->current = holdblock;
                 return nullptr;
             }
-            //block->current->vars.remove_if(ch_var); //remove from blocks -> make tmpblock then delete once
             ch_var->intype = true;
             ch_var->depends.type = info;
             info->ch_vars.add(ch_var);
@@ -568,6 +616,61 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
     info->ch_vars.pack_f();
     i++;
     u = 0;
+    return info;
+}
+
+JokeTypeInfo* CCNV jokescript::SetTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+    JokeTypeInfo* tmpinfo = nullptr;
+    if (info->type != JokeType::unset) {
+        return nullptr;
+    }
+    JokeType types = info->root->type;
+    unsigned long long size = 0;
+    while (types == JokeType::type_alias) {
+        tmpinfo = info->root;
+        if (!tmpinfo)break;
+        types = tmpinfo->type;
+    }
+    if (types != JokeType::structure_template) {
+        AddJokeSemErr(log, "\"*\" is not template", info->name, i, u);
+        return nullptr;
+    }
+    info->type = JokeType::template_instance;
+    auto counter = 0ull;
+    while (nowline[u]) {
+        u++;
+        if (nowline[u] == '!') {
+            tmpinfo = ParseTypedef(i, u, list, block, log);
+        }
+        else {
+            tmpinfo = GetTypebyName(i, u, nowline, list, block, log);
+        }
+        if (!tmpinfo) {
+            return nullptr;
+        }
+        info->ch_types.add(tmpinfo);
+        counter++;
+        nowline = list->file->loglines[i];
+        if (!nowline)return nullptr;
+        if (nowline[u] == '>')break;
+        if (nowline[u] != ',') {
+            AddJokeUnexpectedTokenErr(log, ",", nowline[u], i, u);
+            return nullptr;
+        }
+    }
+    if (info->root->size != counter) {
+        if (!info->root->size) {
+            AddJokeSemErr(log, "incomplete type is unsuable", nullptr, i, u);
+        }
+        else {
+            AddJokeSemErr(log, "template parameter count is unmatched.", nullptr, i, u);
+        }
+        return nullptr;
+    }
+    info->ch_types.pack();
+    info->ch_vars.unuse();
+    info->size = counter;
+    u++;
     return info;
 }
 
@@ -664,15 +767,35 @@ JokeTypeInfo* CCNV jokescript::SearchTypeOnBlock(const char* type, JokeBlockList
 
 JokeTypeInfo* CCNV jokescript::SearchTypeOnChild(const char* type, JokeTypeInfo* info) {
     if (!type || !info)return nullptr;
-    if (info->type != JokeType::structure)return nullptr;
-    JokeTypeInfo* p=info;
+    JokeTypeInfo* search = info,*ret=nullptr;
+    while (search->type == JokeType::type_alias) {
+        search = search->root;
+        if (!search)return nullptr;
+    }
+    if (search->type != JokeType::structure&&search->type!=JokeType::template_instance)return nullptr;
+    JokeTypeInfo* p=nullptr;
+    if (search->type == JokeType::structure) {
+        p = search;
+    }
+    else {
+        p = search->root;
+    }
+    if (!p)return nullptr;
     for (auto i = 0ull; p->ch_types[i]; i++) {
         if (strcmp(type, p->ch_types[i]->name) == 0) {
-            return p->ch_types[i];
+            ret = p->ch_types[i];
+            if (p->ch_types[i]->type == JokeType::template_param) {
+                ret = search->ch_types[i];
+            }
+            return ret;
         }
     }
     for (auto k = 0ull; p->ch_vars[k]; k++) {
         if (strcmp(type, p->ch_vars[k]->name) == 0) {
+            ret = p->ch_types[k];
+            if (p->ch_types[k]->type == JokeType::template_param) {
+                ret = search->ch_types[k];
+            }
             return p->ch_vars[k]->type;
         }
     }

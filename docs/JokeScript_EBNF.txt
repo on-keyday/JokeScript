@@ -1,23 +1,24 @@
 program:=statments
-statments:="{"statments"}"|(statment";")*
+statments:=("{"statments"}"|(statment";"))*
 degit:=["0"-"9"]
 alphabet:=["a"-"z" "A"-"Z"]
-identifier:=(alphabet|"_") (degit|alphabet|"_")*
+identifier:=(alphabet|"_") (degit|alphabet|"_")* ("." identifier)?
 identifiers:=identifier ("," identifiers)?
-typedef:="!" typedef_detail
-typedef_detail:=identifier? "?" 
+typedef:="!" identifier? typedef_detail
+typedef_detail:="?" 
                 (identifier ("<"typedefs|identifier">")?|
-                (identifier|"<"typedef">")? "("paramlist?") funcopts?"|
+                (identifier("<"typedefs|identifier">")?|"<"typedef">")? "("paramlist?") funcopts?"|
                 "="("<"identifiers)?">"var_block)? 
                 typesuffix?
 funcopts:=funcopt*
-funcopt:="ccnv("identifier")"|"capt("(typedef|identifier)")"|"co("co_opt")"
+funcopt:="ccnv("identifier")"|"capt("(typedef|identifier)")"|"co("co_opt")"|
+         "va_args("identifiers?")"
 co_opt:="must"|"not"|"default"
 typedefs:=typedef(","typedefs)?
 typesuffix:=("["ineger?"]"|"*") typesuffix?
 paramlist:=param ("," paramlist)?
-param:="$" identifier? "?" (identifier|typedef)?
-variabledef:="$" identifier "?" (identifier typesuffix?|typedef)? ("=" (expr|param_block|function))?
-functiondef:="@" identifier? "?" (identifier|"<"typedef">") "("paramlist")=>" block
+param:="$" identifier? typedef_detail?
+variabledef:="$" identifier typedef_detail? ("=" (expr|param_block|functiondef))?
+functiondef:="@" identifier? typedef_detail "=>" block
 block:="{"sentence*"}"
-var_block:="{"(variable|typedef)*"}"
+var_block:="{"(variabledef|typedef)*"}"

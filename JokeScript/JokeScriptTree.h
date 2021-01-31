@@ -34,21 +34,22 @@ namespace jokescript {
 		JokeBlock* depends=nullptr;
 		JokeTypeInfo* type=nullptr;
 		EasyVector<JokeTree*> params=nullptr;
+		JokeBlock* relblock = nullptr;
 	};
 
 	JokeTree* CreateJokeTree(char* symbol,JokeDefinitionList* list);
 
 	bool SpecifyType(JokeTree* tree, unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTree* Expr(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTree* Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
-	JokeTree* BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
 	template<class Now,class... After>
-	JokeTree* BinaryOps(unsigned long long& i,unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log,Now now,After... afters) {
-		JokeTree* ret = BinaryOps(i, u, list, block, log, afters...),*tmptree=nullptr;
+	JokeTree* BinaryOps(unsigned long long& i,unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log,bool& expect,Now&& now,After&&... afters) {
+		JokeTree* ret = BinaryOps(i, u, list, block, log,expect, afters...),*tmptree=nullptr;
 		if (!ret)return nullptr;
 		const char* nowline = list->file->loglines[i];
 		bool ok = false;
@@ -57,24 +58,30 @@ namespace jokescript {
 		}
 		while (nowline[u]) {
 			for (auto symbol : now) {
-				if (strncmp(&nowline[u], symbol, strlen(symbol))==0) {
-					u += strlen(symbol);
+				auto leng = strlen(symbol);
+				if (strncmp(&nowline[u], symbol, leng)==0) {
+					if (leng==1) {
+						if (nowline[u + 1] == symbol[0]) {
+							continue;
+						}
+					}
+					u += leng;
 					tmptree = CreateJokeTree(StringFilter() = symbol, list);
 					if (!tmptree) {
 						return nullptr;
 					}
-					tmptree->type = JokeSymbol::bin;
+					tmptree->symtype = JokeSymbol::bin;
 					tmptree->params.unuse();
 					tmptree->left = ret;
 					ret = tmptree;
 					tmptree = nullptr;
-					tmptree = BinaryOps(i, u, list, block, log, afters...);
+					tmptree = BinaryOps(i, u, list, block, log,expect,afters...);
 					if (!tmptree) {
 						return nullptr;
 					}
 					ret->right = tmptree;
 					tmptree = nullptr;
-					if (!SpecifyType(ret,list,block,log)) {
+					if (!SpecifyType(ret,i,u,list,block,log)) {
 						return nullptr;
 					}
 					ok = true;
@@ -88,7 +95,11 @@ namespace jokescript {
 	}
 
 
-	JokeTree* UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
-	JokeTree* SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+
+	JokeTree* NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+
+	JokeTypeInfo* SuffixToType(JokeSymbol willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log);
 }

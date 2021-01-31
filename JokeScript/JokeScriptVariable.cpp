@@ -39,13 +39,13 @@ JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned l
     JokeVariableInfo* info = nullptr, * tmpinfo = nullptr;
     JokeTypeInfo* type = nullptr;
     JokeFunctionInfo* func = nullptr;
+    JokeTree* tree = nullptr;
 
     id = CollectId(u, nowline, log);
 
     if (nowline[u]!='?') {
         return nullptr;
     }
-    u++;
 
     info = CreateJokeVariableInfo(id.get_raw_z(), list);
 
@@ -53,18 +53,14 @@ JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned l
         return nullptr;
     }
 
-    if (nowline[u]=='!') {
-        type = ParseTypedef(i, u, list, block, log);
-        nowline = list->file->loglines[i];
-    }
-    else if (isalpha((unsigned char)nowline[u])||nowline[u]=='_'){
-        type = GetTypebyName(i, u, nowline, list, block, log);
+    if (nowline[u + 1] != '=' ||(nowline[u+1]=='='&&(nowline[u + 2] == '>' || nowline[u + 2] == '<'))) {
+        type = ParseTypedef_detail(i, u, list, block, log);
     }
 
     if (nowline[u]=='=') {
         u++;
         if (nowline[u] == '@') {
-            JokeFunctionInfo* func = ParseFuncdef(i, u, list, block, log);
+            func = ParseFuncdef(i, u, list, block, log);
             if (!func) {
                 return nullptr;
             }
@@ -73,7 +69,8 @@ JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned l
             }
         }
         else {
-            JokeTree* tree = Expr(i, u, list, block, log);
+            bool res = false;
+            tree = Expr(res,i, u, list, block, log);
             if (!tree) {
                 return nullptr;
             }

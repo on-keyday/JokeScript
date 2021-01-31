@@ -16,11 +16,11 @@ bool jokescript::AddJokeMsg(JokeLogger* log, const char* msg, JokeMsgType type) 
 	return false;
 }
 
-bool jokescript::AddJokeInfo(JokeLogger* log, const char* msg) {
+bool jokescript::AddJokeInfo(JokeLogger* log, const char* msg, const char* value) {
 	return false;
 }
 
-bool jokescript::AddJokeLog(JokeLogger* log, const char* msg) {
+bool jokescript::AddJokeLog(JokeLogger* log, const char* msg, const char* value) {
 	return false;
 }
 
@@ -37,5 +37,17 @@ bool jokescript::AddJokeSemErr(JokeLogger* log, const char* msg,const char* valu
 }
 
 bool jokescript::AddJokeUnexpectedTokenErr(JokeLogger* log, const char* expected, char but, unsigned long long line, unsigned long long pos) {
+	return false;
+}
+
+bool jokescript::AddJokeUnexpectedEOFErr(JokeLogger* log, unsigned long long line, unsigned long long pos) {
+	return false;
+}
+
+bool jokescript::AddJokeMemoryFullErr(JokeLogger* log) {
+	return false;
+}
+
+bool jokescript::AddJokeCompilerBrokenErr(JokeLogger* log, const char* msg) {
 	return false;
 }

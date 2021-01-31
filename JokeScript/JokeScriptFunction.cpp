@@ -13,5 +13,8 @@
 using namespace jokescript;
 
 JokeFunctionInfo* jokescript::ParseFuncdef(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+	if (!list->file->loglines[i]) {
+		return nullptr;
+	}
 	return nullptr;
 }

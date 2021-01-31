@@ -10,7 +10,10 @@
 
 #include"JokeScriptInfoLists.h"
 #include"JokeScriptType.h"
+#include"JokeScriptVariable.h"
 #include"JokeScriptCommon.h"
+#include"JokeScriptFunction.h"
+#include"JokeScriptTree.h"
 #include<string.h>
 #include <map>
 using namespace jokescript;
@@ -28,7 +31,7 @@ JokeDefinitionList* CCNV jokescript::CreateJokeDefinitionList(JokeFile* file, Jo
         ret = new JokeDefinitionList;
     }
     catch (...) {
-        AddJokeSysErr(log, "memory is full", nullptr);
+        AddJokeMemoryFullErr(log);
         return nullptr;
     }
     ret->file = file;
@@ -93,7 +96,7 @@ JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLog
     catch (...) {
         delete ret;
         delete root;
-        AddJokeSysErr(log, "memory is full", nullptr);
+        AddJokeMemoryFullErr(log);
         return nullptr;
     }
     ret->list.add(root);
@@ -120,7 +123,7 @@ JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLog
         JokeTypeInfo* info = CreateJokeTypeInfo(StringFilter() = b.first, list);
         if (!info) {
             delete ret;
-            AddJokeSysErr(log, "memory is full", nullptr);
+            AddJokeMemoryFullErr(log);
             return false;
         }
         info->type = JokeType::builtin;
@@ -143,3 +146,76 @@ bool CCNV jokescript::ParseDefinition(JokeDefinitionList* list) {
     }
     return false;
 }*/
+
+JokeBlock* jokescript::CreateJokeBlock() {
+    JokeBlock* ret = nullptr;
+    try {
+        ret = new JokeBlock;
+    }
+    catch(...){
+        return nullptr;
+    }
+    return ret;
+}
+
+bool jokescript::ParseProgram(JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+    if (!list || !block || !log)return false;
+    unsigned long long line = 0, pos = 0;
+    const char* nowline = list->file->lines[0];
+    if (!nowline) {
+        AddJokeInfo(log, "\"*\" is only comment file.",list->file->filename);
+        return true;
+    }
+    bool expect = false;
+    while (nowline) {
+        /*if (nowline[0] == '!') {
+            auto type = ParseTypedef(line, pos, list, block, log);
+            if (!type) {
+                return false;
+            }
+            expect = true;
+        }
+        else if (nowline[0]=='$') {
+            auto var = ParseVardef(line, pos, list, block, log);
+            if (!var) {
+                return false;
+            }
+            expect = true;
+        }
+        else if (nowline[0]=='@') {
+            auto func = ParseFuncdef(line, pos, list, block, log);
+            if (!func) {
+                return false;
+            }
+        }
+        else*/ 
+        if (nowline[0]=='{') {
+            auto rel = CreateJokeBlock();
+            if (!rel) {
+                AddJokeMemoryFullErr(log);
+                return false;
+            }
+            block->list.add(rel);
+            rel->parent = block->current;
+            block->current->child.add(rel);
+            block->current = rel;
+        }
+        else if (nowline[0]=='}') {
+            if (!block->current->parent) {
+                AddJokeSynErr(log, "unexpected end of block.\"{\" and \"}\" have to be pair.", nullptr, line, pos);
+                return false;
+            }
+            block->current = block->current->parent;
+        }
+        else {
+            bool res = false;
+            Expr(res,line, pos, list, block, log);
+            if (!res) {
+                return false;
+            }
+        }
+        line++;
+        nowline = list->file->loglines[line];
+        pos = 0;
+    }
+}

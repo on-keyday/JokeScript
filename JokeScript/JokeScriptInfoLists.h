@@ -16,7 +16,7 @@ namespace jokescript {
     struct JokeTypeInfo;
     struct JokeVariableInfo;
     struct JokeFunctionInfo;
-
+    struct JokeTree;
 
     struct JokeDefinitionList {
         const JokeFile* file=nullptr;
@@ -24,6 +24,7 @@ namespace jokescript {
         EasyVector<JokeTypeInfo*> types;
         EasyVector<JokeVariableInfo*> vars;
         EasyVector<JokeFunctionInfo*> funcs;
+        EasyVector<JokeTree*> trees;
         ~JokeDefinitionList();
     };
 
@@ -31,7 +32,11 @@ namespace jokescript {
         EasyVector<JokeTypeInfo*> types;
         EasyVector<JokeVariableInfo*> vars;
         EasyVector<JokeBlock*> child;
-        JokeFunctionInfo* relfunc = nullptr;
+        bool isfunc = false;
+        union {
+            JokeFunctionInfo* func = nullptr;
+            JokeTree* tree;
+        }rel;
         JokeBlock* parent = nullptr;
         bool istmp = false;
     };
@@ -45,4 +50,8 @@ namespace jokescript {
     JokeDefinitionList* CCNV CreateJokeDefinitionList(JokeFile* file, JokeLogger* log);
     JokeBlockList* CCNV SetBuiltInType(JokeDefinitionList* list, JokeLogger* log);
     //bool CCNV ParseDefinition(JokeDefinitionList* list);
+
+    JokeBlock* CreateJokeBlock();
+
+    bool ParseProgram(JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log);
 }

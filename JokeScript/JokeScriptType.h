@@ -23,11 +23,13 @@ namespace jokescript{
         builtin,
         type_alias,
         function,
+        //function_template,
         function_options,
         operators,
         structure,
         structure_template,
         template_param,
+        //template_param_va,
         template_instance,
         pointer,
         array,
@@ -69,6 +71,7 @@ namespace jokescript{
     
 
     JokeTypeInfo* CCNV SetStructureInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
     EasyVector<char> CCNV CollectId(unsigned long long& u, const char* nowline,JokeLogger* log);
     JokeTypeInfo* CCNV GetTypebyName(unsigned long long& i,unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);

@@ -39,7 +39,7 @@ JokeFile* CCNV jokescript::LoadJoke(const char* filename, JokeLogger* log) {
     char* file_copy = nullptr;
     file_copy = StringFilter() = filename;
     if (!file_copy) {
-        AddJokeSysErr(log, "memory is full", nullptr);
+        AddJokeMemoryFullErr(log);
         fclose(file);
         return nullptr;
     }
@@ -68,7 +68,7 @@ JokeFile* CCNV jokescript::LoadJoke(const char* filename, JokeLogger* log) {
         tmp = (void(*)(char*))free;
         lines.remove_each(tmp);
         free(file_copy);
-        AddJokeSysErr(log, "memory is full", nullptr);
+        AddJokeMemoryFullErr(log);
         return nullptr;
     }
     ret->filename = file_copy;

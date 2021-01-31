@@ -16,6 +16,8 @@ namespace jokescript {
 	struct JokeFunctionInfo {
 		JokeTypeInfo* type;
 		EasyVector<JokeVariableInfo*> params;
+		JokeBlock* depends;
+		JokeBlock* relblock;
 	};
 
 	JokeFunctionInfo* ParseFuncdef(unsigned long long& i, unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log);

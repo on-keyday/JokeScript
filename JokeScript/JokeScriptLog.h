@@ -35,11 +35,14 @@ namespace jokescript {
 
     bool AddJokeMsg(JokeLogger* log, const char* msg, JokeMsgType type);
 
-    bool AddJokeInfo(JokeLogger* log, const char* msg);
-    bool AddJokeLog(JokeLogger* log, const char* msg);
+    bool AddJokeInfo(JokeLogger* log, const char* msg, const char* value);
+    bool AddJokeLog(JokeLogger* log, const char* msg, const char* value);
     bool AddJokeSysErr(JokeLogger* log, const char* msg,const char* value);
     bool AddJokeSynErr(JokeLogger* log, const char* msg,const char* value, unsigned long long line, unsigned long long pos);
     bool AddJokeSemErr(JokeLogger* log, const char* msg, const char* value,unsigned long long line, unsigned long long pos);
 
     bool AddJokeUnexpectedTokenErr(JokeLogger* log,const char* expected,char but,unsigned long long line, unsigned long long pos);
+    bool AddJokeUnexpectedEOFErr(JokeLogger* log,unsigned long long line,unsigned long long pos);
+    bool AddJokeMemoryFullErr(JokeLogger* log);
+    bool AddJokeCompilerBrokenErr(JokeLogger* log, const char* msg);
 }
