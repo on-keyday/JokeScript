@@ -7,18 +7,27 @@ identifiers:=identifier ("," identifiers)?
 typedef:="!" identifier? typedef_detail
 typedef_detail:="?" 
                 (identifier ("<"typedefs|identifier">")?|
-                (identifier("<"typedefs|identifier">")?|"<"typedef">")? "("paramlist?") funcopts?"|
+                (identifier|"<"typedef">")? "("paramlist?")" funcopts?|
                 "="("<"identifiers)?">"var_block)? 
                 typesuffix?
 funcopts:=funcopt*
-funcopt:="ccnv("identifier")"|"capt("(typedef|identifier)")"|"co("co_opt")"|
-         "va_args("identifiers?")"
+funcopt:="ccnv("identifier")"|"capt("identifier")"|"co("co_opt")"|
+         "va_args("identifier|typedef")"
 co_opt:="must"|"not"|"default"
 typedefs:=typedef(","typedefs)?
 typesuffix:=("["ineger?"]"|"*") typesuffix?
 paramlist:=param ("," paramlist)?
 param:="$" identifier? typedef_detail?
-variabledef:="$" identifier typedef_detail? ("=" (expr|param_block|functiondef))?
+variabledef:="$" identifier typedef_detail? ("=" (assings|param_block|functiondef))?
 functiondef:="@" identifier? typedef_detail "=>" block
-block:="{"sentence*"}"
+block:="{"statments*"}"
 var_block:="{"(variabledef|typedef)*"}"
+loop:="loop" ("first" expr)? ("if" assigns)? ("continue" assigns) block
+if:="if" assigns block ("elif" assigns block)* ("else" block)?
+return:="return" assigns?
+break:="break"
+continue:="continue"
+co:="co" functioncall
+joke:="joke" 
+controls:=loop|if|co|break|continue|return|joke|expr
+expr:=typedef|variabledef|functiondef|assigns
