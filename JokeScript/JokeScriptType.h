@@ -34,6 +34,7 @@ namespace jokescript{
         pointer,
         array,
         vector,
+        some_returns,
         not_defined
     };
     
@@ -63,15 +64,16 @@ namespace jokescript{
     JokeTypeInfo* CCNV ParseTypedef(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block,JokeLogger* log);
 
     JokeTypeInfo* CCNV ParseTypedef_detail(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV GetIdSemantics(unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV SetRootInfo(JokeTypeInfo* info,unsigned long long& i, unsigned long long& u, const char* nowline,JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV SetFuncOpts(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV SetArrayOrPointerInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV GetIdSemantics(unsigned long long& i, unsigned long long& u,const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetRootInfo(JokeTypeInfo* info,unsigned long long& i, unsigned long long& u, const char*& nowline,JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetFuncOpts(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetArrayOrPointerInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
     
 
-    JokeTypeInfo* CCNV SetStructureInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
-    JokeTypeInfo* CCNV SetTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetReturnInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetStructureInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+    JokeTypeInfo* CCNV SetTemplateInfo(JokeTypeInfo* info, unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
     EasyVector<char> CCNV CollectId(unsigned long long& u, const char* nowline,JokeLogger* log);
     JokeTypeInfo* CCNV GetTypebyName(unsigned long long& i,unsigned long long& u, const char* nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);

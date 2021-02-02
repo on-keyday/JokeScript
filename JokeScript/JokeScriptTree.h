@@ -43,6 +43,8 @@ namespace jokescript {
 
 	JokeTree* Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
+	JokeTree* Comma(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect);
+
 	JokeTree* Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
 	JokeTree* BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
@@ -101,5 +103,5 @@ namespace jokescript {
 
 	JokeTree* NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTypeInfo* SuffixToType(JokeSymbol willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log);
+	JokeTypeInfo* SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log);
 }

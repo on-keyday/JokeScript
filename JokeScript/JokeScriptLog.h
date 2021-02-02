@@ -12,6 +12,7 @@
 #include"JokeScriptCommon.h"
 namespace jokescript {
     struct JokeFile;
+    typedef void (*LogCallBack)(const char*);
 
     enum class JokeMsgType {
         info,
@@ -28,6 +29,7 @@ namespace jokescript {
 
 
     struct JokeLogger {
+        LogCallBack cb;
         EasyVector<JokeMessage*> msgs;
         const JokeFile* file=nullptr;
     };
@@ -35,6 +37,9 @@ namespace jokescript {
 
     bool AddJokeMsg(JokeLogger* log, const char* msg, JokeMsgType type);
 
+
+    bool CommonAdd(EasyVector<char>& to,const char* type, const char* msg, const char* value);
+    bool ResolveFileLine(EasyVector<char>& to,JokeLogger* log,unsigned long long line, unsigned long long pos);
     bool AddJokeInfo(JokeLogger* log, const char* msg, const char* value);
     bool AddJokeLog(JokeLogger* log, const char* msg, const char* value);
     bool AddJokeSysErr(JokeLogger* log, const char* msg,const char* value);

@@ -161,7 +161,7 @@ JokeBlock* jokescript::CreateJokeBlock() {
 bool jokescript::ParseProgram(JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
     if (!list || !block || !log)return false;
     unsigned long long line = 0, pos = 0;
-    const char* nowline = list->file->lines[0];
+    const char* nowline = list->file->loglines[0];
     if (!nowline) {
         AddJokeInfo(log, "\"*\" is only comment file.",list->file->filename);
         return true;

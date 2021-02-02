@@ -14,8 +14,13 @@
 using namespace std;
 using namespace jokescript;
 
+void print(const char* str) {
+	cout << str;
+}
+
 int main(int argc, char** argv) {
 	auto s = CreateJokeCompiler();
+	JokeCompiler_RegisterLogCallback(s, print);
 	JokeCompiler_Load(s, "Joke.jok");
 	JokeCompiler_Compile(s);
 	DeleteJokeCompiler(s);

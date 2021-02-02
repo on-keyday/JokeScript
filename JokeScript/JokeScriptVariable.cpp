@@ -25,7 +25,7 @@ JokeVariableInfo* CCNV jokescript::CreateJokeVariableInfo(char* name, JokeDefini
     }
     info->name = name;
     list->vars.add(info);
-    return nullptr;
+    return info;
 }
 
 JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block,JokeLogger* log) {
@@ -53,9 +53,17 @@ JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned l
         return nullptr;
     }
 
+    info->depends.block = block->current;
+    block->current->vars.add(info);
+
     if (nowline[u + 1] != '=' ||(nowline[u+1]=='='&&(nowline[u + 2] == '>' || nowline[u + 2] == '<'))) {
         type = ParseTypedef_detail(i, u, list, block, log);
+        nowline = list->file->loglines[i];
     }
+    else {
+        u++;
+    }
+    
 
     if (nowline[u]=='=') {
         u++;
@@ -70,7 +78,7 @@ JokeVariableInfo* CCNV jokescript::ParseVardef(unsigned long long& i, unsigned l
         }
         else {
             bool res = false;
-            tree = Expr(res,i, u, list, block, log);
+            tree = Assigns(i, u, list, block, log,res);
             if (!tree) {
                 return nullptr;
             }

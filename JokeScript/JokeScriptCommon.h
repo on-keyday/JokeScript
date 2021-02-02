@@ -137,15 +137,15 @@ namespace jokescript {
             return ret;
         }
 
-        const PType* get_const() {
+        const PType* get_const() const{
             return ps;
         }
 
-        const PType get_end() {
+        const PType get_end() const{
             return ps[toadd - 1];
         }
 
-        unsigned long long get_size() {
+        unsigned long long get_size() const {
             return toadd;
         }
 
@@ -207,7 +207,7 @@ namespace jokescript {
             return true;
         }
 
-        bool is_enable() {
+        bool is_enable() const{
             return ps != nullptr;
         }
 

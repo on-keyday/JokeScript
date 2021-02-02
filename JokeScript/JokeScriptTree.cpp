@@ -174,7 +174,8 @@ const char* Pow[] = {
 #define FirstBinOpts(...) BinaryOps(__VA_ARGS__,Or,And,Eaq,Rel,Shift,Bor,Bxor,Band,And,Mul,Pow)
 
 JokeTree* jokescript::Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect) {
-	JokeTree* ret = FirstBinOpts(i, u, list, block, log,expect), * tmptree = nullptr;;
+	JokeTree* ret = FirstBinOpts(i, u, list, block, log,expect), * tmptree = nullptr;
+	if (!ret)return nullptr;
 	const char* nowline = list->file->loglines[i];
 	bool ok = false;
 	while (1) {
@@ -184,6 +185,7 @@ JokeTree* jokescript::Assigns(unsigned long long& i, unsigned long long& u, Joke
 				u += len;
 				tmptree = CreateJokeTree(StringFilter() = s, list);
 				if (!tmptree) {
+					AddJokeMemoryFullErr(log);
 					return nullptr;
 				}
 				tmptree->symtype = JokeSymbol::bin;
@@ -259,6 +261,7 @@ JokeTree*jokescript::SingleOpts(unsigned long long& i, unsigned long long& u, Jo
 		}
 	}
 	else if (isdigit((unsigned char)nowline[u])) {
+		/*
 		int base = 10;
 		int ofs = 0;
 		if (nowline[u]=='0') {
@@ -294,7 +297,8 @@ JokeTree*jokescript::SingleOpts(unsigned long long& i, unsigned long long& u, Jo
 			AddJokeMemoryFullErr(log);
 			return nullptr;
 		}
-		ret->symtype = JokeSymbol::integer;
+		ret->symtype = JokeSymbol::integer;*/
+		ret = NumberDec(i, u, list, block, log);
 	}
 	return ret;
 }
@@ -324,7 +328,7 @@ JokeTree* jokescript::NumberDec(unsigned long long& i, unsigned long long& u, Jo
 				base = 8;
 				ofs = 1;
 			}
-			else if (isalnum((unsigned char)nowline[u + 1])) {
+			else if (!isalnum((unsigned char)nowline[u + 1])) {
 				AddJokeUnexpectedTokenErr(log, "xXbB01234567", nowline[u + 1], i, u);
 				return nullptr;
 			}
@@ -439,7 +443,7 @@ JokeTree* jokescript::NumberDec(unsigned long long& i, unsigned long long& u, Jo
 	return ret;
 }
 
-JokeTypeInfo* jokescript::SuffixToType(JokeSymbol willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log) {
+JokeTypeInfo* jokescript::SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log) {
 	JokeTypeInfo* ret=nullptr;
 	bool u_suffix = false, f_suffix = false, l_suffix = false;
 	int h_suffix = 0;
@@ -491,43 +495,44 @@ JokeTypeInfo* jokescript::SuffixToType(JokeSymbol willtype,EasyVector<char>& id,
 	}
 
 
-	if (willtype == JokeSymbol::integer) {
-		if (u_suffix) {
-			if (l_suffix) {
-				ret = list->types[8];//u64 
-			}
-			else if (h_suffix == 1) {
-				ret = list->types[4];//u16
-			}
-			else if (h_suffix == 2) {
-				ret = list->types[2];//u8
-			}
-			else {
-				ret = list->types[6];//u32
-			}
+	if (!f_suffix) {
+		if (willtype == JokeSymbol::real) {
+			ret = list->types[10];//f64
 		}
 		else {
-			if (l_suffix) {
-				ret = list->types[7];//s64 
-			}
-			else if (h_suffix == 1) {
-				ret = list->types[5];//s16
-			}
-			else if (h_suffix == 2) {
-				ret = list->types[1];//s8
+			if (u_suffix) {
+				if (l_suffix) {
+					ret = list->types[8];//u64 
+				}
+				else if (h_suffix == 1) {
+					ret = list->types[4];//u16
+				}
+				else if (h_suffix == 2) {
+					ret = list->types[2];//u8
+				}
+				else {
+					ret = list->types[6];//u32
+				}
 			}
 			else {
-				ret = list->types[5];//s32
+				if (l_suffix) {
+					ret = list->types[7];//s64 
+				}
+				else if (h_suffix == 1) {
+					ret = list->types[5];//s16
+				}
+				else if (h_suffix == 2) {
+					ret = list->types[1];//s8
+				}
+				else {
+					ret = list->types[5];//s32
+				}
 			}
 		}
 	}
 	else {
-		if (f_suffix) {
-			ret = list->types[9];//f32
-		}
-		else {
-			ret = list->types[10];//f64
-		}
+		ret = list->types[9];//f32
+		willtype = JokeSymbol::real;
 	}
 
 	return ret;

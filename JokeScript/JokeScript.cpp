@@ -31,10 +31,16 @@ JokeCompiler* CCNV jokescript::CreateJokeCompiler() {
 	catch (...) {
 		return nullptr;
 	}
+	try {
+		ret->logger = new JokeLogger;
+	}
+	catch (...) {
+		delete ret;
+		return 0;
+	}
 	ret->blocks = nullptr;
 	ret->defs = nullptr;
 	ret->file = nullptr;
-	ret->logger = nullptr;
 	return ret;
 }
 
@@ -50,14 +56,6 @@ int CCNV jokescript::DeleteJokeCompiler(JokeCompiler* joke) {
 
 int CCNV jokescript::JokeCompiler_Load(JokeCompiler* joke, const char* filename) {
 	if (!joke || !filename)return 0;
-	if (!joke->logger) {
-		try {
-			joke->logger = new JokeLogger;
-		}
-		catch (...) {
-			return 0;
-		}
-	}
 	auto loaded = LoadJoke(filename,joke->logger);
 	if (!loaded) {
 		return 0;
@@ -72,7 +70,8 @@ int CCNV jokescript::JokeCompiler_Compile(JokeCompiler* joke) {
 	joke->defs = CreateJokeDefinitionList(joke->file, joke->logger);
 	joke->blocks = SetBuiltInType(joke->defs, joke->logger);
 	unsigned long long i = 0, j = 0;
-	auto info = ParseTypedef(i, j, joke->defs,joke->blocks,joke->logger);
+	bool res = ParseProgram(joke->defs,joke->blocks,joke->logger);
+	//if (!res)return 0;
 	i = 0;
 	while (joke->defs->types[i]) {
 		auto f = joke->defs->types[i];
@@ -86,5 +85,12 @@ int CCNV jokescript::JokeCompiler_Compile(JokeCompiler* joke) {
 		std::cout << f->name << "\n";
 		i++;
 	}
+	return 1;
+}
+
+int CCNV jokescript::JokeCompiler_RegisterLogCallback(JokeCompiler* joke, void (*cb)(const char*)) {
+	if (!joke)return 0;
+	if (!joke->logger)return 0;
+	joke->logger->cb = cb;
 	return 1;
 }
