@@ -94,11 +94,11 @@ JokeTree* CCNV jokescript::Expr(bool& res,unsigned long long& i, unsigned long l
 		const char* nowline = list->file->loglines[i];
 		if (!nowline) {
 			AddJokeUnexpectedEOFErr(log, i, u);
-			return false;
+			return nullptr;
 		}
 		if (nowline[u] != ';') {
 			AddJokeUnexpectedTokenErr(log, ";", nowline[u], i, u);
-			return false;
+			return nullptr;
 		}
 	}
 
