@@ -408,9 +408,8 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 		ret->type = func->type;
 		ret->rel.func = func;
 		ret->reltype = TreeRel::func;
-		if (list->file->loglines[i]) {
-			nowline = list->file->loglines[i];
-		}
+		i++;
+		nowline = list->file->loglines[i];
 	}
 	else if (nowline[u]=='\0'&&list->file->lines[i+1]) {
 		if (list->file->lines[i + 1][0]=='{') {
@@ -846,5 +845,6 @@ JokeTree* CCNV jokescript::Match(unsigned long long& i, unsigned long long& u,co
 		ret->type = list->types[JTYPE_null_t];//null_t
 	}
 	expect = false;
+	nowline = list->file->loglines[i];
 	return ret;
 }
