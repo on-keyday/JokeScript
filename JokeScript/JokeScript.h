@@ -18,6 +18,7 @@
 #endif
 #else
 #define CCNV
+#undef DLL
 #define DLL
 #endif
 
