@@ -178,7 +178,6 @@ JokeTypeInfo* CCNV jokescript::SetRootInfo(JokeTypeInfo* info, unsigned long lon
         tmpinfo = GetTypebyName(i,u,nowline,list,block,log);
     }
     if (!tmpinfo)return nullptr;
-    info = tmpinfo;
     //if 'info' have no root (maybe syntax '!id?' or '!id?()' or structure), 'info->root' will be 'null_t' 
     if (!info->root) {
         info->root = list->types[JTYPE_null_t];
@@ -679,6 +678,7 @@ JokeTypeInfo* CCNV jokescript::SetStructureInfo(JokeTypeInfo* info, unsigned lon
     info->ch_vars.pack_f();
     i++;
     u = 0;
+    nowline = list->file->loglines[i];
     return info;
 }
 

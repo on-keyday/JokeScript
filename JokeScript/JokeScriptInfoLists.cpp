@@ -80,7 +80,7 @@ JokeDefinitionList* CCNV jokescript::CreateJokeDefinitionList(JokeFile* file, Jo
 }
 
 JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLogger* log) {
-    if (!list)return false;
+    if (!list)return nullptr;
     JokeBlockList* ret = nullptr;
     JokeBlock* root = nullptr, * undef = nullptr;
     try {
@@ -125,7 +125,7 @@ JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLog
         if (!info) {
             delete ret;
             AddJokeMemoryFullErr(log);
-            return false;
+            return nullptr;
         }
         info->type = JokeType::builtin;
         info->size = b.second;

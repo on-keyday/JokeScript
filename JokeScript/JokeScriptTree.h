@@ -44,7 +44,7 @@ namespace jokescript {
 		JokeTree* right=nullptr;
 		JokeBlock* depends=nullptr;
 		JokeTypeInfo* type=nullptr;
-		EasyVector<JokeTree*> params=nullptr;
+		EasyVector<JokeTree*> params;
 		TreeRel reltype=TreeRel::unset;
 		union {
 			JokeBlock* block = nullptr;

@@ -190,13 +190,14 @@ JokeTree* CCNV jokescript::Comma(unsigned long long& i, unsigned long long& u, J
 			}
 			tmptree->symtype = JokeSymbol::bin;
 			tmptree->left = ret;
-			tmptree->type = list->types[0];
+			tmptree->params.unuse();
 			ret = tmptree;
 			tmptree = Assigns(i, u, list, block, log, expect);
 			if (!tmptree) {
 				return nullptr;
 			}
 			ret->right = tmptree;
+			ret->type=tmptree->type;
 			tmptree = nullptr;
 			continue;
 		}
@@ -330,6 +331,7 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 		}
 		ret->symtype = JokeSymbol::boolean;
 		ret->type = list->types[JTYPE_bool];
+		ret->params.unuse();
 	}
 	else if (strncmp(&nowline[u], "false", 5) && !is_first_of_identitier(nowline[u + 5])) {
 		ret = CreateJokeTree(StringFilter() = "false", list);
@@ -339,6 +341,7 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 		}
 		ret->symtype = JokeSymbol::boolean;
 		ret->type = list->types[JTYPE_bool];
+		ret->params.unuse();
 	}
 	else if (strncmp(&nowline[u], "null", 4)&&!is_first_of_identitier(nowline[u+4])) {
 		ret = CreateJokeTree(StringFilter() = "null", list);
@@ -348,6 +351,7 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 		}
 		ret->symtype = JokeSymbol::null;
 		ret->type = list->types[JTYPE_null_t];
+		ret->params.unuse();
 	}
 	else if (strncmp(&nowline[u],"import ",7)) {
 		AddJokeSysErr(log, "on this compiler, \"import\" is not supported.", nullptr);
@@ -380,6 +384,7 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 			AddJokeMemoryFullErr(log);
 			return nullptr;
 		}
+		ret->params.unuse();
 		if (func) {
 			ret->symtype = JokeSymbol::func;
 			ret->type = func->type;
@@ -404,6 +409,7 @@ JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long&
 			return nullptr;
 		}
 		expect = false;
+		ret->params.unuse();
 		ret->symtype = JokeSymbol::func;
 		ret->type = func->type;
 		ret->rel.func = func;
@@ -631,7 +637,7 @@ JokeTree* CCNV jokescript::NumberDec(unsigned long long& i, unsigned long long& 
 	}
 	ret->symtype = willtype;
 	ret->type = type;
-
+	ret->params.unuse();
 	return ret;
 }
 
