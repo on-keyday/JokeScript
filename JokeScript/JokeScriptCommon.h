@@ -42,7 +42,7 @@ namespace jokescript {
             init();
         }
 
-        EasyVector(nullptr_t) {
+        EasyVector(std::nullptr_t) {
             ps = nullptr;
             toadd = 0;
             len = 0;
