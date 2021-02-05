@@ -8,8 +8,9 @@
 
 */
 
-#include"JokeScriptLoader.h"
 #include<iostream>
+#include"JokeScriptLoader.h"
+
 
 using namespace jokescript;
 
@@ -19,6 +20,7 @@ jokescript::JokeFile::~JokeFile() {
     lines.remove_each(tmp);
     loglines.remove_each(tmp);
 }
+
 
 JokeFile* CCNV jokescript::LoadJoke(const char* filename, JokeLogger* log) {
     if (!filename)return nullptr;

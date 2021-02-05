@@ -11,7 +11,11 @@
 #pragma once
 #include"JokeScriptMacro.h"
 #include"JokeScriptLog.h"
-
+#ifdef _WIN32
+#define fopen_s fopen_s
+#else
+#define fopen_s(pfp,filename,mode) ((*pfp)=fopen(filename,mode)) 
+#endif
 namespace jokescript{
     struct JokeFile {
         char* filename = nullptr;
