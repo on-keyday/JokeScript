@@ -14,11 +14,14 @@
 
 namespace jokescript {
 	struct JokeFunctionInfo {
+		char* name;
 		JokeTypeInfo* type;
 		EasyVector<JokeVariableInfo*> params;
 		JokeBlock* depends;
 		JokeBlock* relblock;
 	};
 
-	JokeFunctionInfo* ParseFuncdef(unsigned long long& i, unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log);
+	JokeFunctionInfo* CCNV ParseFuncdef(unsigned long long& i, unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log);
+
+	JokeFunctionInfo* CCNV SearchFuncOnBlock(const char* name,JokeBlockList* block);
 }

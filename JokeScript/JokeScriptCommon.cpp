@@ -12,6 +12,7 @@
 using namespace jokescript;
 
 StringFilter& jokescript::StringFilter::operator=(const char* str) {
+    if (!str)return *this;
     unsigned long long i = 0;
     while (str[i]) {
         s.add(str[i]);
@@ -21,7 +22,5 @@ StringFilter& jokescript::StringFilter::operator=(const char* str) {
 }
 
 jokescript::StringFilter::operator char* () {
-    auto ret = s.get_raw_z();
-    s.init();
-    return ret;
+    return s.get_raw_z();
 }

@@ -181,8 +181,7 @@ JokeTypeInfo* CCNV jokescript::SetRootInfo(JokeTypeInfo* info, unsigned long lon
     info = tmpinfo;
     //if 'info' have no root (maybe syntax '!id?' or '!id?()' or structure), 'info->root' will be 'null_t' 
     if (!info->root) {
-        info->root = list->types[0]; //null_t 
-                                     //null_t is type of 'null'
+        info->root = list->types[JTYPE_null_t];
     }
     return info;
 }
@@ -411,12 +410,18 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
         tmpinfo = nullptr;
     }
 
+
+
     while (nowline[u]) {
         if (nowline[u] == '>' || nowline[u] == ';' || nowline[u] == ',' || nowline[u] == '=') {
             ok = true;
             break;
         }
         if (nowline[u] == '*') {
+            if (info->root->type == JokeType::reference) {
+                AddJokeSemErr(log, "pointer to reference is unusable.", nullptr, i, u);
+                return nullptr;
+            }
             tmpinfo = CreateJokeTypeInfo(StringFilter() = "*", list);
             if (!tmpinfo) {
                 AddJokeMemoryFullErr(log);
@@ -424,7 +429,19 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
             }
             tmpinfo->type = JokeType::pointer;
         }
+        else if (nowline[u]=='&') {
+            tmpinfo = CreateJokeTypeInfo(StringFilter() = "&", list);
+            if (!tmpinfo) {
+                AddJokeMemoryFullErr(log);
+                return nullptr;
+            }
+            tmpinfo->type = JokeType::reference;
+        }
         else if (nowline[u] == '[') {
+            if (info->root->type == JokeType::reference) {
+                AddJokeSemErr(log, "array of reference is unusable.", nullptr, i, u);
+                return nullptr;
+            }
             willtype = JokeType::array;
             unsigned long long size = 0;
             u++;
@@ -448,12 +465,12 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
                         base = 2;
                         u += 2;
                     }
-                    else if(nowline[u+1]>='0'&&nowline[u+1]<='7'){
+                    else if (nowline[u + 1] >= '0' && nowline[u + 1] <= '7') {
                         base = 8;
                         u++;
                     }
                 }
-                if (nowline[u]==']') {
+                if (nowline[u] == ']') {
                     AddJokeSynErr(log, "invalid number", nullptr, i, u);
                     return nullptr;
                 }
@@ -461,6 +478,10 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
                 size = strtoull(&nowline[u], &check, base);
                 if (*check != ']') {
                     AddJokeUnexpectedTokenErr(log, "]", *check, i, u);
+                    return nullptr;
+                }
+                if (size == 0) {
+                    AddJokeSemErr(log, "0 length array is invalid", nullptr, i, u);
                     return nullptr;
                 }
                 while (nowline[u] != ']') {
@@ -476,7 +497,7 @@ JokeTypeInfo* CCNV jokescript::SetArrayOrPointerInfo(JokeTypeInfo* info, unsigne
             tmpinfo->size = size;
         }
         else {
-            AddJokeUnexpectedTokenErr(log, "*[>;,=", nowline[u], i, u);
+            AddJokeUnexpectedTokenErr(log, "*&[>;,=", nowline[u], i, u);
             return nullptr;
         }
         tmpinfo->ch_types.unuse();
@@ -517,6 +538,8 @@ JokeTypeInfo* CCNV jokescript::SetReturnInfo(JokeTypeInfo* info, unsigned long l
                 root->type = JokeType::some_returns;
             }
             root->ch_types.add(tmproot);
+            u++;
+            continue;
         }
         if (nowline[u] != '>') {
             AddJokeUnexpectedTokenErr(log, ">", nowline[u], i, u);
@@ -828,9 +851,9 @@ JokeTypeInfo* CCNV jokescript::SearchTypeOnChild(const char* type, JokeTypeInfo*
         search = search->root;
         if (!search)return nullptr;
     }
-    if (search->type != JokeType::structure&&search->type!=JokeType::template_instance)return nullptr;
+    if (search->type!=JokeType::builtin&&search->type != JokeType::structure&&search->type!=JokeType::template_instance)return nullptr;
     JokeTypeInfo* p=nullptr;
-    if (search->type == JokeType::structure) {
+    if (search->type != JokeType::template_instance) {
         p = search;
     }
     else {
@@ -879,21 +902,34 @@ bool CCNV jokescript::TypeCmp_detail(JokeTypeInfo* type1, JokeTypeInfo* type2,un
 
         if (finalcmp2->type == JokeType::type_alias) {
             while (finalcmp2->type == JokeType::type_alias) {
-                finalcmp2 = finalcmp2->root;
-                if (!finalcmp2)return false;
+               if (!finalcmp2)return false;
             }
         }
 
         if (finalcmp1 == finalcmp2)return true;
         
         if (finalcmp1->type==finalcmp2->type) {
-            if (finalcmp1->type == JokeType::pointer || finalcmp1->type == JokeType::vector) {
+            if (finalcmp1->type==JokeType::builtin) {
+                if (strcmp(finalcmp1->name,finalcmp2->name)==0) {
+                    return true;
+                }
+            }
+            else if (finalcmp1->type == JokeType::pointer || finalcmp1->type == JokeType::vector||finalcmp1->type==JokeType::reference) {
 
+            }
+            else if (finalcmp1->type==JokeType::template_param) {
+                return true;
+            }
+            else if (finalcmp1->type==JokeType::template_instance) {
+                for (auto i = 0u; finalcmp1->ch_vars[i] || finalcmp2->ch_vars[i]; i++) {
+                    if (!TypeCmp_detail(finalcmp1->ch_vars[i]->type, finalcmp2->ch_vars[i]->type, depth + 1))return false;
+                }
+                if (!TypeCmp_detail(finalcmp1->root, finalcmp2->root, depth + 1))return false;
             }
             else if (finalcmp1->type == JokeType::array) {
                 if (finalcmp1->size != finalcmp2->size)return false;
             }
-            else if (finalcmp1->type == JokeType::structure) {
+            else if (finalcmp1->type == JokeType::structure||finalcmp1->type==JokeType::structure_template) {
                 for (auto i = 0u; finalcmp1->ch_vars[i] || finalcmp2->ch_vars[i]; i++) {
                     if (!TypeCmp_detail(finalcmp1->ch_vars[i]->type, finalcmp2->ch_vars[i]->type,depth+1))return false;
                 }
@@ -919,6 +955,11 @@ bool CCNV jokescript::TypeCmp_detail(JokeTypeInfo* type1, JokeTypeInfo* type2,un
         }
         break;
     }
+
+    return false;
+}
+
+bool CCNV jokescript::AreAutoCastable(JokeTypeInfo* type1, JokeTypeInfo* type2) {
 
     return false;
 }

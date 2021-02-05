@@ -21,9 +21,19 @@ namespace jokescript {
 		integer,
 		real,
 		string,
+		null,
+		boolean,
+		array,
 		var,
 		func,
 		control
+	};
+
+	enum class TreeRel {
+		unset,
+		block,
+		var,
+		func
 	};
 
 	struct JokeTree {
@@ -34,29 +44,36 @@ namespace jokescript {
 		JokeBlock* depends=nullptr;
 		JokeTypeInfo* type=nullptr;
 		EasyVector<JokeTree*> params=nullptr;
-		JokeBlock* relblock = nullptr;
+		TreeRel reltype=TreeRel::unset;
+		union {
+			JokeBlock* block = nullptr;
+			JokeVariableInfo* var;
+			JokeFunctionInfo* func;
+		}rel;
 	};
 
-	JokeTree* CreateJokeTree(char* symbol,JokeDefinitionList* list);
+	JokeTree* CCNV CreateJokeTree(char* symbol,JokeDefinitionList* list);
 
-	bool SpecifyType(JokeTree* tree, unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	bool CCNV SpecifyType(JokeTree* tree, unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTree* Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* CCNV Control(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTree* Comma(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect);
+	JokeTree* CCNV Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTree* Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+	JokeTree* CCNV Comma(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect);
 
-	JokeTree* BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+	JokeTree* CCNV Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+
+	JokeTree* CCNV BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
 	template<class Now,class... After>
-	JokeTree* BinaryOps(unsigned long long& i,unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log,bool& expect,Now&& now,After&&... afters) {
+	JokeTree* CCNV BinaryOps(unsigned long long& i,unsigned long long& u,JokeDefinitionList* list,JokeBlockList* block,JokeLogger* log,bool& expect,Now&& now,After&&... afters) {
 		JokeTree* ret = BinaryOps(i, u, list, block, log,expect, afters...),*tmptree=nullptr;
 		if (!ret)return nullptr;
 		const char* nowline = list->file->loglines[i];
 		bool ok = false;
 		if (!nowline) {
-			return nullptr;
+			return ret;
 		}
 		while (nowline[u]) {
 			for (auto symbol : now) {
@@ -97,11 +114,14 @@ namespace jokescript {
 	}
 
 
-	JokeTree* UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+	JokeTree* CCNV UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
-	JokeTree* SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+	JokeTree* CCNV SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
 
-	JokeTree* NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
+	JokeTree* CCNV NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log);
 
-	JokeTypeInfo* SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log);
+	JokeTypeInfo* CCNV SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log);
+
+	JokeTree* CCNV Match(unsigned long long& i, unsigned long long& u, const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect);
+
 }

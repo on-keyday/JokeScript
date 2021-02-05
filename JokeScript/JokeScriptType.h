@@ -16,6 +16,22 @@
 #define CCNV __stdcall
 #endif
 
+#define is_first_of_identitier(x) (isalpha((unsigned char)(x))||(x)=='_')
+
+#define JTYPE_null_t 0
+#define JTYPE_s8 1
+#define JTYPE_u8 2
+#define JTYPE_s16 3
+#define JTYPE_u16 4
+#define JTYPE_s32 5
+#define JTYPE_u32 6
+#define JTYPE_s64 7
+#define JTYPE_u64 8
+#define JTYPE_f32 9
+#define JTYPE_f64 10
+#define JTYPE_string 11
+#define JTYPE_bool 12
+
 namespace jokescript{
 
     enum class JokeType{
@@ -32,6 +48,7 @@ namespace jokescript{
         //template_param_va,
         template_instance,
         pointer,
+        reference,
         array,
         vector,
         some_returns,
@@ -83,5 +100,5 @@ namespace jokescript{
 
     bool CCNV TypeCmp(JokeTypeInfo* type1, JokeTypeInfo* type2);
     bool CCNV TypeCmp_detail(JokeTypeInfo* type1,JokeTypeInfo* type2,unsigned long long depth);
-    
+    bool CCNV AreAutoCastable(JokeTypeInfo* type1, JokeTypeInfo* type2);
 }

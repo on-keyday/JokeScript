@@ -16,7 +16,7 @@
 
 using namespace jokescript;
 
-JokeTree* jokescript::CreateJokeTree(char* symbol, JokeDefinitionList* list) {
+JokeTree* CCNV jokescript::CreateJokeTree(char* symbol, JokeDefinitionList* list) {
 	if (!symbol || !list)return nullptr;
 	
 	JokeTree* tree = nullptr;
@@ -31,7 +31,7 @@ JokeTree* jokescript::CreateJokeTree(char* symbol, JokeDefinitionList* list) {
 	return tree;
 }
 
-bool jokescript::SpecifyType(JokeTree* tree, unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+bool CCNV jokescript::SpecifyType(JokeTree* tree, unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
 	if (!tree)return false;
 	if (!tree->right)return false;
 	if (tree->symtype == JokeSymbol::unary) {
@@ -55,7 +55,7 @@ bool jokescript::SpecifyType(JokeTree* tree, unsigned long long& i, unsigned lon
 	return true;
 }
 
-JokeTree* jokescript::Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+JokeTree* CCNV jokescript::Expr(bool& res,unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
 	res = false;
 	JokeTree* ret = nullptr;
 	bool expect = true;
@@ -171,12 +171,47 @@ const char* Pow[] = {
 	"**"
 };
 
-#define FirstBinOpts(...) BinaryOps(__VA_ARGS__,Or,And,Eaq,Rel,Shift,Bor,Bxor,Band,And,Mul,Pow)
+#define FirstBinOpts(...) BinaryOps(__VA_ARGS__,Or,And,Eaq,Rel,Shift,Bor,Bxor,Band,Add,Mul,Pow)
 
-JokeTree* jokescript::Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect) {
+JokeTree* CCNV jokescript::Comma(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
+	JokeTree* ret = Assigns(i,u,list,block,log,expect),*tmptree=nullptr;
+	if (!ret)return nullptr;
+	const char* nowline = list->file->loglines[i];
+	if (!nowline) {
+		return ret;
+	}
+	while (1) {
+		if (nowline[u] == ',') {
+			u++;
+			tmptree = CreateJokeTree(StringFilter() = ",", list);
+			if (!tmptree) {
+				AddJokeMemoryFullErr(log);
+				return nullptr;
+			}
+			tmptree->symtype = JokeSymbol::bin;
+			tmptree->left = ret;
+			tmptree->type = list->types[0];
+			ret = tmptree;
+			tmptree = Assigns(i, u, list, block, log, expect);
+			if (!tmptree) {
+				return nullptr;
+			}
+			ret->right = tmptree;
+			tmptree = nullptr;
+			continue;
+		}
+		break;
+	}
+	return ret;
+}
+
+JokeTree* CCNV jokescript::Assigns(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect) {
 	JokeTree* ret = FirstBinOpts(i, u, list, block, log,expect), * tmptree = nullptr;
 	if (!ret)return nullptr;
 	const char* nowline = list->file->loglines[i];
+	if (!nowline) {
+		return ret;
+	}
 	bool ok = false;
 	while (1) {
 		for (auto s : As) {
@@ -206,59 +241,46 @@ JokeTree* jokescript::Assigns(unsigned long long& i, unsigned long long& u, Joke
 				break;
 			}
 		}
+		if (!ok)break;
 	}
 	return ret;
 }
 
-JokeTree* jokescript::BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
+JokeTree* CCNV jokescript::BinaryOps(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
 	return UnaryOpts(i, u, list, block,log,expect);
 }
 
-JokeTree* jokescript::UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
+JokeTree* CCNV jokescript::UnaryOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
+	
 	return SingleOpts(i, u, list, block, log, expect);
 }
 
-JokeTree*jokescript::SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
+JokeTree* CCNV jokescript::SingleOpts(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log, bool& expect) {
 	JokeTree* ret = nullptr,*tmptree=nullptr;
+	JokeVariableInfo* var = nullptr;
+	JokeFunctionInfo* func = nullptr;
+	EasyVector<char> id(nullptr);
 	const char* nowline = list->file->loglines[i];
 	if (!nowline) {
 		AddJokeUnexpectedEOFErr(log, i, u);
 		return nullptr;
 	}
 	if (nowline[u] == '(') {
-		while (1) {
-			u++;
-			ret = Assigns(i, u, list, block, log, expect);
-			if (!ret) {
-				return nullptr;
-			}
-			nowline = list->file->loglines[i];
-			if (!nowline) {
-				AddJokeUnexpectedEOFErr(log, i, u);
-				return nullptr;
-			}
-			expect = true;
-			if (nowline[u] == ',') {
-				if (nowline[u+1]==')') {
-					u++;
-					break;
-				}
-				tmptree = CreateJokeTree(StringFilter() = ",", list);
-				if (!tmptree) {
-					AddJokeMemoryFullErr(log);
-					return nullptr;
-				}
-				tmptree->symtype = JokeSymbol::bin;
-				tmptree->left = ret;
-			}
-			else if (nowline[u]==')') {
-				break;
-			}
-			else {
-				AddJokeUnexpectedEOFErr(log, i, u);
-				return nullptr;
-			}
+		ret = Comma(i, u, list, block, log, expect);
+		if (!ret) {
+			return nullptr;
 		}
+		nowline = list->file->loglines[i];
+		if (!nowline) {
+			AddJokeUnexpectedEOFErr(log, i, u);
+			return nullptr;
+		}
+		if (nowline[u]!=')') {
+			AddJokeUnexpectedTokenErr(log, ")", nowline[u], i, u);
+			return nullptr;
+		}
+		expect = true;
+		u++;
 	}
 	else if (isdigit((unsigned char)nowline[u])) {
 		/*
@@ -300,10 +322,181 @@ JokeTree*jokescript::SingleOpts(unsigned long long& i, unsigned long long& u, Jo
 		ret->symtype = JokeSymbol::integer;*/
 		ret = NumberDec(i, u, list, block, log);
 	}
+	else if(strncmp(&nowline[u], "true", 4) && !is_first_of_identitier(nowline[u + 4])){
+		ret= CreateJokeTree(StringFilter() = "true", list);
+		if (!ret) {
+			AddJokeMemoryFullErr(log);
+			return nullptr;
+		}
+		ret->symtype = JokeSymbol::boolean;
+		ret->type = list->types[JTYPE_bool];
+	}
+	else if (strncmp(&nowline[u], "false", 5) && !is_first_of_identitier(nowline[u + 5])) {
+		ret = CreateJokeTree(StringFilter() = "false", list);
+		if (!ret) {
+			AddJokeMemoryFullErr(log);
+			return nullptr;
+		}
+		ret->symtype = JokeSymbol::boolean;
+		ret->type = list->types[JTYPE_bool];
+	}
+	else if (strncmp(&nowline[u], "null", 4)&&!is_first_of_identitier(nowline[u+4])) {
+		ret = CreateJokeTree(StringFilter() = "null", list);
+		if (!ret) {
+			AddJokeMemoryFullErr(log);
+			return nullptr;
+		}
+		ret->symtype = JokeSymbol::null;
+		ret->type = list->types[JTYPE_null_t];
+	}
+	else if (strncmp(&nowline[u],"import ",7)) {
+		AddJokeSysErr(log, "on this compiler, \"import\" is not supported.", nullptr);
+		return nullptr;
+	}
+	else if (strncmp(&nowline[u], "match", 5)&&!is_first_of_identitier(nowline[u+5])) {
+		ret = Match(i, u, nowline,list, block, log,expect);
+		if (!ret)return nullptr;
+	}
+	else if (is_first_of_identitier(nowline[u])) {
+		id = CollectId(u, nowline, log);
+		if (nowline[u] == '(') {
+			func = SearchFuncOnBlock(id.get_const(),block);
+			if (!func) {
+				var = SearchVarOnBlock(id.get_const(), block);
+			}
+		}
+		else {
+			var = SearchVarOnBlock(id.get_const(), block);
+			if (!var) {
+				func = SearchFuncOnBlock(id.get_const(), block);
+			}
+		}
+		if (!func && !var) {
+			AddJokeSemErr(log, "\"*\" is not defined.",id.get_const(),i,u);
+			return nullptr;
+		}
+		ret = CreateJokeTree(id.get_raw_z(), list);
+		if (!ret) {
+			AddJokeMemoryFullErr(log);
+			return nullptr;
+		}
+		if (func) {
+			ret->symtype = JokeSymbol::func;
+			ret->type = func->type;
+			ret->reltype = TreeRel::func;
+			ret->rel.func = func;
+		}
+		else {
+			ret->symtype = JokeSymbol::var;
+			ret->type = var->type;
+			ret->reltype = TreeRel::var;
+			ret->rel.var = var;
+		}
+	}
+	else if (nowline[u]=='@') {
+		func = ParseFuncdef(i, u, list, block, log);
+		if (!func) {
+			return nullptr;
+		}
+		ret= CreateJokeTree(StringFilter()=func->name, list);
+		if (!ret) {
+			AddJokeMemoryFullErr(log);
+			return nullptr;
+		}
+		expect = false;
+		ret->symtype = JokeSymbol::func;
+		ret->type = func->type;
+		ret->rel.func = func;
+		ret->reltype = TreeRel::func;
+		if (list->file->loglines[i]) {
+			nowline = list->file->loglines[i];
+		}
+	}
+	else if (nowline[u]=='\0'&&list->file->lines[i+1]) {
+		if (list->file->lines[i + 1][0]=='{') {
+			i+=2;
+			u = 0;
+			nowline = list->file->lines[i];
+			if (!nowline) {
+				AddJokeUnexpectedEOFErr(log, i, u);
+				return nullptr;
+			}
+			ret = CreateJokeTree(StringFilter() = "{}", list);
+			ret->symtype = JokeSymbol::array;
+			JokeTypeInfo* type=CreateJokeTypeInfo(StringFilter() = "[]", list);
+			if (!type) {
+				AddJokeMemoryFullErr(log);
+				return nullptr;
+			}
+			type->type = JokeType::vector;
+			type->ch_types.unuse();
+			type->ch_types.unuse();
+			while (nowline[u]) {
+				tmptree = Assigns(i, u, list, block, log, expect);
+				if (!tmptree) {
+					return nullptr;
+				}
+				type->size++;
+				if (!type->root) {
+					type->root = tmptree->type;
+				}
+				ret->params.add(tmptree);
+				nowline = list->file->loglines[i];
+				if (!nowline) {
+					AddJokeUnexpectedEOFErr(log, i, u);
+					return nullptr;
+				}
+				if (nowline[u] == ',') {
+					u++;
+					continue;
+				}
+				else if (nowline[u]=='\0') {
+					if (!type->root) {
+						AddJokeSemErr(log,"0 length array is invalid",nullptr,i,u);
+						return nullptr;
+					}
+					i++;
+					u = 0;
+					nowline = list->file->loglines[i];
+					if (!nowline) {
+						AddJokeUnexpectedEOFErr(log, i, u);
+						return nullptr;
+					}
+					if (nowline[u] != '}') {
+						AddJokeUnexpectedTokenErr(log, "}", nowline[u], i, u);
+						return nullptr;
+					}
+					i++;
+					nowline = list->file->loglines[i];
+					if (!nowline) {
+						AddJokeUnexpectedEOFErr(log, i, u);
+						return nullptr;
+					}
+				}
+			}
+		}
+	}
+
+	if (nowline) {
+		while (1) {
+			if (nowline[u] == '(') {
+				expect = true;
+			}
+			else if (nowline[u] == '.') {
+				u++;
+			}
+			else if (nowline[u] == '-' && nowline[u + 1] == '>') {
+				u += 2;
+			}
+			else {
+				break;
+			}
+		}
+	}
 	return ret;
 }
 
-JokeTree* jokescript::NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
+JokeTree* CCNV jokescript::NumberDec(unsigned long long& i, unsigned long long& u, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log) {
 	JokeTree* ret = nullptr;
 	EasyVector<char> id;
 	JokeSymbol willtype = JokeSymbol::integer;
@@ -443,7 +636,7 @@ JokeTree* jokescript::NumberDec(unsigned long long& i, unsigned long long& u, Jo
 	return ret;
 }
 
-JokeTypeInfo* jokescript::SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log) {
+JokeTypeInfo* CCNV jokescript::SuffixToType(JokeSymbol& willtype,EasyVector<char>& id, unsigned long long& i, unsigned long long& u,const char* nowline, JokeDefinitionList* list, JokeLogger* log) {
 	JokeTypeInfo* ret=nullptr;
 	bool u_suffix = false, f_suffix = false, l_suffix = false;
 	int h_suffix = 0;
@@ -497,43 +690,161 @@ JokeTypeInfo* jokescript::SuffixToType(JokeSymbol& willtype,EasyVector<char>& id
 
 	if (!f_suffix) {
 		if (willtype == JokeSymbol::real) {
-			ret = list->types[10];//f64
+			ret = list->types[JTYPE_f64];//f64
 		}
 		else {
 			if (u_suffix) {
 				if (l_suffix) {
-					ret = list->types[8];//u64 
+					ret = list->types[JTYPE_u64];//u64 
 				}
 				else if (h_suffix == 1) {
-					ret = list->types[4];//u16
+					ret = list->types[JTYPE_u16];//u16
 				}
 				else if (h_suffix == 2) {
-					ret = list->types[2];//u8
+					ret = list->types[JTYPE_u8];//u8
 				}
 				else {
-					ret = list->types[6];//u32
+					ret = list->types[JTYPE_u32];//u32
 				}
 			}
 			else {
 				if (l_suffix) {
-					ret = list->types[7];//s64 
+					ret = list->types[JTYPE_s64];//s64 
 				}
 				else if (h_suffix == 1) {
-					ret = list->types[5];//s16
+					ret = list->types[JTYPE_s16];//s16
 				}
 				else if (h_suffix == 2) {
-					ret = list->types[1];//s8
+					ret = list->types[JTYPE_s8];//s8
 				}
 				else {
-					ret = list->types[5];//s32
+					ret = list->types[JTYPE_s32];//s32
 				}
 			}
 		}
 	}
 	else {
-		ret = list->types[9];//f32
+		ret = list->types[JTYPE_f32];//f32
 		willtype = JokeSymbol::real;
 	}
 
+	return ret;
+}
+
+JokeTree* CCNV jokescript::Match(unsigned long long& i, unsigned long long& u,const char*& nowline, JokeDefinitionList* list, JokeBlockList* block, JokeLogger* log,bool& expect) {
+	u += 5;
+	if (nowline[u]==' ') {
+		u++;
+	}
+	JokeTree* judge = Assigns(i, u, list, block, log, expect),*tmptree=nullptr;
+	if (!judge) {
+		return nullptr;
+	}
+	JokeTypeInfo* cmp_type = judge->type,*result_type=nullptr;
+	JokeTree* ret = CreateJokeTree(StringFilter() = "match", list);
+	if (!ret) {
+		AddJokeMemoryFullErr(log);
+		return nullptr;
+	}
+	ret->symtype = JokeSymbol::control;
+	ret->right = judge;
+	judge = nullptr;
+	nowline = list->file->loglines[i];
+	if (!nowline) {
+		AddJokeUnexpectedEOFErr(log, i, u);
+		return nullptr;
+	}
+	u = 0;
+	if (nowline[u] != '{') {
+		AddJokeUnexpectedTokenErr(log, "{", nowline[u], i, u);
+		return nullptr;
+	}
+	i++;
+	nowline = list->file->loglines[i];
+	if (!nowline) {
+		AddJokeUnexpectedEOFErr(log, i, u);
+		return nullptr;
+	}
+	while (nowline[u]) {
+		if (nowline[u] == '(') {
+			tmptree = CreateJokeTree(StringFilter() = "?=", list);
+			if (!tmptree) {
+				AddJokeMemoryFullErr(log);
+				return nullptr;
+			}
+			tmptree->symtype = JokeSymbol::bin;
+			judge = Assigns(i, u, list, block, log,expect);
+			if (!judge) {
+				return nullptr;
+			}
+			tmptree->left = judge;
+			nowline = list->file->loglines[i];
+			if (!nowline) {
+				AddJokeUnexpectedEOFErr(log, i, u);
+				return nullptr;
+			}
+			if (nowline[u] != '?') {
+				AddJokeUnexpectedTokenErr(log, "?", nowline[u], i, u);
+				return nullptr;
+			}
+			u++;
+			if (nowline[u] != '=') {
+				AddJokeUnexpectedTokenErr(log, "=", nowline[u], i, u);
+				return nullptr;
+			}
+			u++;
+			judge = Assigns(i, u, list, block, log, expect);
+			if (!judge) {
+				return nullptr;
+			}
+			tmptree->right = judge;
+			ret->params.add(tmptree);
+			if (!AreAutoCastable(tmptree->left->type,cmp_type)) {
+				AddJokeSemErr(log, "on match expression, types are not auto-castable.", nullptr, i, u);
+				return nullptr;
+			}
+			if (!result_type) {
+				result_type = tmptree->right->type;
+			}
+			else {
+				if (!AreAutoCastable(tmptree->right->type, cmp_type)) {
+					AddJokeSemErr(log, "on match expression, types are not auto-castable.", nullptr, i, u);
+					return nullptr;
+				}
+			}
+			nowline = list->file->loglines[i];
+			if (!nowline) {
+				AddJokeUnexpectedEOFErr(log, i, u);
+				return nullptr;
+			}
+			if (nowline[u] != ';') {
+				AddJokeUnexpectedTokenErr(log, ";", nowline[u], i, u);
+				return nullptr;
+			}
+		}
+		else if (nowline[u]=='}') {
+			i++;
+			u = 0;
+			break;
+		}
+		else {
+			AddJokeUnexpectedTokenErr(log, "(}", nowline[u], i, u);
+			return nullptr;
+		}
+		i++;
+		nowline = list->file->loglines[i];
+		if (!nowline) {
+			AddJokeUnexpectedEOFErr(log, i, u);
+			return nullptr;
+		}
+		u = 0;
+	}
+	if (result_type) {
+		ret->type = result_type;
+	}
+	else {
+		ret->type = list->types[JTYPE_null_t];//null_t
+	}
+	expect = false;
 	return ret;
 }

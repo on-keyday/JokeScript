@@ -118,6 +118,7 @@ JokeBlockList* CCNV jokescript::SetBuiltInType(JokeDefinitionList* list, JokeLog
     builtin.emplace("f32",4);
     builtin.emplace("f64",8);
     builtin.emplace("string", 0);
+    builtin.emplace("bool", 1);
 
     for (auto b : builtin) {
         JokeTypeInfo* info = CreateJokeTypeInfo(StringFilter() = b.first, list);
@@ -218,4 +219,5 @@ bool jokescript::ParseProgram(JokeDefinitionList* list, JokeBlockList* block, Jo
         nowline = list->file->loglines[line];
         pos = 0;
     }
+    return false;
 }
