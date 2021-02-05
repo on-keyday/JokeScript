@@ -203,7 +203,7 @@ JokeTypeInfo* CCNV jokescript::SetFuncOrTemplateInfo(JokeTypeInfo* info, unsigne
                 return nullptr;
             }
         }
-        if (info->type == JokeType::structure || info->type == JokeType::structure_template)return false;
+        if (info->type == JokeType::structure || info->type == JokeType::structure_template)return nullptr;
         info->type = JokeType::function;
         while (nowline[u]) {
             u++;
