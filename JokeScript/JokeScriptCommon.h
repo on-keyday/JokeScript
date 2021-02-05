@@ -9,6 +9,7 @@
 */
 
 #pragma once 
+#include"JokeScriptMacro.h"
 #include<stdlib.h>
 namespace jokescript {
     template<class PType>

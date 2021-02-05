@@ -9,10 +9,8 @@
 */
 
 #pragma once
+#include"JokeScriptMacro.h"
 #include"JokeScriptLog.h"
-#ifndef CCNV
-#define CCNV __stdcall
-#endif
 
 namespace jokescript{
     struct JokeFile {

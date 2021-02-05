@@ -9,12 +9,10 @@
 */
 
 #pragma once
+#include"JokeScriptMacro.h"
 #include"JokeScriptCommon.h"
 #include"JokeScriptInfoLists.h"
 #include"JokeScriptLog.h"
-#ifndef CCNV
-#define CCNV __stdcall
-#endif
 
 #define is_first_of_identitier(x) (isalpha((unsigned char)(x))||(x)=='_')
 

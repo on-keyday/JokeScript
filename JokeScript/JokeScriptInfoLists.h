@@ -9,6 +9,7 @@
 */
 
 #pragma once
+#include"JokeScriptMacro.h"
 #include"JokeScriptCommon.h"
 #include"JokeScriptLoader.h"
 

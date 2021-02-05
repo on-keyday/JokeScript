@@ -9,6 +9,7 @@
 */
 
 #pragma once
+#include"JokeScriptMacro.h"
 #include"JokeScriptType.h"
 namespace jokescript {
 

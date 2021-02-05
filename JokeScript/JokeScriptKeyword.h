@@ -9,10 +9,7 @@
 */
 
 #pragma once
-#ifndef CCNV
-#define CCNV __stdcall
-#endif
-
+#include"JokeScriptMacro.h"
 namespace jokescript {
 	bool CCNV IsJokeReserved(const char* name);
 	bool CCNV IsJokeKeyWord(const char* name);

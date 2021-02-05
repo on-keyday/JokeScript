@@ -9,6 +9,7 @@
 */
 
 #pragma once
+#include"JokeScriptMacro.h"
 #include"JokeScriptCommon.h"
 namespace jokescript {
     struct JokeFile;
@@ -35,19 +36,19 @@ namespace jokescript {
     };
 
 
-    bool AddJokeMsg(JokeLogger* log, const char* msg, JokeMsgType type);
+    bool CCNV AddJokeMsg(JokeLogger* log, const char* msg, JokeMsgType type);
 
 
-    bool CommonAdd(EasyVector<char>& to,const char* type, const char* msg, const char* value);
-    bool ResolveFileLine(EasyVector<char>& to,JokeLogger* log,unsigned long long line, unsigned long long pos);
-    bool AddJokeInfo(JokeLogger* log, const char* msg, const char* value);
-    bool AddJokeLog(JokeLogger* log, const char* msg, const char* value);
-    bool AddJokeSysErr(JokeLogger* log, const char* msg,const char* value);
-    bool AddJokeSynErr(JokeLogger* log, const char* msg,const char* value, unsigned long long line, unsigned long long pos);
-    bool AddJokeSemErr(JokeLogger* log, const char* msg, const char* value,unsigned long long line, unsigned long long pos);
+    bool CCNV CommonAdd(EasyVector<char>& to,const char* type, const char* msg, const char* value);
+    bool CCNV ResolveFileLine(EasyVector<char>& to,JokeLogger* log,unsigned long long line, unsigned long long pos);
+    bool CCNV AddJokeInfo(JokeLogger* log, const char* msg, const char* value);
+    bool CCNV AddJokeLog(JokeLogger* log, const char* msg, const char* value);
+    bool CCNV AddJokeSysErr(JokeLogger* log, const char* msg,const char* value);
+    bool CCNV AddJokeSynErr(JokeLogger* log, const char* msg,const char* value, unsigned long long line, unsigned long long pos);
+    bool CCNV AddJokeSemErr(JokeLogger* log, const char* msg, const char* value,unsigned long long line, unsigned long long pos);
 
-    bool AddJokeUnexpectedTokenErr(JokeLogger* log,const char* expected,char but,unsigned long long line, unsigned long long pos);
-    bool AddJokeUnexpectedEOFErr(JokeLogger* log,unsigned long long line,unsigned long long pos);
-    bool AddJokeMemoryFullErr(JokeLogger* log);
-    bool AddJokeCompilerBrokenErr(JokeLogger* log, const char* msg);
+    bool CCNV AddJokeUnexpectedTokenErr(JokeLogger* log,const char* expected,char but,unsigned long long line, unsigned long long pos);
+    bool CCNV AddJokeUnexpectedEOFErr(JokeLogger* log,unsigned long long line,unsigned long long pos);
+    bool CCNV AddJokeMemoryFullErr(JokeLogger* log);
+    bool CCNV AddJokeCompilerBrokenErr(JokeLogger* log, const char* msg);
 }
