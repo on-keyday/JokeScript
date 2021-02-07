@@ -13,7 +13,7 @@
 #include"compiler_filereader.h"
 #include"compiler_identifier_holder.h"
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace compiler {
 
 		SyntaxTree* comma(IdHolder* holder, Reader* reader);

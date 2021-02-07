@@ -9,8 +9,8 @@
 */
 
 #pragma once
-
-namespace jokescript {
+#include"common_structs.h"
+namespace PROJECT_NAME {
 	namespace log {
 		struct Log {
 			bool syserr(const char* message);

@@ -11,7 +11,7 @@
 
 #include"common_io.h"
 
-using namespace jokescript;
+using namespace PROJECT_NAME;
 
 bool common::io::Input::readall(const char* filename) {
 	FILE* fp = nullptr;

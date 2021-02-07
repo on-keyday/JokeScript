@@ -9,7 +9,8 @@
 */
 
 #include"common_structs.h"
-using namespace jokescript;
+using namespace PROJECT_NAME;
+
 
 common::StringFilter& common::StringFilter::operator=(const char* str) {
     if (!str)return *this;

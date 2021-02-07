@@ -10,8 +10,8 @@
 
 #include"compiler_syntax_analyzer.h"
 #include"compiler_ctype.h"
-using namespace jokescript;
-using namespace jokescript::compiler;
+using namespace PROJECT_NAME;
+using namespace PROJECT_NAME::compiler;
 
 SyntaxTree* compiler::comma(IdHolder* holder, Reader* reader) {
 	SyntaxTree* ret = assign(holder, reader), * tmptree = nullptr;

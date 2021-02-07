@@ -13,7 +13,7 @@
 #include"compiler_filereader.h"
 #include"common_tools.h"
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace compiler {
 		struct Identifier;
 		struct SyntaxTree;

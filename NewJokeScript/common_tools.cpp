@@ -11,7 +11,7 @@
 #include"common_tools.h"
 #include"stdcpps.h"
 
-using namespace jokescript;
+using namespace PROJECT_NAME;
 
 bool common::tools::Hash::name_hash(EasyVector<char>& buf) {
 	buf.add_copy("%unnamed_",0);

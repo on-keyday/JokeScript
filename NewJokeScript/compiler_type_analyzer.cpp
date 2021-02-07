@@ -13,8 +13,8 @@
 #include"compiler_ctype.h"
 #include"common_tools.h"
 
-using namespace jokescript;
-using namespace jokescript::compiler;
+using namespace PROJECT_NAME;
+using namespace PROJECT_NAME::compiler;
 
 Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 	if (!reader->expect_or_err("!"))return nullptr;

@@ -10,7 +10,7 @@
 
 #pragma once
 #include"compiler_identifier_holder.h"
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace compiler {
 		Type* type_analyze(IdHolder* holder,Reader* reader);
 		Type* type_detail(IdHolder* holder, Reader* reader);

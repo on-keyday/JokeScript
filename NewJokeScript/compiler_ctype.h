@@ -11,7 +11,7 @@
 #pragma once
 #include"compiler_filereader.h"
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace ctype{
 		bool is_first_of_identifier(char c);
 		bool is_usable_for_identifier(char c);

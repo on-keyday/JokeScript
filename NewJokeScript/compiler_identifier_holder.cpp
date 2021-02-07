@@ -11,8 +11,8 @@
 #include"stdcpps.h"
 #include"compiler_identifier_holder.h"
 
-using namespace jokescript;
-using namespace jokescript::compiler;
+using namespace PROJECT_NAME;
+using namespace PROJECT_NAME::compiler;
 
 Block* compiler::IdHolder::make_block() {
 	return create<Block>();

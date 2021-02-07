@@ -12,7 +12,7 @@
 #include"common_structs.h"
 
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace common {
 		namespace io {
 			struct Input {

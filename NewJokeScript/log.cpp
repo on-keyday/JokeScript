@@ -9,7 +9,7 @@
 */
 
 #include"log.h"
-using namespace jokescript;
+using namespace PROJECT_NAME;
 
 bool log::Log::synerr(const char* message) {
 	return false;

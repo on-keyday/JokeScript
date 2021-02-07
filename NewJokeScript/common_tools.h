@@ -11,7 +11,7 @@
 #pragma once
 #include"common_structs.h"
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace common {
 		namespace tools {
 			struct Hash {

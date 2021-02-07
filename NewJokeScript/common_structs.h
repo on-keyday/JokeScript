@@ -8,9 +8,12 @@
 
 */
 
-#pragma once 
+#pragma once
+
+#define PROJECT_NAME hogehoge
+
 #include"stdcpps.h"
-namespace jokescript {
+namespace PROJECT_NAME {
     namespace common {
         template<class PType> 
         struct EasyVector {

@@ -11,7 +11,7 @@
 #include"stdcpps.h"
 #include"compiler_ctype.h"
 
-using namespace jokescript;
+using namespace PROJECT_NAME;
 
 bool ctype::is_first_of_identifier(char c) {
 	return isalpha((unsigned char)c) || c == '_';

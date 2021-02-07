@@ -11,7 +11,7 @@
 
 #include"compiler_filereader.h"
 
-using namespace jokescript;
+using namespace PROJECT_NAME;
 
 compiler::Reader::Reader(const char* filename) {
 	input.readall(filename);

@@ -12,7 +12,7 @@
 #include"common_io.h"
 #include"log.h"
 
-namespace jokescript {
+namespace PROJECT_NAME {
 	namespace compiler {
 		struct ReadStatus {
 			log::Log* logger;
