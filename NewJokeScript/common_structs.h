@@ -10,7 +10,7 @@
 
 #pragma once
 
-#define PROJECT_NAME hogehoge
+#define PROJECT_NAME jokescript
 
 #include"stdcpps.h"
 namespace PROJECT_NAME {
