@@ -14,6 +14,7 @@
 
 namespace PROJECT_NAME {
 	namespace compiler {
+		struct Type;
 		struct ReadStatus {
 			log::Log* logger;
 			common::EasyVector<char> buf;
@@ -25,6 +26,7 @@ namespace PROJECT_NAME {
 			bool flag4 = false;
 			bool flag5 = false;
 			bool failed = false;
+			//Type* option = nullptr;
 		};
 
 		struct Reader {

@@ -15,8 +15,11 @@ namespace PROJECT_NAME {
 		struct Log {
 			bool syserr(const char* message);
 			bool synerr(const char* message);
-			bool symerr_val(const char* message,const char* val);
+			bool synerr_val(const char* message, const char* val);
+			bool semerr(const char* message);
+			bool semerr_val(const char* message,const char* val);
 			bool unexpected_token(const char* expected,char but);
+			bool unimplemented(const char* message);
 		};
 	}
 }

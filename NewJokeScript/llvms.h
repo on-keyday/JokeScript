@@ -1,4 +1,4 @@
-﻿/*
+/*
     JokeScript
 
     Copyright (c) 2021 on-keyday
@@ -8,14 +8,5 @@
 
 */
 
+#pragma once
 
-#include<stdlib.h>
-using namespace std;
-
-int main()
-{
-	char* end=nullptr;
-	auto i=strtoull("", &end, 16);
-	auto p=errno;
-	return 0;
-}

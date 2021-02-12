@@ -32,13 +32,14 @@ namespace PROJECT_NAME {
 			common::EasyVector<SyntaxTree*> children;
 			Identifier* rel = nullptr;
 			Block* depends = nullptr;
+			Type* type=nullptr;
 		};
 
 		enum class TypeType {
 			unset,
 
 			//base types
-			bit_t,
+			base_t,
 		
 			//derived types
 			has_size_t, //for string and arrays
@@ -56,6 +57,7 @@ namespace PROJECT_NAME {
 			template_f_t,
 			template_s_t,
 			template_p_t,
+			template_a_t,
 			instance_t,
 
 			//other types
@@ -108,9 +110,12 @@ namespace PROJECT_NAME {
 			Block* get_current();
 			SyntaxTree* make_tree(char* symbol);
 			Type* make_type(char* symbol);
+			Type* get_float_bit_t();
 			Type* get_bit_t(bool signeds);
+			Type* get_void();
+			Type* get_string();
 			ReadStatus* get_status();
-			common::tools::Hash hash;
+			common::Hash hash;
 		};
 
 		template<class T>

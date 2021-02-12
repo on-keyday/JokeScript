@@ -10,6 +10,7 @@
 
 #include"stdcpps.h"
 #include"compiler_identifier_holder.h"
+#include"compiler_id_analyzer.h"
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::compiler;
@@ -53,13 +54,25 @@ Type* compiler::IdHolder::make_type(char* symbol) {
 	return ret;
 }
 
+Type* compiler::IdHolder::get_float_bit_t() {
+	return types[3];
+}
+
 Type* compiler::IdHolder::get_bit_t(bool signeds) {
 	if (signeds) {
-		return types[0];
-	}
-	else {
 		return types[1];
 	}
+	else {
+		return types[2];
+	}
+}
+
+Type* compiler::IdHolder::get_void() {
+	return types[0];
+}
+
+Type* compiler::IdHolder::get_string() {
+	return get_derived(TypeType::has_size_t, 0, get_derived(TypeType::has_size_t, 8, get_bit_t(false), this), this);
 }
 
 ReadStatus* compiler::IdHolder::get_status() {

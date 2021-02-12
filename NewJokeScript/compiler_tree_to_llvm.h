@@ -1,4 +1,4 @@
-﻿/*
+/*
     JokeScript
 
     Copyright (c) 2021 on-keyday
@@ -8,14 +8,14 @@
 
 */
 
+#pragma once
 
-#include<stdlib.h>
-using namespace std;
+#include"common_structs.h"
+#include"llvms.h"
 
-int main()
-{
-	char* end=nullptr;
-	auto i=strtoull("", &end, 16);
-	auto p=errno;
-	return 0;
+
+namespace PROJECT_NAME {
+	namespace compiler {
+		
+	}
 }

@@ -13,14 +13,17 @@
 
 namespace PROJECT_NAME {
 	namespace common {
-		namespace tools {
-			struct Hash {
-			private:
-				uint64_t unnamed_count = 0;
-			public:
-				bool name_hash(EasyVector<char>& buf);
-				uint64_t make_hash(const char* str);
-			};
-		}
+		struct Hash {
+		private:
+			uint64_t unnamed_count = 0;
+		public:
+			bool name_hash(EasyVector<char>& buf);
+			uint64_t make_hash(const char* str);
+			char* get_hash();
+		};
+
+		uint64_t count_while_f(const char* p,bool(*judge)(char));
+		uint64_t strtoull_ex(const char* str,char** p);
+
 	}
 }

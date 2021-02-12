@@ -10,6 +10,7 @@
 
 #include"compiler_syntax_analyzer.h"
 #include"compiler_ctype.h"
+#include"compiler_id_analyzer.h"
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::compiler;
 
@@ -176,14 +177,19 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 		auto status = holder->get_status();
 		reader->readwhile(status, ctype::reader::Number);
 		if (status->failed)return nullptr;
+		Type* thold = get_number_type(status->buf.get_const(),holder);
+		if (!thold)return nullptr;
 		ret = holder->make_tree(status->buf.get_raw_z());
 		if (!ret)return nullptr;
+		ret->type = thold;
 	}
 	else if (ctype::is_first_of_string(reader->abyte())) {
 		auto res = reader->string();
-		if (!res.is_enable())return false;
+		if (!res.is_enable())return nullptr;
 		ret = holder->make_tree(res.get_raw_z());
 		if (!ret)return nullptr;
+		ret->type = holder->get_string();
+		if (!ret->type)return nullptr;
 	}
 	else if (reader->expect_pf("match",ctype::is_usable_for_identifier)) {
 		ret = match(holder, reader);
@@ -228,4 +234,14 @@ SyntaxTree* compiler::match(IdHolder* holder, Reader* reader) {
 		break;
 	}
 	return ret;
+}
+
+bool compiler::check_semicolon(IdHolder* holder, Reader* reader) {
+	if (!reader->expect(";")) {
+		if (strcmp(reader->prev(), "}") != 0) {
+			holder->logger->unexpected_token("};", reader->abyte());
+			return false;
+		}
+	}
+	return true;
 }

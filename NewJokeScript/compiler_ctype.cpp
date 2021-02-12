@@ -10,6 +10,7 @@
 
 #include"stdcpps.h"
 #include"compiler_ctype.h"
+#include"compiler_id_analyzer.h"
 
 using namespace PROJECT_NAME;
 
@@ -55,6 +56,9 @@ bool ctype::reader::Number(const char* s, compiler::ReadStatus* status) {
 		status->logger->synerr("unexpected end of file.");
 		status->failed = true;
 		return false;
+	}
+	if (*s == '\'') {
+		return true;
 	}
 	bool& doted = status->flag1;
 	unsigned int& base = status->num;
@@ -252,7 +256,7 @@ bool ctype::reader::Identifier(const char* s, compiler::ReadStatus* status) {
 		status->begin = s;
 		if (!ctype::is_first_of_identifier(*s)) {
 			if (ctype::is_number(*s)) {
-				status->logger->unexpected_token("abcdefghijoklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", *s);
+				status->logger->unexpected_token("alphabet\" or \"_\"", *s);
 				status->failed = true;
 			}
 			return false;

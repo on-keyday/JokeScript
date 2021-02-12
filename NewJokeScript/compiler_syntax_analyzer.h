@@ -64,5 +64,7 @@ namespace PROJECT_NAME {
 		SyntaxTree* unary(IdHolder* holder,Reader* reader);
 		SyntaxTree* single(IdHolder* holder,Reader* reader);
 		SyntaxTree* match(IdHolder* holder, Reader* reader);
+
+		bool check_semicolon(IdHolder* holder, Reader* reader);
 	}
 }
