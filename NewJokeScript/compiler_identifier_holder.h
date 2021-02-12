@@ -118,16 +118,6 @@ namespace PROJECT_NAME {
 			common::Hash hash;
 		};
 
-		template<class T>
-		T* create() {
-			T* ret = nullptr;
-			try {
-				ret = new T;
-			}
-			catch (...) {
-				return nullptr;
-			}
-			return ret;
-		}
+		
 	}
 }

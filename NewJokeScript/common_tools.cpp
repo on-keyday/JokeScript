@@ -14,15 +14,19 @@
 
 using namespace PROJECT_NAME;
 
-bool common::Hash::name_hash(EasyVector<char>& buf) {
-	buf.add_copy("%unnamed_",0);
-	auto num=std::to_string(unnamed_count);
-	unnamed_count++;
+bool common::Hash::name_hash(EasyVector<char>& buf, const char* name) {
+	buf.add_copy(name, strlen(name));
+	auto num = std::to_string(hash_count);
+	hash_count++;
 	buf.add_copy(num.c_str(), num.length());
 	buf.add('_');
 	num = std::to_string(make_hash(buf.get_const()));
 	buf.add_copy(num.c_str(), num.length());
 	return true;
+}
+
+bool common::Hash::unname_hash(EasyVector<char>& buf) {
+	return name_hash(buf,"`unnamed_");
 }
 
 uint64_t common::Hash::make_hash(const char* str) {
@@ -39,8 +43,20 @@ uint64_t common::Hash::make_hash(const char* str) {
 
 char* common::Hash::get_hash() {
 	common::EasyVector<char> tmp;
-	name_hash(tmp);
+	unname_hash(tmp);
 	return tmp.get_raw_z();
+}
+
+char* common::Hash::get_hash_with_name(const char* s) {
+	common::EasyVector<char> tmp;
+	name_hash(tmp, s);
+	return tmp.get_raw_z();
+}
+
+const char* common::Hash::get_hash_const() {
+	tmpc.init();
+	unname_hash(tmpc);
+	return tmpc.get_const();
 }
 
 uint64_t common::count_while_f(const char* p, bool(*judge)(char)) {

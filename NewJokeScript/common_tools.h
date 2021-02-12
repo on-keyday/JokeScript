@@ -15,11 +15,15 @@ namespace PROJECT_NAME {
 	namespace common {
 		struct Hash {
 		private:
-			uint64_t unnamed_count = 0;
+			uint64_t hash_count = 0;
+			EasyVector<char> tmpc = nullptr;
 		public:
-			bool name_hash(EasyVector<char>& buf);
+			bool name_hash(EasyVector<char>& buf,const char* name);
+			bool unname_hash(EasyVector<char>& buf);
 			uint64_t make_hash(const char* str);
 			char* get_hash();
+			char* get_hash_with_name(const char* s);
+			const char* get_hash_const();
 		};
 
 		uint64_t count_while_f(const char* p,bool(*judge)(char));

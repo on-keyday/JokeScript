@@ -228,5 +228,30 @@ namespace PROJECT_NAME {
             StringFilter& operator=(const char* str);
             operator char* ();
         };
+
+        template<class T>
+        T* create() {
+            T* ret = nullptr;
+            try {
+                ret = new T;
+            }
+            catch (...) {
+                return nullptr;
+            }
+            return ret;
+        }
+
+        template<class T,class ...Args>
+        T* create(Args&... args) {
+            T* ret = nullptr;
+            try {
+                ret=new T(args...)
+            }
+            catch (...) {
+                return nullptr;
+            }
+            return ret;
+        }
+
     }
 }

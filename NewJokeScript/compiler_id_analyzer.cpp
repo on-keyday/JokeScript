@@ -40,13 +40,22 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 	if (status->failed)return false;
 	if (reader->expect_or_err("?"))return nullptr;
 	if (ctype::is_unnamed(status->buf.get_const())) {
-		holder->hash.name_hash(status->buf);
+		holder->hash.unname_hash(status->buf);
 	}
 	common::EasyVector<char> hold(nullptr);
 	hold = std::move(status->buf);
 	ret = type_detail(hold.get_const(),holder,reader,false);
 	if (!ret) return nullptr;
-	
+	if (!ttype::is_naming(ret->type)||strcmp(hold.get_const(),ret->name)==0) {
+		auto tmp=holder->make_type(hold.get_raw_z());
+		if (!tmp)return nullptr;
+		tmp->derived.unuse();
+		tmp->types.unuse();
+		tmp->ids.unuse();
+		tmp->type = TypeType::simple_alias_t;
+		tmp->root = ret;
+		ret = tmp;
+	}
 	return ret;
 }
 
