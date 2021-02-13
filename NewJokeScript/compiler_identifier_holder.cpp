@@ -16,7 +16,13 @@ using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::compiler;
 
 Block* compiler::IdHolder::make_block() {
-	return common::create<Block>();
+	auto ret=common::create<Block>();
+	if (!ret) {
+		logger->syserr("memory is full");
+		return nullptr;
+	}
+	blocks.add(ret);
+	return ret;
 }
 
 Block* compiler::IdHolder::get_current() {
@@ -35,6 +41,7 @@ SyntaxTree* compiler::IdHolder::make_tree(char* symbol) {
 		return nullptr;
 	}
 	ret->symbol = symbol;
+	trees.add(ret);
 	return ret;
 }
 
@@ -51,6 +58,7 @@ Type* compiler::IdHolder::make_type(char* symbol) {
 		return nullptr;
 	}
 	ret->name = symbol;
+	types.add(ret);
 	return ret;
 }
 

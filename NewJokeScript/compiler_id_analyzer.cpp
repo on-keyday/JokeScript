@@ -288,7 +288,7 @@ Type* compiler::search_type_on_block(const char* name, IdHolder* holder, int& is
 		}
 		i = 0;
 		while (search->ids[i]) {
-			if (strcmp(search->ids[i]->type->name, name) == 0) {
+			if (strcmp(search->ids[i]->name, name) == 0) {
 				if (search->ids[i]->is_const) {
 					isvar = -1;
 				}
@@ -340,11 +340,13 @@ Type* compiler::resolve_template(Type* base, IdHolder* holder, Reader* reader) {
 		holder->logger->semerr_val("unexpandable. \"*\" is not template.",base->name);
 		return nullptr;
 	}
+	common::EasyVector<Type*> params;
 	Type* ret = nullptr;
 	Type* arg = nullptr;
 	Type* depth = base;
 	uint64_t count = 0;
 	bool ok = false;
+	bool new_make = false;
 	while (!reader->eof()) {
 		count++;
 		if (count > base->len) {
@@ -372,7 +374,9 @@ Type* compiler::resolve_template(Type* base, IdHolder* holder, Reader* reader) {
 			depth->derived.add(param);
 			depth = param;
 			ret = depth;
+			new_make = true;
 		}
+		params.add(ret);
 		if (reader->expect(",")) {
 			ok = false;
 			continue;
@@ -383,7 +387,15 @@ Type* compiler::resolve_template(Type* base, IdHolder* holder, Reader* reader) {
 		holder->logger->semerr("parameter count is unmatched.");
 		return nullptr;
 	}
-	if(ret)ret->type = TypeType::instance_t;
+	if (new_make) {
+		if (base->type == TypeType::template_f_t) {
+			ret->type = TypeType::instance_f_t;
+		}
+		else {
+			ret->type = TypeType::instance_s_t;
+		}
+		ret->derived = std::move(params);
+	}
 	return ret;
 }
 
@@ -530,7 +542,7 @@ Type* compiler::get_number_type(const char* num,IdHolder* holder) {
 		if (lf)bit_size = 64;
 	}
 
-	return get_derived(TypeType::has_size_t, bit_size, holder->get_bit_t(!uf), holder);;
+	return get_derived(TypeType::has_size_t, bit_size, holder->get_bit_t(!uf), holder);
 }
 
 Type* compiler::get_derived(TypeType ttype,uint64_t size, Type* base, IdHolder* holder) {
@@ -583,7 +595,26 @@ bool compiler::ttype::is_naming(TypeType ttype) {
 	return ttype == TypeType::function_t||ttype==TypeType::struct_t||ttype==TypeType::enum_t||ttype==TypeType::interface_t||is_templatetype(ttype);
 }
 
+bool compiler::typecmp(Type* t1, Type* t2) {
+	return false;
+}
+
 Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 	holder->logger->unimplemented("identifer analyzer");
+	return nullptr;
+}
+
+Identifier* compiler::search_id_on_block(const char* name, IdHolder* holder) {
+	Block* search = holder->get_current();
+	while (search) {
+		auto i = 0ull;
+		while (search->ids[i]) {
+			if (strcmp(search->ids[i]->name, name) == 0) {
+				return search->ids[i];
+			}
+			i++;
+		}
+		search = search->parent;
+	}
 	return nullptr;
 }

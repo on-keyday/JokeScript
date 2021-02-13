@@ -21,8 +21,23 @@ namespace PROJECT_NAME {
 
 		struct Block {
 			Block* parent=nullptr;
+			bool is_control = false;
+			union {
+				Identifier* func = nullptr;
+				SyntaxTree* ctrl;
+			}rel;
 			common::EasyVector<Type*> types;
 			common::EasyVector<Identifier*> ids;
+		};
+
+
+		enum class TreeType{
+			unset,
+			bin,
+			unary,
+			literal,
+			defined,
+			ctrl
 		};
 
 		struct SyntaxTree {
@@ -33,6 +48,7 @@ namespace PROJECT_NAME {
 			Identifier* rel = nullptr;
 			Block* depends = nullptr;
 			Type* type=nullptr;
+			TreeType ttype=TreeType::unset;
 		};
 
 		enum class TypeType {
@@ -58,11 +74,13 @@ namespace PROJECT_NAME {
 			template_s_t,
 			template_p_t,
 			template_a_t,
-			instance_t,
+			instance_f_t,
+			instance_s_t,
 
 			//other types
 			enum_t,
-			simple_alias_t
+			simple_alias_t,
+			option_t
 		};
 
 
@@ -99,7 +117,10 @@ namespace PROJECT_NAME {
 		struct IdHolder {
 		private:
 			ReadStatus status = {0};
+			common::EasyVector<Block*> blocks;
 			common::EasyVector<Type*> types;
+			common::EasyVector<Identifier*> ids;
+			common::EasyVector<SyntaxTree*> trees;
 			Block* current = nullptr;
 		public:
 			log::Log* logger=nullptr;

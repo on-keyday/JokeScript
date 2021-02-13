@@ -37,7 +37,12 @@ namespace PROJECT_NAME {
 			bool is_derivedtype(TypeType ttype);
 			bool is_naming(TypeType ttype);
 		}
+		
+		bool typecmp(Type* t1, Type* t2);
+
 
 		Identifier* id_analyze(IdHolder* holder, Reader* reader);
+
+		Identifier* search_id_on_block(const char* name, IdHolder* holder);
 	}
 }

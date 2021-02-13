@@ -41,8 +41,9 @@ LLVM* compiler::analyze_tree(IdHolder* holder) {
 
 		ret->builder->SetInsertPoint(entry);
 		ret->builder->CreateRet(ret->builder->getInt64(0));
-
-		ret->_module->print()
+		
+		
+		ret->_module->print(llvm::outs(),nullptr);
 	}
 	catch (...) {
 		holder->logger->syserr("error ocurred in llvm library.");
@@ -50,3 +51,4 @@ LLVM* compiler::analyze_tree(IdHolder* holder) {
 	}
 	return ret;
 }
+
