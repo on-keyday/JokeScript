@@ -111,12 +111,11 @@ int interactive::json_reader() {
 	bool ok = false;
 	bool exit = false;
 	while (true) {
-		Reader reader(nullptr, 0ull);
 		std::string input;
 		out << ">>";
 		std::getline(in, input);
 		in.clear();
-		reader.add_str(input.c_str());
+		Reader reader(input.c_str(),input.length());
 		while (true) {
 			if (reader.expect_pf("exit", ctype::is_usable_for_identifier)) {
 				exit = true;
