@@ -94,6 +94,11 @@ namespace PROJECT_NAME {
                 return *this;
             }
 
+            EasyVector& operator=(std::nullptr_t) noexcept {
+                unuse();
+            }
+
+
             EasyVector& operator+=(EasyVector& from) noexcept{
                 add_copy(from.get_const(),from.get_size());
                 return *this;
