@@ -13,6 +13,10 @@
 
 using namespace PROJECT_NAME;
 
+#ifndef _WIN32
+#define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
+#endif
+
 bool common::io::Input::readall(const char* filename) {
 	FILE* fp = nullptr;
 	fopen_s(&fp,filename, "r");
