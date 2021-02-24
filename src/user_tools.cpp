@@ -256,11 +256,11 @@ JSONNode* user_tools::JSON::get_nodes(JSONNode* base, const char* path) const{
 }
 
 bool user_tools::JSON::print_node(JSONNode* node,void(*printer)(const char*), int has_line, int ofs) const{
-	if (!node||!printer)return nullptr;
+	if (!node||!printer)return false;
 	common::EasyVector<char> str;
 	get_nodestr(node, str,has_line,ofs);
 	printer(str.get_const());
-	return false;
+	return true;
 }
 
 bool  user_tools::JSON::get_nodestr(JSONNode* node, common::EasyVector<char>& str,int has_line,int ofs) const{
