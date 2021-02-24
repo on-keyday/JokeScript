@@ -93,7 +93,7 @@ const char* compiler::Reader::prev() {
 }
 
 bool compiler::Reader::ahead(const char* symbol) {
-	if (!symbol)return nullptr;
+	if (!symbol)return false;
 	common::EasyVector<char>& str=this->input.buf;
 	while (1) {
 		if (str[readpos]==' '||str[readpos]=='\n'||str[readpos]=='\t'||str[readpos]=='\v'||str[readpos]=='\r') {
