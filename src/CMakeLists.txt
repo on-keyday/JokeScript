@@ -8,7 +8,7 @@
 
 cmake_minimum_required (VERSION 3.8)
 
-if(GCC)
+if(linux)
 set(CMAKE_CXX_FLAGS "-O1 -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 endif()
