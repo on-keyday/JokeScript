@@ -292,7 +292,7 @@ bool ctype::reader::DigitNumber(const char* s, compiler::ReadStatus* status) {
 		if (*s == '0') {
 			if (s[1]=='x'||s[1]=='b'||ctype::is_octnumber(s[1])) {
 				status->failed = true;
-				return nullptr;
+				return false;
 			}
 		}
 	}
