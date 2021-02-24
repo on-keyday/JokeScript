@@ -358,6 +358,7 @@ namespace PROJECT_NAME {
             return ret;
         }
 
+        /*
         template<class T,class ...Args>
         T* create(Args&... args) {
             T* ret = nullptr;
@@ -368,7 +369,7 @@ namespace PROJECT_NAME {
                 return nullptr;
             }
             return ret;
-        }
+        }*/
 
         template<class T, class ...Args>
         T* create(Args... args) {

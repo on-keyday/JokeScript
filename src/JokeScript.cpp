@@ -33,6 +33,54 @@ void print(const char* s) {
 	std::cout << s;
 }
 
+Instance* ccnv jokescript::make_instance() {
+	auto ret = common::create<Instance>();
+	if (!ret)return nullptr;
+	ret->holder = nullptr;
+	ret->reader = nullptr;
+	return ret;
+}
+
+void ccnv jokescript::delete_instance(Instance* ins) {
+	if (!ins)return;
+	common::kill(ins->holder->logger);
+	common::kill(ins->holder);
+	common::kill(ins->reader);
+	common::kill(ins);
+	return;
+}
+
+int ccnv jokescript::set_option(Instance* ins, const char* opt, const char* value) {
+	if (!ins||!opt||!value)return 0;
+	if (strcmp(opt,"-s")==0) {
+		if (ins->reader || ins->holder)return 0;
+		auto hold = common::create<log::Log>();
+		if (!hold)return 0;
+		auto reader = common::create<compiler::Reader>(value,hold);
+		auto holder = common::create<compiler::IdHolder>();
+		if (!reader||!holder)goto Err;
+		if (!holder->make_block())goto Err;
+		holder->logger = hold;
+		ins->reader = reader;
+		ins->holder = holder;
+		goto Fin;
+	Err:
+		common::kill(hold);
+		common::kill(reader);
+		common::kill(holder);
+		return 0;
+	}
+Fin:
+	return 1;
+}
+
+int ccnv jokescript::parse(Instance* ins) {
+	if (!ins)return 0;
+	if (!ins->holder || !ins->reader)return 0;
+	if (!compiler::program(ins->holder, ins->reader))return 0;
+	return 1;
+}
+
 int ccnv jokescript::compiler_main(int argc, char** argv) {
 	const char* name = nullptr;
 	if (argc >= 2) {
@@ -41,19 +89,14 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	else {
 		name = "joke.jok";
 	}
-	log::Log logger;
-	compiler::Reader reader(name,&logger);
-	if (reader.eof())return -1;
-	compiler::IdHolder holder;
-	holder.logger = &logger;
-	holder.make_block();
-	if (!compiler::program(&holder, &reader))return -2;
-	Instance inst;
-	inst.holder = &holder;
-	inst.reader = &reader;
+	auto inst = make_instance();
+	if (!inst)return -1;
+	if(!set_option(inst, "-s", name))return -2;
+	if (!parse(inst))return -3;
 	//print_types(&inst, print);
 	//print("\n");
-	print_trees(&inst, print);
+	print_trees(inst, print);
+	delete_instance(inst);
 	print("\n");
 	return 0;
 }

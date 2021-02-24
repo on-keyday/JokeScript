@@ -42,7 +42,7 @@ namespace jokescript {
 
 		dll_property int ccnv output(const char* outname,unsigned int type);
 
-		dll_property int ccnv compile(Instance* ins);
+		dll_property int ccnv parse(Instance* ins);
 
 		dll_property int ccnv jit_setup(Instance *ins);
 
