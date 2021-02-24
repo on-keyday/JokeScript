@@ -8,7 +8,9 @@
 
 */
 
+#ifdef _WIN32
 #define dll_property __declspec(dllexport)
+#endif
 #include"JokeScript.h"
 #include"compiler_identifier_holder.h"
 #include"compiler_syntax_analyzer.h"

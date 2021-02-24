@@ -11,11 +11,19 @@
 #pragma once
 
 #ifndef dll_property
+#ifdef _WIN32
 #define dll_property __declspec(dllimport)
+#else
+#define dll_property
+#endif
 #endif
 
 #ifndef ccnv
+#ifdef _WIN32
 #define ccnv __stdcall
+#else
+#define ccnv
+#endif
 #endif
 
 #ifdef __cplusplus
