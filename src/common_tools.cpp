@@ -94,7 +94,7 @@ uint64_t common::strtoull_ex(const char* str,char** p) {
 
 common::String common::to_utf8(char32_t c) {
 	if (c < 0 || c > 0x10FFFF) {
-		return false;
+		return nullptr;
 	}
 	common::String ret;
 	if (c < 128) {
