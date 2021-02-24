@@ -12,6 +12,7 @@
 
 #include"compiler_filereader.h"
 #include"compiler_identifier_holder.h"
+#include"compiler_id_analyzer.h"
 
 namespace PROJECT_NAME {
 	namespace compiler {

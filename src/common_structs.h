@@ -196,7 +196,7 @@ namespace PROJECT_NAME {
                     }
                     i++;
                 }
-                return (uint64_t)(~0)
+                return (uint64_t)(~0);
             }
 
             PType get_if(PType p) {
@@ -347,7 +347,7 @@ namespace PROJECT_NAME {
         T* create(Args&... args) {
             T* ret = nullptr;
             try {
-                ret=new T(args...)
+                ret = new T(args...);
             }
             catch (...) {
                 return nullptr;

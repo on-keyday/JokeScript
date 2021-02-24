@@ -40,7 +40,7 @@ namespace PROJECT_NAME {
 			Reader(const char* filename,log::Log* logger=nullptr);
 			Reader(const char* base,uint64_t s);
 			bool expect(const char* symbol);
-			bool expect_p1(const char* symbol,char not);
+			bool expect_p1(const char* symbol,char judge);
 			bool expect_pf(const char* symbol,bool (*judge)(char));
 			bool expect_or_err(const char* symbol);
 			bool expect_or_err_pe(const char* symbol,const char* expected);

@@ -36,9 +36,9 @@ bool compiler::Reader::expect(const char* symbol) {
 	return true;
 }
 
-bool compiler::Reader::expect_p1(const char* symbol, char not) {
+bool compiler::Reader::expect_p1(const char* symbol, char judge) {
 	if (!ahead(symbol))return false;
-	if (input.buf[readpos+strlen(symbol)]==not) {
+	if (input.buf[readpos+strlen(symbol)]==judge) {
 		return false;
 	}
 	readpos += strlen(symbol);
