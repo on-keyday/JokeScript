@@ -63,6 +63,16 @@ namespace PROJECT_NAME {
                 from.len = 0;
             }
 
+            EasyVector(EasyVector&& from) {
+                this->ps = nullptr;
+                this->ps = from.ps;
+                from.ps = nullptr;
+                this->toadd = from.toadd;
+                this->len = from.len;
+                from.toadd = 0;
+                from.len = 0;
+            }
+
             bool init() {
                 if (ps && len == 10 && toadd == 0)return true;
                 free(ps);
