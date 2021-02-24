@@ -34,18 +34,27 @@ void print(const char* s) {
 }
 
 int ccnv jokescript::compiler_main(int argc, char** argv) {
+	const char* name = nullptr;
+	if (argc >= 2) {
+		name = argv[1];
+	}
+	else {
+		name = "joke.jok";
+	}
 	log::Log logger;
-	compiler::Reader reader("joke.jok",&logger);
+	compiler::Reader reader(name,&logger);
+	if (reader.eof())return -1;
 	compiler::IdHolder holder;
 	holder.logger = &logger;
 	holder.make_block();
-	if (!compiler::program(&holder, &reader))return -1;
+	if (!compiler::program(&holder, &reader))return -2;
 	Instance inst;
 	inst.holder = &holder;
 	inst.reader = &reader;
 	//print_types(&inst, print);
 	//print("\n");
 	print_trees(&inst, print);
+	print("\n");
 	return 0;
 }
 

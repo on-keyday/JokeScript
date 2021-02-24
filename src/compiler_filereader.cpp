@@ -16,7 +16,7 @@ using namespace PROJECT_NAME;
 
 compiler::Reader::Reader(const char* filename,log::Log* logger) {
 	this->logger = logger;
-	input.readall(filename);
+	if (!input.readall(filename))iseof = true;;
 }
 
 compiler::Reader::Reader(const char* base, uint64_t s) {
