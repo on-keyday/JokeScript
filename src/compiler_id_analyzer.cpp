@@ -37,7 +37,7 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 	Type* ret = nullptr;
 	ReadStatus* status = holder->get_status();
 	reader->readwhile(status, ctype::reader::Identifier);
-	if (status->failed)return false;
+	if (status->failed)return nullptr;
 	if (!reader->expect_or_err("?"))return nullptr;
 	if (ctype::is_unnamed(status->buf.get_const())) {
 		holder->hash.unname_hash(status->buf);
@@ -824,7 +824,7 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 	Identifier* ret = nullptr;
 	ReadStatus* status = holder->get_status();
 	reader->readwhile(status, ctype::reader::Identifier);
-	if (status->failed)return false;
+	if (status->failed)return nullptr;
 	if (ctype::is_unnamed(status->buf.get_const())) {
 		holder->hash.unname_hash(status->buf);
 	}
