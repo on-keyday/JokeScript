@@ -1,3 +1,13 @@
+/*
+    JokeScript
+
+    Copyright (c) 2021 on-keyday
+
+    This software is released under the MIT License.
+    http://opensource.org/licenses/mit-license.php
+
+*/
+
 #include"user_action.h"
 #include"compiler_filereader.h"
 #include"compiler_ctype.h"
