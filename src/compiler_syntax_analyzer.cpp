@@ -62,37 +62,37 @@ bool compiler::block_detail(IdHolder* holder, Reader* reader) {
 		else if (reader->expect_pf("break", ctype::is_usable_for_identifier) || reader->expect_pf("continue", ctype::is_usable_for_identifier)) {
 			if (!break_usable(holder)) {
 				holder->logger->semerr_val("in this scope, '*' is not usable.", reader->prev());
-				return nullptr;
+				return false;
 			}
 			auto hold = holder->make_tree(common::StringFilter() = reader->prev(), TreeType::ctrl, nullptr);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			holder->get_current()->trees.add(hold);
 		}
 		else if (reader->expect_pf("return", ctype::is_usable_for_identifier)) {
 			if (!return_usable(holder)) {
 				holder->logger->semerr_val("in this scope, 'return' is not usable.", reader->prev());
-				return nullptr;
+				return false;
 			}
 			auto hold = holder->make_tree(common::StringFilter() = "return", TreeType::ctrl, nullptr);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			if (!reader->ahead(";")) {
 				hold->right = assign(holder, reader);
-				if (!hold->right)return nullptr;
+				if (!hold->right)return false;
 				if (!hold->right->type) {
 					holder->logger->semerr("+not usable for return statment.");
-					return nullptr;
+					return false;
 				}
 			}
 			holder->get_current()->trees.add(hold);
 		}
 		else if (reader->expect_pf("loop",ctype::is_usable_for_identifier)) {
 			auto hold = loop(holder, reader);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			holder->get_current()->trees.add(hold);
 		}
 		else if (reader->expect_pf("if", ctype::is_usable_for_identifier)) {
 			auto hold = ifs(holder, reader);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			holder->get_current()->trees.add(hold);
 		}
 		else {
