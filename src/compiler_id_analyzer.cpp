@@ -42,9 +42,15 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 	if (ctype::is_unnamed(status->buf.get_const())) {
 		holder->hash.unname_hash(status->buf);
 	}
+	else {
+		int i = 0;
+		if (search_type_on_block(status->buf.get_const(), holder, i)) {
+			holder->logger->semerr_val("*:name conflict.",status->buf.get_const());
+		}
+	}
 	common::EasyVector<char> hold(nullptr);
 	hold = std::move(status->buf);
-	ret = type_detail(hold.get_const(),holder,reader,false,false);
+	ret = type_detail(hold.get_const(),holder,reader,false);
 	if (!ret) return nullptr;
 	if (!ttype::is_naming(ret->type)||strcmp(hold.get_const(),ret->name)!=0) {
 		auto tmp=holder->make_type(hold.get_raw_z());
@@ -59,7 +65,7 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 	return ret;
 }
 
-Type* compiler::type_detail(const char* name,IdHolder* holder, Reader* reader,bool unname, bool on_id) {
+Type* compiler::type_detail(const char* name,IdHolder* holder, Reader* reader,bool unname) {
 	if (ctype::is_first_of_identifier(reader->abyte())) {
 		return get_ids(holder,reader);
 	}
@@ -73,7 +79,7 @@ Type* compiler::type_detail(const char* name,IdHolder* holder, Reader* reader,bo
 		return get_common_derived(TypeType::referrence_t, 0, holder, reader, "referece of");
 	}
 	else if (reader->ahead("(")||reader->ahead("<")) {
-		return get_funcs(holder, reader, on_id);
+		return get_functypes(holder, reader);
 	}
 	else if (reader->expect_or_err_pe("[", "|*&[\" or alphabet or \"_")) {
 		return get_has_size(holder,reader);
@@ -130,7 +136,7 @@ Type* compiler::get_ids(IdHolder* holder, Reader* reader) {
 }
 
 Type* compiler::get_common_derived(TypeType ttype, uint64_t size, IdHolder* holder, Reader* reader,const char* err) {
-	Type* ret = type_detail(nullptr, holder, reader, true, false);
+	Type* ret = type_detail(nullptr, holder, reader, true);
 	if (!ret)return nullptr;
 	if (ret->type == TypeType::referrence_t) {
 		holder->logger->synerr_val("* reference is unusable.",err);
@@ -171,8 +177,8 @@ Type* compiler::get_has_size(IdHolder* holder, Reader* reader) {
 	return get_common_derived(TypeType::has_size_t, ar_size, holder, reader, err);
 }
 
-Type* compiler::get_funcs(IdHolder* holder, Reader* reader, bool on_id) {
-	common::EasyVector<Identifier*> ids;
+Type* compiler::get_functypes(IdHolder* holder, Reader* reader) {
+	common::EasyVector<Type*> types;
 	Type* ret = nullptr;
 	if (reader->expect("<")) {
 		holder->logger->unimplemented("function template.");
@@ -183,75 +189,30 @@ Type* compiler::get_funcs(IdHolder* holder, Reader* reader, bool on_id) {
 		if (reader->ahead(")")) {
 			break;
 		}
-		else if (reader->ahead("$") || reader->ahead("@")) {
-			auto hold = id_analyze(holder, reader);
-			if (!hold)return nullptr;
-			ids.add(hold);
-		}
 		else {
-			holder->logger->unexpected_token(")$@", reader->abyte());
-			return nullptr;
+			auto hold = type_detail(nullptr, holder, reader, false);
+			if (!hold)return nullptr;
+			types.add(hold);
 		}
 		if (!reader->expect(","))break;
 	}
 	if (!reader->expect_or_err(")"))return nullptr;
+	return get_optandreturns(holder,reader,types);
+}
+
+Type* compiler::get_optandreturns(IdHolder* holder, Reader* reader,common::EasyVector<Type*>& types) {
+	common::EasyVector<Option*> opts = get_options(holder, reader);
+	if (opts == nullptr)return nullptr;
 	Type* rettype = nullptr;
 	if (reader->expect("->")) {
-		rettype = type_detail(nullptr, holder, reader, false,true);
+		rettype = type_detail(nullptr, holder, reader, false);
 		if (!rettype)return nullptr;
 	}
 	else {
 		rettype = holder->get_void();
 	}
 	if (!rettype)return nullptr;
-	/*auto i = 0ull;
-	while (rettype->function[i]) {
-		if (rettype->function[i]->types.get_size() == ids.get_size()) {
-			auto u = 0ull;
-			bool ok = true;
-			while (rettype->function[i]->types[u]) {
-				if (rettype->function[i]->types[u] != ids[u]->type) {
-					ok = false;
-					break;
-				}
-				u++;
-			}
-			if (ok) {
-				ret = rettype->function[i];
-				break;
-			}
-		}
-		i++;
-	}
-	if (!ret) {
-		ret = holder->make_type(common::StringFilter() = "()");
-		if (!ret)return nullptr;
-		ret->type = TypeType::function_t;
-		ret->root = rettype;
-		rettype->function.add(ret);
-		auto i = 0ull;
-		while (ids[i]) {
-			ret->types.add_nz(ids[i]->type);
-		}
-		ret->types.pack_f();
-		ret->ids.unuse();
-	}*/
-	common::EasyVector<Option*> opts = get_options(holder, reader);
-	if (opts == nullptr)return nullptr;
-	ret = get_function(TypeType::function_t,rettype,ids,opts,holder);
-	if (!ret)return nullptr;
-	if (on_id) {
-		ret->ids = std::move(ids);
-	}
-	else {
-		auto i = 0ull;
-		auto& base = holder->get_ids();
-		while (ids[i]) {
-			delete base.remove_if(ids[i]);
-			i++;
-		}
-	}
-	return ret;
+	return get_function(TypeType::function_t, rettype, types, opts, holder);
 }
 
 common::EasyVector<Option*> compiler::get_options(IdHolder* holder, Reader* reader) {
@@ -329,6 +290,8 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 			ret->root = holder->get_void();
 		}
 		if (!reader->expect_or_err("{"))return nullptr;
+		auto current = holder->get_current();
+		current->types.add(ret);
 		while (!reader->eof()) {
 			if (reader->ahead("}")) {
 				break;
@@ -350,6 +313,10 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 				return nullptr;
 			}
 			if (!check_semicolon(holder, reader))return nullptr;
+		}
+		if (current->types.remove_end() != ret) {
+			holder->logger->syserr("system is broken.");
+			return nullptr;
 		}
 		if (!reader->expect_or_err("}"))return nullptr;
 	}
@@ -422,6 +389,7 @@ Type* compiler::search_type_on_block(const char* name, IdHolder* holder, int& is
 			}
 			i++;
 		}
+		//if (current)break;
 		search = search->prev;
 	}
 	return nullptr;
@@ -723,22 +691,11 @@ Type* compiler::get_derived(TypeType ttype,uint64_t size, Type* base, IdHolder* 
 	return ret;
 }
 
-Type* compiler::get_function(TypeType ttype, Type* rettype, common::EasyVector<Identifier*>& args,common::EasyVector<Option*>& opts,IdHolder* holder) {
+Type* compiler::get_function(TypeType ttype, Type* rettype, common::EasyVector<Type*>& args,common::EasyVector<Option*>& opts,IdHolder* holder) {
 	auto i = 0ull;
 	while (rettype->function[i]) {
 		if (rettype->function[i]->types.get_size() == args.get_size()&&rettype->function[i]->type==ttype) {
-			auto u = 0ull;
-			bool ok = true;
-			while (rettype->function[i]->types[u]) {
-				if (rettype->function[i]->types[u] != args[u]->type) {
-					ok = false;
-					break;
-				}
-				u++;
-			}
-			if (ok) {
-				if(rettype->function[i]->opts==opts)return rettype->function[i];
-			}
+			if(rettype->function[i]->types==args&&rettype->function[i]->opts==opts)return rettype->function[i];
 		}
 		i++;
 	}
@@ -748,9 +705,7 @@ Type* compiler::get_function(TypeType ttype, Type* rettype, common::EasyVector<I
 	ret->root = rettype;
 	rettype->function.add(ret);
 	i = 0ull;
-	while (args[i]) {
-		ret->types.add_nz(args[i]->type);
-	}
+	ret->types = std::move(args);
 	ret->opts = std::move(opts);
 	ret->opts.pack_f();
 	ret->types.pack_f();
@@ -828,11 +783,16 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 	if (ctype::is_unnamed(status->buf.get_const())) {
 		holder->hash.unname_hash(status->buf);
 	}
+	else {
+		if (search_id_on_block(status->buf.get_const(), holder)) {
+			holder->logger->semerr_val("*:name conflict.", status->buf.get_const());
+		}
+	}
 	ret = holder->make_id(status->buf.get_raw_z());
 	if (!ret)return nullptr;
 	ret->is_const = is_const;
 	if (reader->expect("?")) {
-		ret->type=type_detail(nullptr, holder, reader,true,true);
+		ret->type=type_detail(nullptr, holder, reader,true);
 		if (!ret->type)return nullptr;
 		if (ret->type->type==TypeType::function_t) {
 			ret->params = std::move(ret->type->ids);
@@ -851,25 +811,56 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 			}
 		}
 	}
-	else if (ret->type) {
-		if (ret->type->type == TypeType::function_t) {
-			if (reader->expect("{")) {
-				ret->init = block(holder, reader);
-				if (!ret->init)return nullptr;
-				ret->init->rel = ret;
-				ret->init->relblock->id = ret;
-			}
+	else if (!ret->type&&reader->expect("(")) {
+		if (!get_func_instance(ret, holder, reader))return nullptr;
+		auto current=holder->get_current();
+		current->ids.add(ret);
+		ret->init=make_block_tree_pair(holder, "{}");
+		if (!ret->init)return nullptr;
+		ret->init->rel = ret;
+		ret->init->relblock->id = ret;
+		ret->init->relblock->ids.add_copy(ret->params.get_const(), ret->params.get_size());
+		if (!reader->expect_or_err("{"))return nullptr;
+		if (!block_detail(holder, reader))return nullptr;
+		if (!reader->expect_or_err("}"))return nullptr;
+		if (!holder->to_parent_block())return nullptr;
+		if (current->ids.remove_end() != ret) {
+			holder->logger->syserr("system is broken.");
+			return nullptr;
 		}
 	}
 	if (!ret->type) {
 		holder->logger->semerr("type can not be identified.");
 		return nullptr;
 	}
-	if (is_const&&!ret->init&&ret->type->type==TypeType::function_t) {
-		holder->logger->semerr("constant function have to initialize.");
+	if (is_const&&!ret->init) {
+		holder->logger->semerr("constant value have to initialize.");
 		return nullptr;
 	}
 	return ret;
+}
+
+bool compiler::get_func_instance(Identifier* func,IdHolder* holder, Reader* reader) {
+	common::EasyVector<Type*> types;
+	common::EasyVector<Identifier*> ids;
+	while (!reader->eof()) {
+		if (reader->ahead(")")) {
+			break;
+		}
+		else {
+			auto hold = id_analyze(holder, reader);
+			if (!hold)return nullptr;
+			ids.add(hold);
+			types.add_nz(hold->type);
+		}
+		reader->expect(",");
+	}
+	if (!reader->expect_or_err(")"))return false;
+	auto type = get_optandreturns(holder, reader, types);
+	if (!type)return false;
+	func->type = type;
+	func->params = std::move(ids);
+	return true;
 }
 
 Identifier* compiler::search_id_on_block(const char* name,IdHolder* holder) {
@@ -882,6 +873,7 @@ Identifier* compiler::search_id_on_block(const char* name,IdHolder* holder) {
 			}
 			i++;
 		}
+		//if (current)break;
 		search = search->prev;
 	}
 	return nullptr;

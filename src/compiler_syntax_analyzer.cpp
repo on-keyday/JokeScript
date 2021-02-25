@@ -318,7 +318,7 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 		if (!hold)return nullptr;
 		ret = holder->make_tree(status->buf.get_raw_z(), TreeType::defined, hold->type);
 	}
-	else if (reader->ahead("@?")) {
+	else if (reader->ahead("@(")) {
 		auto id = id_analyze(holder, reader);
 		if (!id)return nullptr;
 		if (id->type->type != TypeType::function_t) {

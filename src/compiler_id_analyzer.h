@@ -15,12 +15,13 @@ namespace PROJECT_NAME {
 		Type* get_named_type(const char* name, bool unnamd, IdHolder* holder);
 
 		Type* type_analyze(IdHolder* holder,Reader* reader);
-		Type* type_detail(const char* name,IdHolder* holder, Reader* reader,bool unname,bool on_id);
+		Type* type_detail(const char* name,IdHolder* holder, Reader* reader,bool unname);
 
 		Type* get_ids(IdHolder* holder, Reader* reader);
 		Type* get_common_derived(TypeType ttype, uint64_t size,IdHolder* holder,Reader* reader,const char* err);
 		Type* get_has_size(IdHolder* holder, Reader* reader);
-		Type* get_funcs(IdHolder* holder, Reader* reader, bool on_id);
+		Type* get_functypes(IdHolder* holder, Reader* reader);
+		Type* get_optandreturns(IdHolder* holder, Reader* reader,common::EasyVector<Type*>& types);
 		common::EasyVector<Option*> get_options(IdHolder* holder, Reader* reader);
 		Type* get_sets(const char* name, IdHolder* holder, Reader* reader, bool unname);
 
@@ -33,7 +34,7 @@ namespace PROJECT_NAME {
 
 		Type* get_number_type(const char* num,IdHolder* holder);
 		Type* get_derived(TypeType ttype,uint64_t size,Type* base,IdHolder* holder);
-		Type* get_function(TypeType ttype,Type* rettype,common::EasyVector<Identifier*>& args,common::EasyVector<Option*>& opts,IdHolder* holder);
+		Type* get_function(TypeType ttype,Type* rettype,common::EasyVector<Type*>& args,common::EasyVector<Option*>& opts,IdHolder* holder);
 
 		namespace ttype {
 			bool is_templatetype(TypeType ttype);
@@ -47,6 +48,8 @@ namespace PROJECT_NAME {
 
 
 		Identifier* id_analyze(IdHolder* holder, Reader* reader);
+
+		bool get_func_instance(Identifier* func,IdHolder* holder, Reader* reader);
 
 		Identifier* search_id_on_block(const char* name, IdHolder* holder);
 		Identifier* search_id_on_id(const char* name,Identifier* id);
