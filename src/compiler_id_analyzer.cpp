@@ -820,10 +820,7 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 		ret->init->rel = ret;
 		ret->init->relblock->id = ret;
 		ret->init->relblock->ids.add_copy(ret->params.get_const(), ret->params.get_size());
-		if (!reader->expect_or_err("{"))return nullptr;
-		if (!block_detail(holder, reader))return nullptr;
-		if (!reader->expect_or_err("}"))return nullptr;
-		if (!holder->to_parent_block())return nullptr;
+		if (!block_cycle(holder, reader))return nullptr;
 		if (current->ids.remove_end() != ret) {
 			holder->logger->syserr("system is broken.");
 			return nullptr;

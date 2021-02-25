@@ -93,5 +93,6 @@ namespace PROJECT_NAME {
 		bool break_usable(IdHolder* holder);
 		bool return_usable(IdHolder* holder);
 		SyntaxTree* make_block_tree_pair(IdHolder* holder,const char* name);
+		bool block_cycle(IdHolder* holder, Reader* reader);
 	}
 }

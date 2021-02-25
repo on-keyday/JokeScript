@@ -31,9 +31,7 @@ bool compiler::program(IdHolder* holder, Reader* reader) {
 SyntaxTree* compiler::block(IdHolder* holder, Reader* reader) {
 	auto ret = make_block_tree_pair(holder,"{}");
 	if (!ret)return nullptr;
-	if (!block_detail(holder,reader))return nullptr;
-	if (!reader->expect_or_err("}"))return nullptr;
-	if (!holder->to_parent_block())return nullptr;;
+	if (!block_cycle(holder, reader))return nullptr;
 	return ret;
 }
 
@@ -51,7 +49,7 @@ bool compiler::block_detail(IdHolder* holder, Reader* reader) {
 			if (!id)return false;
 			holder->get_current()->ids.add(id);
 		}
-		else if (reader->expect("{")) {
+		else if (reader->ahead("{")) {
 			auto tree = block(holder, reader);
 			if (!tree)return false;
 			holder->get_current()->trees.add(tree);
@@ -553,10 +551,7 @@ SyntaxTree* compiler::loop(IdHolder* holder, Reader* reader) {
 		if (!got->right)return nullptr;
 		ret->children.add(got);
 	}
-	if (!reader->expect_or_err("{"))return nullptr;
-	if (!block_detail(holder, reader))return nullptr;
-	if (!reader->expect_or_err("}"))return nullptr;
-	if (!holder->to_parent_block())return nullptr;
+	if (!block_cycle(holder, reader))return nullptr;
 	return ret;
 }
 
@@ -565,10 +560,7 @@ SyntaxTree* compiler::ifs(IdHolder* holder, Reader* reader){
 	if (!ret)return nullptr;
 	ret->left = assign(holder,reader);
 	if (!ret->left)return nullptr;
-	if (!reader->expect_or_err("{"))return nullptr;
-	if (!block_detail(holder, reader))return nullptr;
-	if (!reader->expect_or_err("}"))return nullptr;
-	if (!holder->to_parent_block())return nullptr;
+	if (!block_cycle(holder, reader))return nullptr;
 	if (reader->expect("else")) {
 		if (reader->expect("if")) {
 			ret->right = ifs(holder, reader);
@@ -625,4 +617,12 @@ SyntaxTree* compiler::make_block_tree_pair(IdHolder* holder,const char* name) {
 	if (!ret)return nullptr;
 	set_relative(current, ret);
 	return ret;
+}
+
+bool compiler::block_cycle(IdHolder* holder, Reader* reader) {
+	if (!reader->expect_or_err("{"))return false;
+	if (!block_detail(holder, reader))return false;
+	if (!reader->expect_or_err("}"))return false;
+	if (!holder->to_parent_block())return false;
+	return true;
 }
