@@ -575,9 +575,8 @@ SyntaxTree* compiler::ifs(IdHolder* holder, Reader* reader){
 }
 
 bool compiler::set_relative(Block* block, SyntaxTree* tree) {
-	block->is_tree = true;
-	block->rel.ctrl = tree;
-	tree->depends = block;
+	block->reltree = tree;
+	tree->relblock = block;
 	return true;
 }
 
@@ -594,11 +593,9 @@ bool compiler::check_semicolon(IdHolder* holder, Reader* reader) {
 bool compiler::break_usable(IdHolder* holder) {
 	auto search = holder->get_current();
 	while (search) {
-		if (search->is_tree) {
-			if (search->rel.ctrl) {
-				if (strcmp(search->rel.ctrl->symbol, "loop")) {
-					return true;
-				}
+		if (search->reltree) {
+			if (strcmp(search->reltree->symbol, "loop")) {
+				return true;
 			}
 		}
 		search = search->prev;

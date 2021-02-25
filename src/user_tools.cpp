@@ -521,12 +521,12 @@ JSONNode* user_tools::print_SyntaxTree(JSON* json, compiler::SyntaxTree* tree) {
 		i++;
 	}
 	ret->add(json->make_pair("children", arr));
-	if (tree->ttype==TreeType::ctrl&&tree->depends) {
+	if (tree->ttype==TreeType::ctrl&&tree->relblock) {
 		auto block = json->make_array();
 		if (!block)return nullptr;
 		i = 0;
-		while (tree->depends->trees[i]) {
-			block->add(print_SyntaxTree(json, tree->depends->trees[i]));
+		while (tree->relblock->trees[i]) {
+			block->add(print_SyntaxTree(json, tree->relblock->trees[i]));
 			i++;
 		}
 		ret->add(json->make_pair("block",block));

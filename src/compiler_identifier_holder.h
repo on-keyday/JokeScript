@@ -23,11 +23,8 @@ namespace PROJECT_NAME {
 
 		struct Block {
 			Block* prev=nullptr;
-			bool is_tree = false;
-			union {
-				Identifier* func = nullptr;
-				SyntaxTree* ctrl;
-			}rel;
+			SyntaxTree* reltree = nullptr;
+			Identifier* func = nullptr;
 			common::EasyVector<Type*> types;
 			common::EasyVector<Identifier*> ids;
 			common::EasyVector<SyntaxTree*> trees;
@@ -49,7 +46,7 @@ namespace PROJECT_NAME {
 			SyntaxTree* right=nullptr;
 			common::EasyVector<SyntaxTree*> children;
 			Identifier* rel = nullptr;
-			Block* depends = nullptr;
+			Block* relblock = nullptr;
 			Type* type=nullptr;
 			TreeType ttype=TreeType::unset;
 			~SyntaxTree();

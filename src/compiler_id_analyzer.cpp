@@ -830,6 +830,7 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 	}
 	ret = holder->make_id(status->buf.get_raw_z());
 	if (!ret)return nullptr;
+	ret->is_const = is_const;
 	if (reader->expect("?")) {
 		ret->type=type_detail(nullptr, holder, reader,true,true);
 		if (!ret->type)return nullptr;
@@ -850,8 +851,22 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 			}
 		}
 	}
+	else if (ret->type) {
+		if (ret->type->type == TypeType::function_t) {
+			if (reader->expect("{")) {
+				ret->init = block(holder, reader);
+				if (!ret->init)return nullptr;
+				ret->init->rel = ret;
+				ret->init->relblock->func = ret;
+			}
+		}
+	}
 	if (!ret->type) {
 		holder->logger->semerr("type can not be identified.");
+		return nullptr;
+	}
+	if (is_const&&!ret->init&&ret->type->type==TypeType::function_t) {
+		holder->logger->semerr("constant function have to initialize.");
 		return nullptr;
 	}
 	return ret;
