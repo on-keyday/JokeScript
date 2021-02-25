@@ -336,13 +336,13 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 			else if (reader->ahead("!")) {
 				auto hold = type_analyze(holder, reader);
 				if (!hold)return nullptr;
-				hold->depends.type = ret;
+				hold->type_on = ret;
 				ret->types.add(hold);
 			}
 			else if (reader->ahead("$") || reader->ahead("@")) {
 				auto hold = id_analyze(holder, reader);
 				if (!hold)return nullptr;
-				hold->depends.type = ret;
+				hold->type_on = ret;
 				ret->ids.add(hold);
 			}
 			else {
@@ -857,7 +857,7 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 				ret->init = block(holder, reader);
 				if (!ret->init)return nullptr;
 				ret->init->rel = ret;
-				ret->init->relblock->func = ret;
+				ret->init->relblock->id = ret;
 			}
 		}
 	}

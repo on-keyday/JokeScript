@@ -25,6 +25,7 @@ using namespace jokescript;
 struct jokescript::Instance {
 	compiler::Reader* reader;
 	compiler::IdHolder* holder;
+	char* printed;
 };
 
 //std::ofstream file("Type.json");
@@ -38,11 +39,13 @@ Instance* ccnv jokescript::make_instance() {
 	if (!ret)return nullptr;
 	ret->holder = nullptr;
 	ret->reader = nullptr;
+	ret->printed = nullptr;
 	return ret;
 }
 
 void ccnv jokescript::delete_instance(Instance* ins) {
 	if (!ins)return;
+	free(ins->printed);
 	common::kill(ins->holder->logger);
 	common::kill(ins->holder);
 	common::kill(ins->reader);
@@ -93,17 +96,34 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	if (!inst)return -1;
 	if(!set_option(inst, "-s", name))return -2;
 	if (!parse(inst))return -3;
-	//print_types(&inst, print);
-	//print("\n");
-	print_trees(inst, print);
+	print(to_string(inst));
 	delete_instance(inst);
 	print("\n");
 	return 0;
 }
 
+const char* ccnv jokescript::to_string(Instance* ins) {
+	if (!ins)return nullptr;
+	if (!ins->holder)return nullptr;
+	user_tools::JSON json;
+	auto types = user_tools::print_types(&json, ins->holder);
+	if (!types)return nullptr;
+	auto trees = user_tools::print_trees(&json, ins->holder);
+	if (!trees)return nullptr;
+	auto res = json.make_obj();
+	if (!res)return nullptr;
+	res->add(json.make_pair("types", types)).add(json.make_pair("trees", trees));
+	common::String retstr;
+	json.get_nodestr(res, retstr, 0, 2);
+	auto ret = retstr.get_raw_z();
+	if (!ret)return nullptr;
+	free(ins->printed);
+	ins->printed = ret;
+	return ret;
+}
 
 
-int ccnv jokescript::print_types(Instance* ins, void(*printer)(const char*)) {
+/*int ccnv jokescript::print_types(Instance* ins, void(*printer)(const char*)) {
 	if (!ins || !printer)return 0;
 	auto& types = ins->holder->get_types();
 	user_tools::JSON json;
@@ -127,8 +147,8 @@ int ccnv jokescript::print_types(Instance* ins, void(*printer)(const char*)) {
 	if (!result)return 0;
 	result->add(json.make_pair("types",nodes));
 	result->add(json.make_pair("count", json.make_number(nodes->len())));
-	//common::EasyVector<char> hold;
-	json.print_node(result, printer, 0, 2);
+	common::EasyVector<char> hold;
+	json.get_nodestr(result,hold, 0, 2);
 	return 1;
 }
 
@@ -152,4 +172,4 @@ int ccnv jokescript::print_trees(Instance* ins, void(*printer)(const char*)) {
 	result->add(json.make_pair("count", json.make_number(nodes->len())));
 	json.print_node(result, printer, 0, 2);
 	return 1;
-}
+}*/

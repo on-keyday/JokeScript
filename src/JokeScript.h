@@ -52,9 +52,9 @@ namespace jokescript {
 
 		dll_property int ccnv compiler_main(int argc,char** argv);
 
-		dll_property int ccnv print_types(Instance* ins,void(*printer)(const char*));
 
-		dll_property int ccnv print_trees(Instance* ins, void(*printer)(const char*));
+		dll_property const char* ccnv to_string(Instance* ins);
+		
 #ifdef __cplusplus
 	}
 }

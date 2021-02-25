@@ -24,7 +24,8 @@ namespace PROJECT_NAME {
 		struct Block {
 			Block* prev=nullptr;
 			SyntaxTree* reltree = nullptr;
-			Identifier* func = nullptr;
+			Identifier* id = nullptr;
+			bool has_this=false;
 			common::EasyVector<Type*> types;
 			common::EasyVector<Identifier*> ids;
 			common::EasyVector<SyntaxTree*> trees;
@@ -101,15 +102,15 @@ namespace PROJECT_NAME {
 			common::EasyVector<Type*> types;
 			common::EasyVector<Option*> opts;
 			Type* root = nullptr;
-			bool on_block = false;
+			//bool on_block = false;
 			union {
 				uint64_t size = 0;
 				uint64_t len;
 			};
-			union {
-				Block* block=nullptr;
-				Type* type;
-			}depends;
+			//union {
+				//Block* block=nullptr;
+				Type* type_on=nullptr;
+			//};
 			common::EasyVector<Type*> derived;
 			common::EasyVector<Type*> function;
 			~Type();
@@ -119,12 +120,12 @@ namespace PROJECT_NAME {
 			char* name = nullptr;
 			bool is_const=false;
 			bool is_global = false;
-			bool on_block = false;
+			//bool on_block = false;
 			Type* type=nullptr;
-			union {
-				Block* block = nullptr;
-				Type* type;
-			}depends;
+			//union {
+				//Block* block = nullptr;
+				Type* type_on=nullptr;
+			//};
 			SyntaxTree* init=nullptr;
 			common::EasyVector<Identifier*> params=nullptr;
 			~Identifier();

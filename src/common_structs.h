@@ -63,7 +63,7 @@ namespace PROJECT_NAME {
                 from.len = 0;
             }
 
-            EasyVector(EasyVector&& from) {
+            EasyVector(EasyVector&& from) noexcept{
                 this->ps = nullptr;
                 this->ps = from.ps;
                 from.ps = nullptr;

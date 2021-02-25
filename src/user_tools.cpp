@@ -438,6 +438,52 @@ uint64_t user_tools::JSON::this_size() const{
 	return ret;
 }
 
+
+JSONNode* user_tools::print_types(JSON* json,compiler::IdHolder* holder) {
+	auto& types = holder->get_types();
+	auto nodes = json->make_array();
+	if (!nodes)return 0;
+	auto i = 0ull;
+	std::map<compiler::Type*, uint64_t> idmap;
+	idmap.emplace(nullptr, 0);
+	while (types[i]) {
+		idmap.emplace(types[i], i + 1);
+		i++;
+	}
+	i = 0;
+	while (types[i]) {
+		auto hold = user_tools::print_Type(json, types[i], idmap);
+		if (!hold)return 0;
+		nodes->add(hold);
+		i++;
+	}
+	//auto result = json->make_obj();
+	//if (!result)return 0;
+	//result->add(json->make_pair("types", nodes));
+	//result->add(json.make_pair("count", json.make_number(nodes->len())));
+	return nodes;
+}
+
+JSONNode* user_tools::print_trees(JSON* json, compiler::IdHolder* holder) {
+	auto trees = holder->get_current();
+	if (!trees)return 0;
+	auto nodes = json->make_array();
+	if (!nodes)return 0;
+	auto i = 0ull;
+	while (trees->trees[i]) {
+		auto hold = user_tools::print_SyntaxTree(json, trees->trees[i]);
+		if (!hold)return 0;
+		nodes->add(hold);
+		i++;
+	}
+	//auto result = json->make_obj();
+	//if (!result)return 0;
+	//result->add(json->make_pair("trees", nodes));
+	//result->add(json.make_pair("count", json.make_number(nodes->len())));
+	//json.print_node(result, printer, 0, 2);
+	return nodes;
+}
+
 JSONNode* user_tools::print_Type(JSON* json,Type* type, std::map<Type*, uint64_t>& idmap) {
 	if (!type)return 0;
 	const char* root_s=nullptr;

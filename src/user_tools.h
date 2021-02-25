@@ -96,6 +96,11 @@ namespace PROJECT_NAME {
 
 		
 
+		JSONNode* print_types(JSON* json,compiler::IdHolder* holder);
+
+		JSONNode* print_trees(JSON* json,compiler::IdHolder* holder);
+
+
 		JSONNode* print_Type(JSON* json,compiler::Type* type,std::map<compiler::Type*,uint64_t>& idmap);
 		JSONNode* print_TypeType(JSON* json,compiler::TypeType ttype);
 
