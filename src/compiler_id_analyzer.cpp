@@ -866,7 +866,7 @@ bool compiler::get_func_instance(Identifier* func,IdHolder* holder, Reader* read
 		}
 		else {
 			auto hold = id_analyze(holder, reader);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			ids.add(hold);
 			types.add_nz(hold->type);
 		}
