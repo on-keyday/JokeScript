@@ -597,11 +597,12 @@ SyntaxTree* compiler::ifs(IdHolder* holder, Reader* reader){
 			ret->right = ifs(holder, reader);
 			if (!ret->right)return nullptr;
 		}
-		else if(reader->expect_or_err("{")){
+		else if(reader->ahead("{")){
 			ret->right = block(holder, reader);
 			if (!ret->right)return nullptr;
 		}
 		else {
+			holder->logger->unexpected_token("{", reader->abyte());
 			return nullptr;
 		}
 	}
