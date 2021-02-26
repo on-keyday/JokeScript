@@ -43,6 +43,10 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 		holder->hash.unname_hash(status->buf);
 	}
 	else {
+		if (is_keyword(status->buf.get_const())) {
+			holder->logger->semerr_val("'*' is keyword:not usable for identifier.", status->buf.get_const());
+			return nullptr;
+		}
 		int i = 0;
 		if (search_type_on_block(status->buf.get_const(), holder, i)) {
 			holder->logger->semerr_val("*:name conflict.",status->buf.get_const());
@@ -767,6 +771,17 @@ bool compiler::is_bit_t(Type* type, IdHolder* holder) {
 	return type == holder->get_bit_t(false) || type == holder->get_bit_t(true) || type == holder->get_float_bit_t();
 }
 
+bool compiler::is_keyword(const char* str) {
+	if (!str)return false;
+	const char* keywords[] = {"loop","first","if","continue","break","co","bit_t","void","else","float","signed","unsigned","return","import",
+							  "struct","enum","interface","true","false","null","yield","va_args","ccnv","capt","cast"};
+	for (auto keyword : keywords) {
+		if (strcmp(str, keyword)==0) {
+			return true;
+		}
+	}
+	return false;
+}
 
 Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 	bool is_const = false;
@@ -784,8 +799,13 @@ Identifier* compiler::id_analyze(IdHolder* holder, Reader* reader) {
 		holder->hash.unname_hash(status->buf);
 	}
 	else {
+		if (is_keyword(status->buf.get_const())) {
+			holder->logger->semerr_val("'*' is keyword:not usable for identifier.", status->buf.get_const());
+			return nullptr;
+		}
 		if (search_id_on_block(status->buf.get_const(), holder)) {
 			holder->logger->semerr_val("*:name conflict.", status->buf.get_const());
+			return nullptr;
 		}
 	}
 	ret = holder->make_id(status->buf.get_raw_z());
@@ -891,6 +911,7 @@ Identifier* compiler::search_id_on_type(const char* name, Type* type) {
 			if (strcmp(search->ids[i]->name, name) == 0) {
 				return search->ids[i];
 			}
+			i++;
 		}
 		search = search->root;
 	}

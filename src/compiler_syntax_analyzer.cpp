@@ -230,7 +230,7 @@ SyntaxTree* compiler::unary(IdHolder* holder, Reader* reader) {
 	if (reader->expect_p1("+",'+')) {
 		ret=single(holder, reader);
 	}
-	else if (reader->expect_p1("-",'-')||reader->expect("++")||reader->expect("--")||reader->expect("*")) {
+	else if (reader->expect_p1("-",'-')||reader->expect("++")||reader->expect("--")) {
 		ret = holder->make_tree(common::StringFilter() = reader->prev(),TreeType::unary,nullptr);
 		if (!ret) return nullptr;
 		ret->right = single(holder, reader);
@@ -238,6 +238,35 @@ SyntaxTree* compiler::unary(IdHolder* holder, Reader* reader) {
 			return nullptr;
 		}
 		ret->type = ret->right->type;
+	}
+	else if (reader->expect("*")) {
+		ret = holder->make_tree(common::StringFilter() = reader->prev(), TreeType::unary, nullptr);
+		if (!ret) return nullptr;
+		ret->right = single(holder, reader);
+		if (!ret->right) {
+			return nullptr;
+		}
+		if (!ret->right->type||ret->right->type->type!=TypeType::pointer_t) {
+			holder->logger->semerr("undereferencable.");
+			return nullptr;
+		}
+		ret->type = ret->right->type->root;
+	}
+	else if(reader->expect("&")){
+		ret = holder->make_tree(common::StringFilter() = reader->prev(), TreeType::unary, nullptr);
+		if (!ret) return nullptr;
+		ret->right = single(holder, reader);
+		if (!ret->right) {
+			return nullptr;
+		}
+		if (!ret->right->type) {
+			holder->logger->semerr("unenreferencable.");
+			return nullptr;
+		}
+		ret->type = get_derived(TypeType::pointer_t, 0, ret->right->type, holder);
+		if (!ret->type) {
+			return nullptr;
+		}
 	}
 	else {
 		ret = single(holder,reader);
@@ -404,10 +433,12 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 			ret = hold;
 			ret=member(ret, holder, reader);
 			if (!ret)return nullptr;
+			ok = true;
 		}
 		else if (reader->expect(".")) {
 			ret = member(ret, holder, reader);
 			if (!ret)return nullptr;
+			ok = true;
 		}
 		if (ok) {
 			ok = false;

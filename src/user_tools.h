@@ -96,15 +96,20 @@ namespace PROJECT_NAME {
 
 		
 
-		JSONNode* print_types(JSON* json,compiler::IdHolder* holder);
+		JSONNode* print_types(JSON* json,compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
 
-		JSONNode* print_trees(JSON* json,compiler::IdHolder* holder);
+		JSONNode* print_ids(JSON* json, compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
+
+		JSONNode* print_trees(JSON* json, compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
+
 
 
 		JSONNode* print_Type(JSON* json,compiler::Type* type,std::map<compiler::Type*,uint64_t>& idmap);
 		JSONNode* print_TypeType(JSON* json,compiler::TypeType ttype);
 
-		JSONNode* print_SyntaxTree(JSON* json,compiler::SyntaxTree* tree);
+		JSONNode* print_Identifier(JSON* json, compiler::Identifier* id, std::map<compiler::Type*, uint64_t>& idmap);
+
+		JSONNode* print_SyntaxTree(JSON* json,compiler::SyntaxTree* tree, std::map<compiler::Type*, uint64_t>& idmap);
 		JSONNode* print_TreeType(JSON* json,compiler::TreeType ttype);
 	}
 }

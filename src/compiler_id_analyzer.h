@@ -46,6 +46,7 @@ namespace PROJECT_NAME {
 		Type* typecmp(Type* t1, Type* t2, IdHolder* holder);
 		bool is_bit_t(Type* type,IdHolder* holder);
 
+		bool is_keyword(const char* str);
 
 		Identifier* id_analyze(IdHolder* holder, Reader* reader);
 
