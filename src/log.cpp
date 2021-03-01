@@ -11,6 +11,10 @@
 #include"log.h"
 using namespace PROJECT_NAME;
 
+bool log::Log::info(const char* message) {
+	return false;
+}
+
 bool log::Log::syserr(const char* message) {
 	return false;
 }

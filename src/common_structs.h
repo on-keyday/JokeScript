@@ -15,6 +15,8 @@
 #include"stdcpps.h"
 namespace PROJECT_NAME {
     namespace common {
+        void* calloc(size_t elm,size_t obj);
+        void* realloc(void* p,size_t size);
         void free(void* p);
         template<class PType> 
         struct EasyVector {
@@ -40,7 +42,7 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            bool construct_copy(EasyVector& p) {
+            bool construct_copy(EasyVector& from) {
                 this->ps = nullptr;
                 this->ps = from.ps;
                 from.ps = nullptr;
@@ -48,6 +50,7 @@ namespace PROJECT_NAME {
                 this->len = from.len;
                 from.toadd = 0;
                 from.len = 0;
+                return true;
             }
         public:
 
@@ -78,6 +81,15 @@ namespace PROJECT_NAME {
                 ps = (PType*)calloc(10, sizeof(PType));
                 if (!ps)return false;
                 len = 10;
+                toadd = 0;
+                return true;
+            }
+
+            bool clear() {
+                if (!ps)init();
+                for (auto i = 0ull; i < toadd;i++) {
+                    ps[i] = 0;
+                }
                 toadd = 0;
                 return true;
             }
@@ -355,6 +367,7 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
+            std::cout << "create:" << ret << ":" << sizeof(T)<<"\n";
             return ret;
         }
 
@@ -380,6 +393,7 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
+            std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n";
             return ret;
         }
 
@@ -487,6 +501,15 @@ namespace PROJECT_NAME {
                 }
             }
 
+            bool crear() {
+                if (!p) {
+                    return allocate();
+                }
+                else {
+                    p->clear();
+                }
+            }
+
             PType* begin() {
                 if (!p)return nullptr;
                 return p->begin();
@@ -530,6 +553,10 @@ namespace PROJECT_NAME {
             const PType get_end() const {
                 if (!p)return 0;
                 return p->get_end();
+            }
+
+            EasyVector<PType>* get_base() const {
+                return p;
             }
 
             uint64_t get_size() const {
@@ -616,9 +643,13 @@ namespace PROJECT_NAME {
 
         };
 
-        using String = EasyVectorP<char>;
-        using String16 = EasyVectorP<char16_t>;
-        using String32 = EasyVectorP<char32_t>;
+        using String = EasyVector<char>;
+        using String16 = EasyVector<char16_t>;
+        using String32 = EasyVector<char32_t>;
+
+        using StringP = EasyVectorP<char>;
+        using String16P = EasyVectorP<char16_t>;
+        using String32P = EasyVectorP<char32_t>;
 
         struct StringFilter {
         private:

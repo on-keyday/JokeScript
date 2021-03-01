@@ -54,8 +54,8 @@ char* common::Hash::get_hash_with_name(const char* s) {
 }
 
 const char* common::Hash::get_hash_const() {
-	tmpc.init();
-	unname_hash(tmpc);
+	if(!tmpc.init())return nullptr;
+	unname_hash(*tmpc.get_base());
 	return tmpc.get_const();
 }
 
@@ -92,11 +92,11 @@ uint64_t common::strtoull_ex(const char* str,char** p) {
 	return strtoull(&str[ofs], p, base);
 }
 
-common::String common::to_utf8(char32_t c) {
+common::StringP common::to_utf8(char32_t c) {
 	if (c < 0 || c > 0x10FFFF) {
 		return nullptr;
 	}
-	common::String ret;
+	common::StringP ret;
 	if (c < 128) {
 		ret.add((char)c);
 	}
@@ -120,11 +120,11 @@ common::String common::to_utf8(char32_t c) {
 	return ret;
 }
 
-common::String16 common::to_utf16(char32_t c) {
+common::String16P common::to_utf16(char32_t c) {
 	if (c < 0 || c > 0x10FFFF) {
 		return nullptr;
 	}
-	common::String16 ret;
+	common::String16P ret;
 	if (c < 0x10000) {
 		ret.add(char16_t(c));
 	}

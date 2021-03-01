@@ -52,8 +52,7 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 			holder->logger->semerr_val("*:name conflict.",status->buf.get_const());
 		}
 	}
-	common::EasyVectorP<char> hold;
-	hold = std::move(status->buf);
+	common::EasyVector<char> hold=std::move(status->buf);
 	ret = type_detail(hold.get_const(),holder,reader,false);
 	if (!ret) return nullptr;
 	if (!ttype::is_naming(ret->type)||strcmp(hold.get_const(),ret->name)!=0) {
@@ -155,10 +154,10 @@ Type* compiler::get_common_derived(TypeType ttype, uint64_t size, IdHolder* hold
 
 Type* compiler::get_has_size(IdHolder* holder, Reader* reader) {
 	reader->abyte();
-	auto status = holder->get_status();
 	auto ar_size = 0ull;
 	const char* err = "vector of";
 	if (!reader->ahead("]")) {
+		auto status = holder->get_status();
 		reader->readwhile(status, ctype::reader::Number);
 		if (status->failed)return nullptr;
 		auto num_type = get_number_type(status->buf.get_const(), holder);
@@ -363,10 +362,10 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 
 Type* compiler::resolve_type_by_name(IdHolder* holder, Reader* reader) {
 	Type* ret = nullptr;
-	common::EasyVector<char> id;
+	common::String id;
 	int isvar = false;
 	while (1) {
-		auto status = holder->get_status();
+		auto status=holder->get_status();
 		reader->readwhile(status, ctype::reader::Identifier);
 		if (ctype::is_unnamed(status->buf.get_const())) {
 			holder->logger->unexpected_token("alphabet or number",reader->abyte());
@@ -399,6 +398,7 @@ Type* compiler::resolve_type_by_name(IdHolder* holder, Reader* reader) {
 		else {
 			holder->logger->semerr_val("\"*\" is not type, is constant value.", id.get_const());
 		}
+		return nullptr;
 	}
 	return ret;
 }

@@ -174,7 +174,7 @@ Type* compiler::IdHolder::get_string() {
 
 ReadStatus* compiler::IdHolder::get_status() {
 	status.begin = nullptr;
-	status.buf.init();
+	status.buf.clear();
 	status.failed = false;
 	status.num = 0;
 	status.flag1 = false;

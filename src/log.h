@@ -13,6 +13,7 @@
 namespace PROJECT_NAME {
 	namespace log {
 		struct Log {
+			bool info(const char* message);
 			bool syserr(const char* message);
 			bool synerr(const char* message);
 			bool synerr_val(const char* message, const char* val);

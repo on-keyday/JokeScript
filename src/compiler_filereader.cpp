@@ -58,7 +58,7 @@ bool compiler::Reader::expect_pf(const char* symbol, bool (*but)(char)) {
 
 bool compiler::Reader::expect_or_err(const char* symbol) {
 	if (!expect(symbol)) {
-		common::String s;
+		common::StringP s;
 		const char* msg = "unexpected token. expected \"",
 					*but="\", but \'";
 		s.add_copy(msg,strlen(msg));
@@ -130,7 +130,7 @@ bool compiler::Reader::ahead(const char* symbol) {
 
 common::String compiler::Reader::string(bool raw) {
 	if (input.buf[readpos] != '\"' && input.buf[readpos] != '\'')return nullptr;
-	common::String ret,&str=input.buf;
+	common::String ret,& str = input.buf;
 	char start = str[readpos];
 	ret.add(start);
 	readpos++;
