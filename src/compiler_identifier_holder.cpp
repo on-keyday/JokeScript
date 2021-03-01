@@ -17,24 +17,24 @@ using namespace PROJECT_NAME::compiler;
 
 
 compiler::SyntaxTree::~SyntaxTree() {
-	free(symbol);
+	common::free(symbol);
 }
 
 compiler::Type::~Type() {
-	free(name);
+	common::free(name);
 }
 
 compiler::Identifier::~Identifier() {
-	free(name);
+	common::free(name);
 }
 
 compiler::Option::~Option() {
-	free(name);
+	common::free(name);
 	if (type==OptionType::vec) {
 		ids.unuse();
 	}
-	else if (type==OptionType::boolean) {
-		free(value);
+	else if (type==OptionType::str) {
+		common::free(value);
 	}
 }
 
@@ -86,7 +86,7 @@ SyntaxTree* compiler::IdHolder::make_tree(char* symbol, TreeType ttype, Type* ty
 	auto ret=common::create<SyntaxTree>();
 	if (!ret) {
 		logger->syserr("memory is full");
-		free(symbol);
+		common::free(symbol);
 		return nullptr;
 	}
 	ret->symbol = symbol;
@@ -105,7 +105,7 @@ Type* compiler::IdHolder::make_type(char* symbol) {
 	auto ret = common::create<Type>();
 	if (!ret) {
 		logger->syserr("memory is full");
-		free(symbol);
+		common::free(symbol);
 		return nullptr;
 	}
 	ret->name = symbol;
@@ -116,14 +116,14 @@ Type* compiler::IdHolder::make_type(char* symbol) {
 Option* compiler::IdHolder::make_option(char* name, char* value,OptionType type) {
 	if (!name||(type==OptionType::str&&!value)) {
 		logger->syserr("memory is full");
-		free(name);
+		common::free(name);
 		return nullptr;
 	}
 	auto ret = common::create<Option>();
 	if (!ret) {
 		logger->syserr("memory is full");
-		free(name);
-		free(value);
+		common::free(name);
+		common::free(value);
 		return nullptr;
 	}
 	ret->name = name;
@@ -143,7 +143,7 @@ Identifier* compiler::IdHolder::make_id(char* symbol) {
 	auto ret = common::create<Identifier>();
 	if (!ret) {
 		logger->syserr("memory is full");
-		free(symbol);
+		common::free(symbol);
 		return nullptr;
 	}
 	ret->name = symbol;

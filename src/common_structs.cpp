@@ -11,6 +11,10 @@
 #include"common_structs.h"
 using namespace PROJECT_NAME;
 
+void common::free(void* p) {
+    std::cout <<"free:"<<p << "\n";
+    std::free(p);
+}
 
 common::StringFilter& common::StringFilter::operator=(const char* str) {
     if (!str)return *this;

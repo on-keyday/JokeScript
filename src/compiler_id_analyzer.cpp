@@ -319,9 +319,16 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 			}
 			this_flag = op->flag;
 		}
-		if (!reader->expect_or_err("{"))return nullptr;
 		auto current = holder->get_current();
 		current->types.add(ret);
+		if (!reader->expect_or_err("{"))return nullptr;
+		auto prev_this = holder->_this;
+		if (this_flag) {
+			holder->_this = ret;
+		}
+		else {
+			holder->_this = nullptr;
+		}
 		while (!reader->eof()) {
 			if (reader->ahead("}")) {
 				break;
@@ -349,6 +356,7 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 			return nullptr;
 		}
 		if (!reader->expect_or_err("}"))return nullptr;
+		holder->_this=prev_this;
 	}
 	return ret;
 }
@@ -800,7 +808,7 @@ bool compiler::is_bit_t(Type* type, IdHolder* holder) {
 bool compiler::is_keyword(const char* str) {
 	if (!str)return false;
 	const char* keywords[] = {"loop","first","if","continue","break","co","bit_t","void","else","float","signed","unsigned","return","import",
-							  "struct","enum","interface","true","false","null","yield","va_args","ccnv","capt","cast"};
+							  "struct","enum","interface","true","false","null","yield","va_args","ccnv","capt","cast","this"};
 	for (auto keyword : keywords) {
 		if (strcmp(str, keyword)==0) {
 			return true;

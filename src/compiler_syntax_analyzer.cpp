@@ -314,7 +314,7 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 		if (!ret->right)return nullptr;
 		ret->type = ret->right->type;
 	}
-	else if (reader->expect_pf("break",ctype::is_usable_for_identifier)||reader->expect_pf("continue",ctype::is_usable_for_identifier)) {
+	/*else if (reader->expect_pf("break",ctype::is_usable_for_identifier)||reader->expect_pf("continue",ctype::is_usable_for_identifier)) {
 		if (!break_usable(holder)) {
 			holder->logger->semerr_val("in this scope, '*' is not usable.",reader->prev());
 			return nullptr;
@@ -332,10 +332,19 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 			ret->right = assign(holder, reader);
 			if (!ret->right)return nullptr;
 			if (!ret->right->type) {
-				holder->logger->semerr("+not usable for return statment.");
+				holder->logger->semerr("not usable for return statment.");
 				return nullptr;
 			}
 		}
+	}*/
+	else if (reader->expect_pf("this", ctype::is_usable_for_identifier)) {
+		if (!holder->_this) {
+			holder->logger->semerr("on this scope,'this' is not usable.");
+			return nullptr;
+		}
+		auto this_p = get_derived(TypeType::pointer_t, 0, holder->_this, holder);
+		if (!this_p)return nullptr;
+		ret = holder->make_tree(common::StringFilter() = "this", TreeType::defined,this_p);
 	}
 	else if (ctype::is_first_of_identifier(reader->abyte())) {
 		auto status = holder->get_status();

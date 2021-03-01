@@ -15,6 +15,7 @@
 #include"stdcpps.h"
 namespace PROJECT_NAME {
     namespace common {
+        void free(void* p);
         template<class PType> 
         struct EasyVector {
         private:
@@ -73,7 +74,7 @@ namespace PROJECT_NAME {
 
             bool init() {
                 if (ps && len == 10 && toadd == 0)return true;
-                free(ps);
+                if(ps)free(ps);
                 ps = (PType*)calloc(10, sizeof(PType));
                 if (!ps)return false;
                 len = 10;
@@ -91,7 +92,7 @@ namespace PROJECT_NAME {
 
             EasyVector& operator=(EasyVector&& from) noexcept {
                 if (this != &from) {
-                    free(this->ps);
+                    if(this->ps)free(this->ps);
                     this->ps = from.ps;
                     from.ps = nullptr;
                     this->toadd = from.toadd;
@@ -307,10 +308,12 @@ namespace PROJECT_NAME {
             }
 
             bool unuse() {
-                free(ps);
-                ps = nullptr;
-                len = 0;
-                toadd = 0;
+                if (ps) {
+                    free(ps);
+                    ps = nullptr;
+                    len = 0;
+                    toadd = 0;
+                }
                 return true;
             }
 
@@ -333,7 +336,7 @@ namespace PROJECT_NAME {
             }
 
             ~EasyVector() {
-                free(ps);
+                if(ps)free(ps);
             }
         };
 
@@ -382,6 +385,7 @@ namespace PROJECT_NAME {
 
         template<class T>
         void kill(T* obj) {
+            std::cout << "kill:"<<obj << "\n";
             delete obj;
         }
 
@@ -589,8 +593,10 @@ namespace PROJECT_NAME {
             }
 
             bool unuse() {
-                delete p;
-                p = nullptr;
+                if (p) {
+                    kill(p);
+                    p = nullptr;
+                }
                 return true;
             }
 
@@ -605,7 +611,7 @@ namespace PROJECT_NAME {
             }
 
             ~EasyVectorP(){
-                delete p;
+               if(p)kill(p);
             }
 
         };
