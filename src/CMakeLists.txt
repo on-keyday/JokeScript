@@ -10,6 +10,8 @@ cmake_minimum_required (VERSION 3.8)
 
 if(WIN32)
 include_directories("D:/llvm-project/built/include")
+else()
+include_directories("/lib/llvm-10/include")
 endif()
 
 
