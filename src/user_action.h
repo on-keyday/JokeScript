@@ -15,7 +15,7 @@
 namespace PROJECT_NAME {
 	namespace interactive {
 		bool json_assign(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, compiler::Reader& reader);
-		bool json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::EasyVector<char>& buf, compiler::Reader& reader, bool end);
+		bool json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::String& buf, compiler::Reader& reader, bool end);
 		const char* json_help();
 		int json_reader();
 	}

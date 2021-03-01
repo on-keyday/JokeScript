@@ -38,6 +38,16 @@ namespace PROJECT_NAME {
                 toadd++;
                 return true;
             }
+
+            bool construct_copy(EasyVector& p) {
+                this->ps = nullptr;
+                this->ps = from.ps;
+                from.ps = nullptr;
+                this->toadd = from.toadd;
+                this->len = from.len;
+                from.toadd = 0;
+                from.len = 0;
+            }
         public:
 
             using type = PType;
@@ -54,23 +64,11 @@ namespace PROJECT_NAME {
             }
 
             EasyVector(EasyVector& from) {
-                this->ps = nullptr;
-                this->ps = from.ps;
-                from.ps = nullptr;
-                this->toadd = from.toadd;
-                this->len = from.len;
-                from.toadd = 0;
-                from.len = 0;
+                construct_copy(from);
             }
 
             EasyVector(EasyVector&& from) noexcept{
-                this->ps = nullptr;
-                this->ps = from.ps;
-                from.ps = nullptr;
-                this->toadd = from.toadd;
-                this->len = from.len;
-                from.toadd = 0;
-                from.len = 0;
+                construct_copy(from);
             }
 
             bool init() {
@@ -165,6 +163,10 @@ namespace PROJECT_NAME {
 
             PType* get_raw() {
                 if (!ps)return nullptr;
+                if (toadd == 0) {
+                    unuse();
+                    return nullptr;
+                }
                 PType* ret = (PType*)realloc(ps, toadd * sizeof(PType));
                 if (!ret) {
                     ret = ps;
@@ -192,6 +194,7 @@ namespace PROJECT_NAME {
             }
 
             const PType get_end() const {
+                if (!ps)return 0;
                 return ps[toadd - 1];
             }
 
@@ -334,17 +337,11 @@ namespace PROJECT_NAME {
             }
         };
 
-        using String = EasyVector<char>;
-        using String16 = EasyVector<char16_t>;
-        using String32 = EasyVector<char32_t>;
+        
 
-        struct StringFilter {
-        private:
-            String s;
-        public:
-            StringFilter& operator=(const char* str);
-            operator char* ();
-        };
+        
+
+       
 
         template<class T>
         T* create() {
@@ -407,5 +404,222 @@ namespace PROJECT_NAME {
                 return t2;
             }
         };
-    }
+
+        template<class PType>
+        struct EasyVectorP {
+        private:
+            EasyVector<PType>* p;
+            bool allocate() {
+                if (p)return true;
+                p = common::create<common::EasyVector<PType>>();
+                if (!p)return false;
+                return true;
+            }
+        public:
+            EasyVectorP() {
+                p = nullptr;
+            }
+
+            EasyVectorP(std::nullptr_t) {
+                p = nullptr;
+            }
+            
+            EasyVectorP(EasyVectorP& from) = delete;
+
+
+            EasyVectorP(EasyVectorP&& from) noexcept{
+                this->p = from.p;
+                from.p = nullptr;
+            }
+
+            PType operator[](uint64_t pos) const {
+                if (!p)return 0;
+                return p->operator[](pos);
+            }
+
+            EasyVectorP& operator=(EasyVectorP&& from) noexcept {
+                unuse();
+                this->p = from.p;
+                from.p = nullptr;
+                return *this;
+            }
+
+            EasyVectorP& operator=(std::nullptr_t) noexcept {
+                unuse();
+                return *this;
+            }
+
+            EasyVectorP& operator+=(EasyVectorP& from) noexcept {
+                if (!from.p)return *this;
+                if (!allocate())return *this;
+                *this->p += *from.p;
+                return *this;
+            }
+
+            bool operator==(EasyVectorP& cmp) noexcept {
+                if (!this->p && !cmp.p)return true;
+                if (!this->p || !cmp.p)return false;
+                return *this->p == *cmp.p;
+            }
+
+            bool operator==(std::nullptr_t) noexcept {
+                return !is_enable();
+            }
+
+            bool operator!=(EasyVectorP& cmp)noexcept {
+                return !(*this == cmp);
+            }
+
+            bool operator!=(std::nullptr_t) noexcept {
+                return is_enable();
+            }
+
+            bool init() {
+                if (!p) {
+                    return allocate();
+                }
+                else {
+                    return p->init();
+                }
+            }
+
+            PType* begin() {
+                if (!p)return nullptr;
+                return p->begin();
+            }
+
+            PType* end() {
+                if (!p)return nullptr;
+                return p->end();
+            }
+
+            bool add(PType a) {
+                if (!allocate())return false;
+                return p->add(a);
+            }
+
+            bool add_nz(PType a) {
+                if (!allocate())return false;
+                return p->add(a);
+            }
+            
+            bool add_copy(const PType* base, uint64_t size) {
+                if (!allocate())return false;
+                return p->add_copy(base, size);
+            }
+
+            PType* get_raw() {
+                if (!p)return nullptr;
+                return p->get_raw();
+            }
+
+            PType* get_raw_z() {
+                if (!allocate())return nullptr;
+                return p->get_raw_z();
+            }
+
+            const PType* get_const() const {
+                if (!p)return nullptr;
+                return p->get_const();
+            }
+
+            const PType get_end() const {
+                if (!p)return 0;
+                return p->get_end();
+            }
+
+            uint64_t get_size() const {
+                if (!p)return 0;
+                return p->get_size();
+            }
+
+            uint64_t get_cap() const {
+                if (!p)return 0;
+                return p->get_cap();
+            }
+
+            uint64_t get_index(PType e) const {
+                if(!p)return (uint64_t)(~0);
+                return p->get_index(e);
+            }
+
+            PType get_if(PType e) {
+                if (!p)return 0;
+                return p->get_if(e);
+            }
+            
+            PType remove(uint64_t pos) {
+                if (!p)return 0;
+                return p->remove(pos);
+            }
+
+            bool remove_each(void (*rem)(PType)) {
+                if (!p)return false;
+                return p->remove_each(rem);
+            }
+
+            PType remove_if(PType elm) {
+                if (!p)return 0;
+                return p->remove_if(elm);
+            }
+
+            PType remove_top() {
+                if (!p)return 0;
+                return p->remove_top();
+            }
+
+            PType remove_end() {
+                if (!p)return 0;
+                return p->remove_end();
+            }
+
+            bool pack() {
+                if (!p)return false;
+                return p->pack();
+            }
+
+            bool pack_f() {
+                if (!p)return true;
+                if (!p->get_size()) {
+                    return this->unuse();
+                }
+                else {
+                    return p->pack();
+                }
+            }
+
+            bool unuse() {
+                delete p;
+                p = nullptr;
+                return true;
+            }
+
+            bool is_enable() const {
+                if (!p)return false;
+                return p->is_enable();
+            }
+           
+            uint64_t memused() const {
+                if (!p)return sizeof(EasyVectorP);
+                return sizeof(EasyVectorP) + p->memused();
+            }
+
+            ~EasyVectorP(){
+                delete p;
+            }
+
+        };
+
+        using String = EasyVectorP<char>;
+        using String16 = EasyVectorP<char16_t>;
+        using String32 = EasyVectorP<char32_t>;
+
+        struct StringFilter {
+        private:
+            String s;
+        public:
+            StringFilter& operator=(const char* str);
+            operator char* ();
+        };
+    }   
 }

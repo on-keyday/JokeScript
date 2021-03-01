@@ -257,13 +257,13 @@ JSONNode* user_tools::JSON::get_nodes(JSONNode* base, const char* path) const{
 
 bool user_tools::JSON::print_node(JSONNode* node,void(*printer)(const char*), int has_line, int ofs) const{
 	if (!node||!printer)return false;
-	common::EasyVector<char> str;
+	common::String str;
 	get_nodestr(node, str,has_line,ofs);
 	printer(str.get_const());
 	return true;
 }
 
-bool  user_tools::JSON::get_nodestr(JSONNode* node, common::EasyVector<char>& str,int has_line,int ofs) const{
+bool  user_tools::JSON::get_nodestr(JSONNode* node, common::String& str,int has_line,int ofs) const{
 	if (!node)return false;
 	if (node->type() == JSONType::string) {
 		str.add_copy("\"", 1);
@@ -328,7 +328,7 @@ bool  user_tools::JSON::get_nodestr(JSONNode* node, common::EasyVector<char>& st
 	return true;
 }
 
-bool user_tools::JSON::line(int has_line,common::EasyVector<char>& str) const{
+bool user_tools::JSON::line(int has_line,common::String& str) const{
 	if (has_line > 0) {
 		for (int i = 0; i < has_line; i++)str.add(' ');
 	}
@@ -465,7 +465,7 @@ JSONNode* user_tools::print_types(JSON* json,compiler::IdHolder* holder,std::map
 }
 
 JSONNode* user_tools::print_ids(JSON* json, compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap) {
-	auto trees = holder->get_ids();
+	auto& trees = holder->get_ids();
 	auto nodes = json->make_array();
 	if (!nodes)return 0;
 	//auto i = 0ull;
@@ -541,7 +541,7 @@ JSONNode* user_tools::print_TypeType(JSON* json,TypeType ttype) {
 	else if (ttype==TypeType::pointer_t) {
 		return json->make_string("pointer_t");
 	}
-	else if (ttype==TypeType::referrence_t) {
+	else if (ttype==TypeType::reference_t) {
 		return json->make_string("reference_t");
 	}
 	else if (ttype==TypeType::function_t) {

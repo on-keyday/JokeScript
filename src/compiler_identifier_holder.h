@@ -26,9 +26,9 @@ namespace PROJECT_NAME {
 			SyntaxTree* reltree = nullptr;
 			Identifier* id = nullptr;
 			bool has_this=false;
-			common::EasyVector<Type*> types;
-			common::EasyVector<Identifier*> ids;
-			common::EasyVector<SyntaxTree*> trees;
+			common::EasyVectorP<Type*> types;
+			common::EasyVectorP<Identifier*> ids;
+			common::EasyVectorP<SyntaxTree*> trees;
 		};
 
 
@@ -45,7 +45,7 @@ namespace PROJECT_NAME {
 			char* symbol=nullptr;
 			SyntaxTree* left=nullptr;
 			SyntaxTree* right=nullptr;
-			common::EasyVector<SyntaxTree*> children;
+			common::EasyVectorP<SyntaxTree*> children;
 			Identifier* rel = nullptr;
 			Block* relblock = nullptr;
 			Type* type=nullptr;
@@ -62,7 +62,7 @@ namespace PROJECT_NAME {
 			//derived types
 			has_size_t, //for string and arrays
 			pointer_t,
-			referrence_t,
+			reference_t,
 
 			//set types
 			struct_t,
@@ -84,12 +84,20 @@ namespace PROJECT_NAME {
 			simple_alias_t,
 		};
 
+		enum class OptionType {
+			unset,
+			vec,
+			str,
+			boolean
+		};
+
 		struct Option {
 			char* name=nullptr;
-			bool has_vec = false;
+			OptionType type=OptionType::unset;
 			union {
-				common::EasyVector<Identifier*> ids=nullptr;
+				common::EasyVectorP<Identifier*> ids=nullptr;
 				char* value;
+				bool flag;
 			};
 			~Option();
 		};
@@ -98,21 +106,21 @@ namespace PROJECT_NAME {
 		struct Type {
 			char* name=nullptr;
 			TypeType type=TypeType::unset;
-			common::EasyVector<Identifier*> ids;
-			common::EasyVector<Type*> types;
-			common::EasyVector<Option*> opts;
+			common::EasyVectorP<Identifier*> ids;
+			common::EasyVectorP<Type*> types;
+			common::EasyVectorP<Option*> opts;
 			Type* root = nullptr;
 			//bool on_block = false;
-			union {
+			//union {
 				uint64_t size = 0;
-				uint64_t len;
-			};
+				//uint64_t len;
+			//};
 			//union {
 				//Block* block=nullptr;
-				Type* type_on=nullptr;
+				//Type* type_on=nullptr;
 			//};
-			common::EasyVector<Type*> derived;
-			common::EasyVector<Type*> function;
+			common::EasyVectorP<Type*> derived;
+			common::EasyVectorP<Type*> function;
 			~Type();
 		};
 		
@@ -124,24 +132,25 @@ namespace PROJECT_NAME {
 			Type* type=nullptr;
 			//union {
 				//Block* block = nullptr;
-				Type* type_on=nullptr;
+				//Type* type_on=nullptr;
 			//};
 			SyntaxTree* init=nullptr;
-			common::EasyVector<Identifier*> params=nullptr;
+			common::EasyVectorP<Identifier*> params=nullptr;
 			~Identifier();
 		};
 
 		struct IdHolder {
 		private:
 			ReadStatus status = {0};
-			common::EasyVector<Block*> blocks;
-			common::EasyVector<Type*> types;
-			common::EasyVector<Option*> options;
-			common::EasyVector<Identifier*> ids;
-			common::EasyVector<SyntaxTree*> trees;
+			common::EasyVectorP<Block*> blocks;
+			common::EasyVectorP<Type*> types;
+			common::EasyVectorP<Option*> options;
+			common::EasyVectorP<Identifier*> ids;
+			common::EasyVectorP<SyntaxTree*> trees;
 			Block* current = nullptr;
 		public:
 			IdHolder();
+			Type* _this = nullptr;
 			log::Log* logger=nullptr;
 			Block* make_block();
 			bool to_parent_block();
@@ -150,7 +159,7 @@ namespace PROJECT_NAME {
 			Block* get_current();
 			SyntaxTree* make_tree(char* symbol,TreeType ttype,Type* type);
 			Type* make_type(char* symbol);
-			Option* make_option(char* name,char* value,bool has_vec);
+			Option* make_option(char* name,char* value,OptionType type);
 			Identifier* make_id(char* symbol);
 			Type* get_float_bit_t();
 			Type* get_bit_t(bool signeds);
@@ -158,12 +167,13 @@ namespace PROJECT_NAME {
 			Type* get_string();
 			ReadStatus* get_status();
 			Option* get_opt(const char* name,const char* value);
-			Option* get_opt(const char* name,common::EasyVector<Identifier*>& ids);
+			Option* get_opt(const char* name,common::EasyVectorP<Identifier*>& ids);
+			Option* get_opt(const char* name, bool flag);
 			common::Hash hash;
 
-			common::EasyVector<Type*>& get_types();
-			common::EasyVector<Identifier*>& get_ids();
-			common::EasyVector<SyntaxTree*>& get_trees();
+			common::EasyVectorP<Type*>& get_types();
+			common::EasyVectorP<Identifier*>& get_ids();
+			common::EasyVectorP<SyntaxTree*>& get_trees();
 			~IdHolder();
 		};
 

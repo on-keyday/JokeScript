@@ -53,7 +53,7 @@ namespace PROJECT_NAME {
 			//common::EasyVector<JSONNode*> root;
 
 			JSONNode* make_JSON_detail(compiler::Reader* reader);
-			bool line(int has_line, common::EasyVector<char>& str) const;
+			bool line(int has_line, common::String& str) const;
 
 			
 		public:
@@ -84,7 +84,7 @@ namespace PROJECT_NAME {
 			//bool print_nodes(void(*printer)(const char*));
 			//bool get_nodesstr(common::EasyVector<char>& str);
 			bool print_node(JSONNode* node,void(*printer)(const char*), int has_line, int ofs) const;
-			bool get_nodestr(JSONNode* node,common::EasyVector<char>& str,int has_line,int ofs) const;
+			bool get_nodestr(JSONNode* node,common::String& str,int has_line,int ofs) const;
 
 			JSONNode* make_JSON(const char* jsonstr);
 			JSONNode* make_JSON_file(const char* filename);

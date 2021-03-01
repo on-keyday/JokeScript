@@ -30,7 +30,12 @@ compiler::Identifier::~Identifier() {
 
 compiler::Option::~Option() {
 	free(name);
-	if (has_vec)ids.unuse();
+	if (type==OptionType::vec) {
+		ids.unuse();
+	}
+	else if (type==OptionType::boolean) {
+		free(value);
+	}
 }
 
 compiler::IdHolder::IdHolder() {
@@ -108,8 +113,8 @@ Type* compiler::IdHolder::make_type(char* symbol) {
 	return ret;
 }
 
-Option* compiler::IdHolder::make_option(char* name, char* value,bool has_vec) {
-	if (!name||(!value&&!has_vec)) {
+Option* compiler::IdHolder::make_option(char* name, char* value,OptionType type) {
+	if (!name||(type==OptionType::str&&!value)) {
 		logger->syserr("memory is full");
 		free(name);
 		return nullptr;
@@ -123,7 +128,7 @@ Option* compiler::IdHolder::make_option(char* name, char* value,bool has_vec) {
 	}
 	ret->name = name;
 	ret->value = value;
-	ret->has_vec = has_vec;
+	ret->type = type;
 	options.add(ret);
 	return ret;
 }
@@ -182,42 +187,52 @@ ReadStatus* compiler::IdHolder::get_status() {
 }
 
 Option* compiler::IdHolder::get_opt(const char* name, const char* value) {
-	auto i = 0ull;
-	while (options[i]) {
-		if (strcmp(options[i]->name, name) == 0&&!options[i]->has_vec) {
-			if (strcmp(options[i]->value,value)==0) {
-				return options[i];
+	for(auto p:options) {
+		if (strcmp(p->name, name) == 0&&p->type==OptionType::str) {
+			if (strcmp(p->value,value)==0) {
+				return p;
 			}
 		}
-		i++;
 	}
-	return make_option(common::StringFilter()=name,common::StringFilter()=value,false);
+	return make_option(common::StringFilter()=name,common::StringFilter()=value,OptionType::str);
 }
 
-Option* compiler::IdHolder::get_opt(const char* name, common::EasyVector<Identifier*>& ids) {
-	auto i = 0ull;
-	while (options[i]) {
-		if (strcmp(options[i]->name, name) == 0 && options[i]->has_vec) {
-			if (options[i]->ids==ids) {
-				return options[i];
+Option* compiler::IdHolder::get_opt(const char* name, common::EasyVectorP<Identifier*>& ids) {
+	for(auto p:options) {
+		if (strcmp(p->name, name) == 0 && p->type==OptionType::vec) {
+			if (p->ids==ids) {
+				return p;
 			}
 		}
-		i++;
 	}
-	auto ret= make_option(common::StringFilter() = name,nullptr, true);
+	auto ret= make_option(common::StringFilter() = name,nullptr, OptionType::vec);
 	if (!ret)return nullptr;
 	ret->ids = std::move(ids);
 	return ret;
 }
 
-common::EasyVector<Type*>& compiler::IdHolder::get_types() {
+Option* compiler::IdHolder::get_opt(const char* name, bool flag) {
+	for (auto p : options) {
+		if (strcmp(p->name, name) == 0 && p->type == OptionType::boolean) {
+			if (p->flag == flag) {
+				return p;
+			}
+		}
+	}
+	auto ret = make_option(common::StringFilter() = name, nullptr, OptionType::boolean);
+	if (!ret)return nullptr;
+	ret->flag = flag;
+	return ret;
+}
+
+common::EasyVectorP<Type*>& compiler::IdHolder::get_types() {
 	return types;
 }
 
-common::EasyVector<Identifier*>& compiler::IdHolder::get_ids() {
+common::EasyVectorP<Identifier*>& compiler::IdHolder::get_ids() {
 	return ids;
 }
 
-common::EasyVector<SyntaxTree*>& compiler::IdHolder::get_trees() {
+common::EasyVectorP<SyntaxTree*>& compiler::IdHolder::get_trees() {
 	return trees;
 }

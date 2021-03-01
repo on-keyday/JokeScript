@@ -36,7 +36,7 @@ bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idma
 		obj = json.make_JSON_file(buf.get_const());
 	}
 	else {
-		common::EasyVector<char> buf;
+		common::String buf;
 		if (!json_str(idmap, json, buf, reader, true))return false;
 		obj = json.make_JSON(buf.get_const());
 	}
@@ -48,7 +48,7 @@ bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idma
 	return true;
 }
 
-bool interactive::json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::EasyVector<char>& buf, compiler::Reader& reader,bool end) {
+bool interactive::json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::String& buf, compiler::Reader& reader,bool end) {
 	reader.abyte();
 	ReadStatus ch = { 0 };
 	reader.readwhile(&ch, ctype::reader::Identifier);
@@ -145,7 +145,7 @@ int interactive::json_reader() {
 				ok = true;
 			}
 			else if (reader.expect_pf("write", ctype::is_usable_for_identifier)) {
-				common::EasyVector<char> got;
+				common::String got;
 				if (!json_str(idmap, json, got, reader, false))break;
 				reader.abyte();
 				ReadStatus status = { 0 };
@@ -157,7 +157,7 @@ int interactive::json_reader() {
 				}
 			}
 			else if (reader.expect_pf("print", ctype::is_usable_for_identifier)) {
-				common::EasyVector<char> got;
+				common::String got;
 				if (!json_str(idmap, json, got, reader,true))break;
 				out << got.get_const() << "\n";
 				ok = true;

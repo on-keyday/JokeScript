@@ -94,7 +94,7 @@ const char* compiler::Reader::prev() {
 
 bool compiler::Reader::ahead(const char* symbol) {
 	if (!symbol)return false;
-	common::EasyVector<char>& str=this->input.buf;
+	common::String& str=this->input.buf;
 	while (1) {
 		if (str[readpos]==' '||str[readpos]=='\n'||str[readpos]=='\t'||str[readpos]=='\v'||str[readpos]=='\r') {
 			readpos++;
@@ -130,7 +130,7 @@ bool compiler::Reader::ahead(const char* symbol) {
 
 common::String compiler::Reader::string(bool raw) {
 	if (input.buf[readpos] != '\"' && input.buf[readpos] != '\'')return nullptr;
-	common::EasyVector<char> ret,&str=input.buf;
+	common::String ret,&str=input.buf;
 	char start = str[readpos];
 	ret.add(start);
 	readpos++;
