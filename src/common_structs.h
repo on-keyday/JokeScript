@@ -367,7 +367,7 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            std::cout << "create:" << ret << ":" << sizeof(T)<<"\n";
+            //std::cout << "create:" << ret << ":" << sizeof(T)<<"\n";
             return ret;
         }
 
@@ -393,13 +393,13 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n";
+            //std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n";
             return ret;
         }
 
         template<class T>
         void kill(T* obj) {
-            std::cout << "kill:"<<obj << "\n";
+            //std::cout << "kill:"<<obj << "\n";
             delete obj;
         }
 

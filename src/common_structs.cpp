@@ -13,18 +13,18 @@ using namespace PROJECT_NAME;
 
 void* common::calloc(size_t elm, size_t obj) {
     auto ret=std::calloc(elm, obj);
-    std::cout << "calloc:" << ret << ":" << elm*obj << "\n";
+    //std::cout << "calloc:" << ret << ":" << elm*obj << "\n";
     return ret;
 }
 
 void* common::realloc(void* p, size_t size) {
     auto ret = std::realloc(p, size);
-    std::cout << "realloc:" << ret << ":" << size<< "\n";
+    //std::cout << "realloc:" << ret << ":" << size<< "\n";
     return ret;
 }
 
 void common::free(void* p) {
-    std::cout <<"free:"<<p << "\n";
+    //std::cout <<"free:"<<p << "\n";
     std::free(p);
 }
 
