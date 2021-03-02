@@ -45,7 +45,7 @@ bool compiler::block_detail(IdHolder* holder, Reader* reader) {
 			holder->get_current()->types.add(type);
 		}
 		else if (reader->ahead("$") || reader->ahead("@")) {
-			auto id = id_analyze(holder, reader);
+			auto id = id_normal_analyze(holder, reader);
 			if (!id)return false;
 			holder->get_current()->ids.add(id);
 		}
@@ -355,7 +355,7 @@ SyntaxTree* compiler::single(IdHolder* holder, Reader* reader) {
 		ret = holder->make_tree(status->buf.get_raw_z(), TreeType::defined, hold->type);
 	}
 	else if (reader->ahead("@(")) {
-		auto id = id_analyze(holder, reader);
+		auto id = id_normal_analyze(holder, reader);
 		if (!id)return nullptr;
 		if (id->type->type != TypeType::function_t) {
 			holder->logger->semerr("on this context,non function is not definable.");

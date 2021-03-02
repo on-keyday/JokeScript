@@ -382,7 +382,6 @@ bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_
 			reader->seek(positions[i]);
 			if (!set_func_to_block(ret->ids[i], holder))return nullptr;
 			if (!block_cycle(holder, reader))return nullptr;
-
 		}
 		i++;
 	}
@@ -889,7 +888,7 @@ bool compiler::set_func_to_block(Identifier* ret, IdHolder* holder) {
 	auto bt = make_block_tree_pair(holder, ret->name);
 	if (!bt)return false;
 	bt->rel = ret;
-	bt->relblock->id = ret;
+	bt->relblock->func = ret;
 	bt->relblock->ids.add_copy(ret->params.get_const(), ret->params.get_size());
 	return true;
 }
@@ -967,9 +966,9 @@ Identifier* compiler::search_id_on_block(const char* name,IdHolder* holder) {
 			i++;
 		}
 		//if (current)break;
-		if (search->id) {
-			if (strcmp(search->id->name, name) == 0) {
-				return search->id;
+		if (search->func) {
+			if (strcmp(search->func->name, name) == 0) {
+				return search->func;
 			}
 		}
 		search = search->prev;

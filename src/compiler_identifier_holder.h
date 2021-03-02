@@ -24,7 +24,7 @@ namespace PROJECT_NAME {
 		struct Block {
 			Block* prev=nullptr;
 			SyntaxTree* reltree = nullptr;
-			Identifier* id = nullptr;
+			Identifier* func = nullptr;
 			bool has_this=false;
 			common::EasyVectorP<Type*> types;
 			common::EasyVectorP<Identifier*> ids;
