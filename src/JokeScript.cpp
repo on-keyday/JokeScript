@@ -98,6 +98,7 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	print(to_string(inst));
 	delete_instance(inst);
 	print("\n");
+	OutDebugMemoryInfo(ShowGraph();)
 	return 0;
 }
 
@@ -121,7 +122,6 @@ const char* ccnv jokescript::to_string(Instance* ins) {
 	if (!ret)return nullptr;
 	free(ins->printed);
 	ins->printed = ret;
-	OutDebugMemoryInfo(ShowGraph();)
 	return ret;
 }
 
