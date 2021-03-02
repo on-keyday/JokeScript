@@ -11,20 +11,43 @@
 #include"common_structs.h"
 using namespace PROJECT_NAME;
 
+OutDebugMemoryInfo(
+std::map<void*, size_t> sizeinfo;
+common::EasyVector<uint64_t> graph;
+void Record() {
+    uint64_t memo=0;
+    for (auto s : sizeinfo) {
+        memo += s.second;
+    }
+    graph.add(memo);
+}   
+)
+
 void* common::calloc(size_t elm, size_t obj) {
     auto ret=std::calloc(elm, obj);
-    OutDebugMemoryInfo(std::cout << "calloc:" << ret << ":" << elm*obj << "\n");
+    OutDebugMemoryInfo(
+    std::cout << "calloc:" << ret << ":" << elm * obj << "\n";
+    if (ret) {
+        sizeinfo[ret] = elm * obj;
+        Record();
+    })
     return ret;
 }
 
 void* common::realloc(void* p, size_t size) {
     auto ret = std::realloc(p, size);
-    OutDebugMemoryInfo(std::cout << "realloc:" << p <<"->" << ret << ":" << size<< "\n");
+    OutDebugMemoryInfo(
+    std::cout << "realloc:" << p << "->" << ret << ":" << size << "\n";
+    if (ret) {
+        sizeinfo[p] = 0;
+        sizeinfo[ret] = size;
+        Record();
+    })
     return ret;
 }
 
 void common::free(void* p) {
-    OutDebugMemoryInfo(std::cout <<"free:"<<p << "\n");
+    OutDebugMemoryInfo(std::cout << "free:" << p << "\n";sizeinfo[p] = 0; Record();)
     std::free(p);
 }
 

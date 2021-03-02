@@ -11,14 +11,17 @@
 #pragma once
 
 #define PROJECT_NAME jokescript
+#include"stdcpps.h"
 
 #define OutDebugInfo 0
 #if OutDebugInfo 
-#define OutDebugMemoryInfo(x) x
+#define OutDebugMemoryInfo(...) __VA_ARGS__
+extern std::map<void*,size_t> sizeinfo;
+void Record();
 #else
-#define OutDebugMemoryInfo(x)
+#define OutDebugMemoryInfo(...)
 #endif
-#include"stdcpps.h"
+
 namespace PROJECT_NAME {
     namespace common {
         void* calloc(size_t elm,size_t obj);
@@ -374,7 +377,11 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            OutDebugMemoryInfo(std::cout << "create:" << ret << ":" << sizeof(T)<<"\n");
+            OutDebugMemoryInfo(
+                std::cout << "create:" << ret << ":" << sizeof(T) << "\n";
+                sizeinfo[ret] = sizeof(T);
+                Record();
+            )
             return ret;
         }
 
@@ -400,13 +407,17 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            OutDebugMemoryInfo(std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n");
+            OutDebugMemoryInfo(
+                std::cout << "create(arg):" << ret << ":" << sizeof(T) << "\n";
+                sizeinfo[ret] = sizeof(T);
+                Record();   
+            )
             return ret;
         }
 
         template<class T>
         void kill(T* obj) {
-            OutDebugMemoryInfo(std::cout << "kill:"<<obj << "\n");
+            OutDebugMemoryInfo(std::cout << "kill:" << obj << "\n"; sizeinfo[obj] = 0; Record();)
             delete obj;
         }
 
