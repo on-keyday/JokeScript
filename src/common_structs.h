@@ -13,7 +13,7 @@
 #define PROJECT_NAME jokescript
 #include"stdcpps.h"
 
-#define OutDebugInfo 0
+#define OutDebugInfo 1
 #if OutDebugInfo 
 #define OutDebugMemoryInfo(...) __VA_ARGS__
 extern std::map<void*,size_t> sizeinfo;

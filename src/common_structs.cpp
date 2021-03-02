@@ -10,16 +10,19 @@
 
 #include"common_structs.h"
 using namespace PROJECT_NAME;
+#if OutDebugInfo
+#include<vector>
+#endif
 
 OutDebugMemoryInfo(
 std::map<void*, size_t> sizeinfo;
-common::EasyVector<uint64_t> graph;
+std::vector<uint64_t> graph;
 void Record() {
     uint64_t memo=0;
     for (auto s : sizeinfo) {
         memo += s.second;
     }
-    graph.add(memo);
+    graph.push_back(memo);
 }
 void ShowGraph() {
     std::cout << "\n";
