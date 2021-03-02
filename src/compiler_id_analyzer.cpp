@@ -331,7 +331,7 @@ Type* compiler::get_sets(const char* name, IdHolder* holder, Reader* reader, boo
 bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_flag) {
 	auto current = holder->get_current();
 	current->types.add(ret);
-	if (!reader->expect_or_err("{"))return nullptr;
+	if (!reader->expect_or_err("{"))return false;
 	common::EasyVector<uint64_t> positions;
 	while (!reader->eof()) {
 		if (reader->ahead("}")) {
@@ -339,7 +339,7 @@ bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_
 		}
 		else if (reader->ahead("!")) {
 			auto hold = type_analyze(holder, reader);
-			if (!hold)return nullptr;
+			if (!hold)return false;
 			ret->types.add(hold);
 		}
 		else if (reader->ahead("$") || reader->ahead("@")) {
@@ -350,7 +350,7 @@ bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_
 				positions.add(reader->get_readpos());
 				if (!reader->block("{", "}")) {
 					holder->logger->synerr("unexpected EOF.");
-					return nullptr;
+					return false;
 				}
 			}
 			else {
@@ -359,15 +359,11 @@ bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_
 		}
 		else {
 			holder->logger->unexpected_token("}!$@", reader->abyte());
-			return nullptr;
+			return false;
 		}
-		if (!check_semicolon(holder, reader))return nullptr;
+		if (!check_semicolon(holder, reader))return false;
 	}
-	if (current->types.remove_end() != ret) {
-		holder->logger->syserr("system is broken.");
-		return nullptr;
-	}
-	if (!reader->expect_or_err("}"))return nullptr;
+	if (!reader->expect_or_err("}"))return false;
 	auto prev_this = holder->_this;
 	if (this_flag) {
 		holder->_this = ret;
@@ -380,13 +376,17 @@ bool compiler::get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_
 	while (ret->ids[i]) {
 		if (positions[i]) {
 			reader->seek(positions[i]);
-			if (!set_func_to_block(ret->ids[i], holder))return nullptr;
-			if (!block_cycle(holder, reader))return nullptr;
+			if (!set_func_to_block(ret->ids[i], holder))return false;
+			if (!block_cycle(holder, reader))return false;
 		}
 		i++;
 	}
 	reader->seek(nowpos);
 	holder->_this = prev_this;
+	if (current->types.remove_end() != ret) {
+		holder->logger->syserr("system is broken.");
+		return false;
+	}
 	return true;
 }
 
@@ -856,7 +856,7 @@ Identifier* compiler::id_normal_analyze(IdHolder* holder, Reader* reader) {
 		if (!set_func_to_block(ret, holder))return nullptr;
 		if (!block_cycle(holder, reader))return nullptr;
 		if (cu->ids.remove_end()!=ret) {
-			holder->logger->syserr("system is broken.(at " __FUNCTION__")");
+			holder->logger->syserr("system is broken.(at id_normal_analyze)");
 			return nullptr;
 		}
 	}

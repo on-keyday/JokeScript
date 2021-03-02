@@ -12,6 +12,12 @@
 
 #define PROJECT_NAME jokescript
 
+#define OutDebugInfo 1
+#if OutDebugInfo 
+#define OutDebugMemoryInfo(x) x
+#else
+#define OutDebugMemoryInfo(x)
+#endif
 #include"stdcpps.h"
 namespace PROJECT_NAME {
     namespace common {
@@ -368,7 +374,7 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            //std::cout << "create:" << ret << ":" << sizeof(T)<<"\n";
+            OutDebugMemoryInfo(std::cout << "create:" << ret << ":" << sizeof(T)<<"\n");
             return ret;
         }
 
@@ -394,13 +400,13 @@ namespace PROJECT_NAME {
             catch (...) {
                 return nullptr;
             }
-            //std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n";
+            OutDebugMemoryInfo(std::cout << "create(arg):" << ret << ":" << sizeof(T)<<"\n");
             return ret;
         }
 
         template<class T>
         void kill(T* obj) {
-            //std::cout << "kill:"<<obj << "\n";
+            OutDebugMemoryInfo(std::cout << "kill:"<<obj << "\n");
             delete obj;
         }
 

@@ -28,7 +28,7 @@ namespace PROJECT_NAME {
 
 		struct JSONNode {
 		private:
-			common::EasyVector<JSONNode*> pair;
+			common::EasyVectorP<JSONNode*> pair;
 			char* _name = nullptr;
 			JSONType _type = JSONType::null;
 			JSON* _on=nullptr;
