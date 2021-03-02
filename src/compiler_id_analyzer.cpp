@@ -52,7 +52,7 @@ Type* compiler::type_analyze(IdHolder* holder, Reader* reader) {
 			holder->logger->semerr_val("*:name conflict.",status->buf.get_const());
 		}
 	}
-	common::EasyVector<char> hold=std::move(status->buf);
+	common::String hold=std::move(status->buf);
 	ret = type_detail(hold.get_const(),holder,reader,false);
 	if (!ret) return nullptr;
 	if (!ttype::is_naming(ret->type)||strcmp(hold.get_const(),ret->name)!=0) {
