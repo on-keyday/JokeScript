@@ -12,7 +12,7 @@
 
 #define PROJECT_NAME jokescript
 
-#define OutDebugInfo 1
+#define OutDebugInfo 0
 #if OutDebugInfo 
 #define OutDebugMemoryInfo(x) x
 #else
