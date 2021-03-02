@@ -225,6 +225,20 @@ Option* compiler::IdHolder::get_opt(const char* name, bool flag) {
 	return ret;
 }
 
+Option* compiler::IdHolder::get_opt(const char* name, Type* this_p) {
+	for (auto p : options) {
+		if (strcmp(p->name, name) == 0 && p->type == OptionType::type) {
+			if (p->this_p == this_p) {
+				return p;
+			}
+		}
+	}
+	auto ret = make_option(common::StringFilter() = name, nullptr, OptionType::type);
+	if (!ret)return nullptr;
+	ret->this_p=this_p;
+	return ret;
+}
+
 common::EasyVectorP<Type*>& compiler::IdHolder::get_types() {
 	return types;
 }

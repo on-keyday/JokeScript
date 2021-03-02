@@ -22,8 +22,13 @@ namespace PROJECT_NAME {
 		Type* get_has_size(IdHolder* holder, Reader* reader);
 		Type* get_functypes(IdHolder* holder, Reader* reader);
 		Type* get_optandreturns(IdHolder* holder, Reader* reader,common::EasyVectorP<Type*>& types);
-		bool get_options(IdHolder* holder, Reader* reader, common::EasyVectorP<Option*>& ret);
+
+		bool get_func_options(IdHolder* holder, Reader* reader, common::EasyVectorP<Option*>& ret);
+		bool get_sets_options(IdHolder* holder, Reader* reader, common::EasyVectorP<Option*>& ret);
+		
 		Type* get_sets(const char* name, IdHolder* holder, Reader* reader, bool unname);
+		bool get_members(Type* ret,IdHolder* holder, Reader* reader,bool this_flag);
+		
 
 		Type* resolve_type_by_name(IdHolder* holder, Reader* reader);
 		Type* search_type_on_block(const char* name,IdHolder* holder,int& isvar);
@@ -48,7 +53,11 @@ namespace PROJECT_NAME {
 
 		bool is_keyword(const char* str);
 
-		Identifier* id_analyze(IdHolder* holder, Reader* reader);
+		Identifier* id_normal_analyze(IdHolder* holder, Reader* reader);
+
+		bool set_func_to_block(Identifier* s,IdHolder* holder);
+
+		Identifier* id_analyze_detail(IdHolder* holder, Reader* reader,bool& func);
 
 		bool get_func_instance(Identifier* func,IdHolder* holder, Reader* reader);
 

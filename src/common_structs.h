@@ -145,6 +145,7 @@ namespace PROJECT_NAME {
                 return is_enable();
             }
 
+
             bool add_copy(const PType* base, uint64_t size) {
                 if (!ps||!base)return false;
                 for (auto i = 0ull; i < size; i++) {

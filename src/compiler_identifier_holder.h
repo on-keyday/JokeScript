@@ -88,7 +88,8 @@ namespace PROJECT_NAME {
 			unset,
 			vec,
 			str,
-			boolean
+			boolean,
+			type
 		};
 
 		struct Option {
@@ -98,6 +99,7 @@ namespace PROJECT_NAME {
 				common::EasyVectorP<Identifier*> ids=nullptr;
 				char* value;
 				bool flag;
+				compiler::Type* this_p;
 			};
 			~Option();
 		};
@@ -169,6 +171,7 @@ namespace PROJECT_NAME {
 			Option* get_opt(const char* name,const char* value);
 			Option* get_opt(const char* name,common::EasyVectorP<Identifier*>& ids);
 			Option* get_opt(const char* name, bool flag);
+			Option* get_opt(const char* name,Type* this_p);
 			common::Hash hash;
 
 			common::EasyVectorP<Type*>& get_types();

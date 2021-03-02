@@ -29,7 +29,6 @@ struct jokescript::Instance {
 };
 
 //std::ofstream file("Type.json");
-
 void print(const char* s) {
 	std::cout << s;
 }

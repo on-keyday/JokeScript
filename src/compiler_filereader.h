@@ -50,7 +50,8 @@ namespace PROJECT_NAME {
 			bool readwhile(ReadStatus* status,bool (*judge)(const char*,ReadStatus*));
 			char abyte();
 			bool eof();
-			bool seek(bool abs,long long pos);
+			bool seek(uint64_t pos);
+			bool block(const char* start,const char* end);
 			char offset(long long ofs);
 			uint64_t get_readpos() const;
 			char get_const_char() const;

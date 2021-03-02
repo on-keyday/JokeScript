@@ -183,8 +183,33 @@ bool compiler::Reader::eof() {
 	return iseof;
 }
 
-bool compiler::Reader::seek(bool abs, long long pos) {
-	return false;
+bool compiler::Reader::seek(uint64_t pos) {
+	if (pos > input.buf.get_size())return false;
+	readpos = pos;
+	return true;
+}
+
+bool compiler::Reader::block(const char* start, const char* end) {
+	if (!end||!expect(start))return false;
+	uint64_t dp = 0;
+	auto& str = input.buf;
+	while (!eof()) {
+		ahead("");
+		if (eof())return false;
+		if (str[readpos]==start[0]) {
+			if (expect(start)) {
+				dp++;
+			}
+		}
+		else if (str[readpos]==end[0]) {
+			if (expect(end)) {
+				if (dp == 0)break;
+				dp--;
+			}
+		}
+		readpos++;
+	}
+	return true;
 }
 
 char compiler::Reader::offset(long long ofs) {
