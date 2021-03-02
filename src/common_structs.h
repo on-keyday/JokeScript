@@ -18,6 +18,7 @@
 #define OutDebugMemoryInfo(...) __VA_ARGS__
 extern std::map<void*,size_t> sizeinfo;
 void Record();
+void ShowGraph();
 #else
 #define OutDebugMemoryInfo(...)
 #endif

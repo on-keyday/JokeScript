@@ -20,7 +20,13 @@ void Record() {
         memo += s.second;
     }
     graph.add(memo);
-}   
+}
+void ShowGraph() {
+    std::cout << "\n";
+    for (auto i : graph) {
+        std::cout << i << "\n";
+    }
+}
 )
 
 void* common::calloc(size_t elm, size_t obj) {

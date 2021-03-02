@@ -121,6 +121,7 @@ const char* ccnv jokescript::to_string(Instance* ins) {
 	if (!ret)return nullptr;
 	free(ins->printed);
 	ins->printed = ret;
+	OutDebugMemoryInfo(ShowGraph();)
 	return ret;
 }
 
