@@ -46,7 +46,7 @@ bool user_tools::JSONNode::pack() {
 }
 
 user_tools::JSONNode::~JSONNode() {
-	free(_name);
+	common::free(_name);
 }
 
 JSONNode& user_tools::JSONNode::add(JSONNode* node) {

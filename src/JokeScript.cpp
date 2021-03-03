@@ -44,7 +44,7 @@ Instance* ccnv jokescript::make_instance() {
 
 void ccnv jokescript::delete_instance(Instance* ins) {
 	if (!ins)return;
-	free(ins->printed);
+	common::free(ins->printed);
 	common::kill(ins->holder->logger);
 	common::kill(ins->holder);
 	common::kill(ins->reader);
