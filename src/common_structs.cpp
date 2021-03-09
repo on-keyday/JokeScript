@@ -15,19 +15,27 @@ using namespace PROJECT_NAME;
 #endif
 
 OutDebugMemoryInfo(
+std::ofstream rec("memory.log");
+std::ofstream out("memory.csv");
 std::map<void*, size_t> sizeinfo;
-std::vector<uint64_t> graph;
-void Record() {
+std::vector<uint64_t> graph1;
+std::vector<const char*> graph2;
+std::vector<void*> graph3;
+std::vector<void*> graph4;
+void Record(const char* locate,void* p1,void* p2) {
     uint64_t memo=0;
     for (auto s : sizeinfo) {
         memo += s.second;
     }
-    graph.push_back(memo);
+    graph1.push_back(memo);
+    graph2.push_back(locate);
+    graph3.push_back(p1);
+    graph4.push_back(p2);
 }
 void ShowGraph() {
-    std::cout << "\n";
-    for (auto i : graph) {
-        std::cout << i << "\n";
+    out << "\n";
+    for (auto i = 0; i < graph1.size(); i++) {
+        out << i << "," << graph2[i] << "," << graph1[i] << "," << graph3[i] << "," << graph4[i] << "\n";
     }
 }
 )
@@ -35,10 +43,10 @@ void ShowGraph() {
 void* common::calloc(size_t elm, size_t obj) {
     auto ret=std::calloc(elm, obj);
     OutDebugMemoryInfo(
-    std::cout << "calloc:" << ret << ":" << elm * obj << "\n";
+    rec << "calloc:" << ret << ":" << elm * obj << "\n";
     if (ret) {
         sizeinfo[ret] = elm * obj;
-        Record();
+        Record("calloc",ret,nullptr);
     })
     return ret;
 }
@@ -46,17 +54,17 @@ void* common::calloc(size_t elm, size_t obj) {
 void* common::realloc(void* p, size_t size) {
     auto ret = std::realloc(p, size);
     OutDebugMemoryInfo(
-    std::cout << "realloc:" << p << "->" << ret << ":" << size << "\n";
+    rec << "realloc:" << p << "->" << ret << ":" << size << "\n";
     if (ret) {
         sizeinfo[p] = 0;
         sizeinfo[ret] = size;
-        Record();
+        Record("realloc",p,ret);
     })
     return ret;
 }
 
 void common::free(void* p) {
-    OutDebugMemoryInfo(std::cout << "free:" << p << "\n";sizeinfo[p] = 0; Record();)
+    OutDebugMemoryInfo(rec << "free:" << p << "\n";sizeinfo[p] = 0; Record("free",p,nullptr);)
     std::free(p);
 }
 

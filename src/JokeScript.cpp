@@ -18,17 +18,28 @@
 #include"compiler_filereader.h"
 #include"user_tools.h"
 #include"user_action.h"
-
+#include"compiler_llvm.h"
 
 using namespace jokescript;
 
-struct jokescript::Instance {
-	compiler::Reader* reader;
-	compiler::IdHolder* holder;
-	char* printed;
+struct CompilerOpts {
+	bool use_llvm;
 };
 
-//std::ofstream file("Type.json");
+struct jokescript::Instance {
+	CompilerOpts opts;
+	compiler::Reader* reader;
+	compiler::IdHolder* holder;
+	bool parsed;
+	char* printed;
+	union {
+		compiler::LLVM* llvm;
+
+	}result;
+};
+
+
+
 void print(const char* s) {
 	std::cout << s;
 }
@@ -36,9 +47,11 @@ void print(const char* s) {
 Instance* ccnv jokescript::make_instance() {
 	auto ret = common::create<Instance>();
 	if (!ret)return nullptr;
+	ret->opts = { 0 };
 	ret->holder = nullptr;
 	ret->reader = nullptr;
 	ret->printed = nullptr;
+	ret->parsed = false;
 	return ret;
 }
 
@@ -83,6 +96,21 @@ int ccnv jokescript::parse(Instance* ins) {
 	return 1;
 }
 
+int ccnv jokescript::compile(Instance* ins) {
+	if (!ins)return 0;
+	if (!ins->parsed)return 0;
+	if (ins->opts.use_llvm && !_EXIST_LLVM) {
+		ins->holder->logger->info("on this platform, LLVM compiler is not usable.");
+		return 0;
+	}
+	if (ins->opts.use_llvm) {
+		compiler::convert_to_llvm(ins->holder);
+	}
+	else {
+
+	}
+}
+
 int ccnv jokescript::compiler_main(int argc, char** argv) {
 	const char* name = nullptr;
 	if (argc >= 2) {
@@ -95,7 +123,7 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	if (!inst)return -1;
 	if(!set_option(inst, "-s", name))return -2;
 	if (!parse(inst))return -3;
-	print(to_string(inst));
+	//print(to_string(inst));
 	delete_instance(inst);
 	print("\n");
 	OutDebugMemoryInfo(ShowGraph();)
@@ -120,7 +148,7 @@ const char* ccnv jokescript::to_string(Instance* ins) {
 	json.get_nodestr(res, retstr, 0, 2);
 	auto ret = retstr.get_raw_z();
 	if (!ret)return nullptr;
-	free(ins->printed);
+	common::free(ins->printed);
 	ins->printed = ret;
 	return ret;
 }

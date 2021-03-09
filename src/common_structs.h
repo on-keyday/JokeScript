@@ -16,8 +16,10 @@
 #define OutDebugInfo 1
 #if OutDebugInfo 
 #define OutDebugMemoryInfo(...) __VA_ARGS__
+#include<fstream>
 extern std::map<void*,size_t> sizeinfo;
-void Record();
+extern std::ofstream rec;
+void Record(const char* locate,void* p1,void* p2);
 void ShowGraph();
 #else
 #define OutDebugMemoryInfo(...)
@@ -34,8 +36,7 @@ namespace PROJECT_NAME {
             PType* ps;
             uint64_t toadd;
             uint64_t len;
-            bool add_detail(PType p) {
-                if (!ps)return false;
+            bool expand_region() {
                 if (toadd + 3 >= len) {
                     PType* hold = (PType*)realloc(ps, sizeof(PType) * len * 2);
                     if (!hold) {
@@ -47,6 +48,12 @@ namespace PROJECT_NAME {
                     ps = hold;
                     len *= 2;
                 }
+                return true;
+            }
+
+            bool add_detail(PType p) {
+                if (!ps)return false;
+                if (!expand_region())return false;
                 ps[toadd] = p;
                 toadd++;
                 return true;
@@ -379,9 +386,9 @@ namespace PROJECT_NAME {
                 return nullptr;
             }
             OutDebugMemoryInfo(
-                std::cout << "create:" << ret << ":" << sizeof(T) << "\n";
+                rec << "create:" << ret << ":" << sizeof(T) << "\n";
                 sizeinfo[ret] = sizeof(T);
-                Record();
+                Record("create",ret,nullptr);
             )
             return ret;
         }
@@ -409,16 +416,16 @@ namespace PROJECT_NAME {
                 return nullptr;
             }
             OutDebugMemoryInfo(
-                std::cout << "create(arg):" << ret << ":" << sizeof(T) << "\n";
+                rec << "create(arg):" << ret << ":" << sizeof(T) << "\n";
                 sizeinfo[ret] = sizeof(T);
-                Record();   
+                Record("create(arg)",ret,nullptr);   
             )
             return ret;
         }
 
         template<class T>
         void kill(T* obj) {
-            OutDebugMemoryInfo(std::cout << "kill:" << obj << "\n"; sizeinfo[obj] = 0; Record();)
+            OutDebugMemoryInfo(rec << "kill:" << obj << "\n"; sizeinfo[obj] = 0; Record("kill",obj,nullptr);)
             delete obj;
         }
 

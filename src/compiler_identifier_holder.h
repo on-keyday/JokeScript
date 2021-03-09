@@ -156,8 +156,8 @@ namespace PROJECT_NAME {
 			log::Log* logger=nullptr;
 			Block* make_block();
 			bool to_parent_block();
-			Block* make_tmpblock();
-			bool break_tmpblock();
+			//Block* make_tmpblock();
+			//bool break_tmpblock();
 			Block* get_current();
 			SyntaxTree* make_tree(char* symbol,TreeType ttype,Type* type);
 			Type* make_type(char* symbol);
