@@ -20,7 +20,7 @@ add_library (JokeScript SHARED "JokeScript.h" "JokeScript.cpp" "common/stdcpps.h
 
 
 
-add_executable (Joker "main.cpp")
+add_executable (Joker "executable/main.cpp")
 
 target_link_libraries(Joker JokeScript)
 
