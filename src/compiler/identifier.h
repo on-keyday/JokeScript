@@ -87,6 +87,7 @@ namespace PROJECT_NAME {
 		};
 
 		struct Type {
+			Type(){}
 			char* name = nullptr;
 			union {
 				Type* type = nullptr;
@@ -244,7 +245,7 @@ namespace PROJECT_NAME {
 		Type* get_bit_type(compiler::Reader* reader, Maker* maker);
 
 		bool parse_variable_set(compiler::Reader* reader,Maker* maker);
-		Variable* parse_variable(compiler::Reader* reader,Maker* maker,bool on_set=false,bool type_must=false);
+		Variable* parse_variable_detail(compiler::Reader* reader,Maker* maker,bool on_set=false,bool type_must=false);
 
 		bool search_name(const char* name,Maker* maker,Type** type=nullptr,Variable** var=nullptr,Template** temp=nullptr,Macro** macro=nullptr);
 		

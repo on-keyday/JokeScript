@@ -18,13 +18,13 @@ bool identifier::parse_variable_set(compiler::Reader* reader, Maker* maker) {
 	return false;
 }
 
-Variable* identifier::parse_variable(compiler::Reader* reader, Maker* maker, bool on_set, bool type_must) {
+Variable* identifier::parse_variable_detail(compiler::Reader* reader, Maker* maker, bool on_set, bool type_must) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;
 	if (ctype::is_unnamed(s->buf.get_const())) {
 		maker->logger->semerr("on this context, unnamed variable is not definable.");
-		return false;
+		return nullptr;
 	}
 	auto ret = maker->make_variable(s->buf.get_raw_z());
 	if (!ret)return nullptr;
@@ -36,9 +36,14 @@ Variable* identifier::parse_variable(compiler::Reader* reader, Maker* maker, boo
 	if (reader->expect("=")) {
 		auto init = syntax::parse_syntax(reader, maker);
 		if (!init)return nullptr;
-		ret->init = false;
+		ret->init = init;
 	}
 	if (on_set && !ret->type) {
-		
+		if (!reader->expect_or_err(","))return nullptr;
 	}
+	if (type_must && !ret->type) {
+		maker->logger->synerr("on this context,type has to be explicitly specified,but is not.");
+		return nullptr;
+	}
+	return ret;
 }

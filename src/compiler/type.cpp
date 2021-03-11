@@ -186,7 +186,7 @@ Type* identifier::get_named(compiler::Reader* reader, Maker* maker) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;
-	bool is_var = nullptr;
+	bool is_var = false;
 	Type* ret = nullptr, * type = nullptr;
 	Variable* var = nullptr;
 	search_name(s->buf.get_const(), maker, &type, &var);
