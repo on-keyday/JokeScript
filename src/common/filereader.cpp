@@ -59,15 +59,17 @@ bool Reader::expect_pf(const char* symbol, bool (*but)(char)) {
 
 bool Reader::expect_or_err(const char* symbol) {
 	if (!expect(symbol)) {
-		common::StringP s;
-		const char* msg = "unexpected token. expected \"",
-					*but="\", but \'";
-		s.add_copy(msg,strlen(msg));
-		s.add_copy(symbol,strlen(symbol));
-		s.add_copy(but, strlen(but));
-		s.add(input.buf[readpos]);
-		s.add_copy("\'.",2);
-		if(logger)logger->synerr(s.get_const());
+		if (logger) {
+			common::String s;
+			const char* msg = "unexpected token. expected \"",
+				* but = "\", but \'";
+			s.add_copy(msg, strlen(msg));
+			s.add_copy(symbol, strlen(symbol));
+			s.add_copy(but, strlen(but));
+			s.add(input.buf[readpos]);
+			s.add_copy("\'.", 2);
+			logger->synerr(s.get_const());
+		}
 		return false;
 	}
 	return true;
@@ -75,15 +77,17 @@ bool Reader::expect_or_err(const char* symbol) {
 
 bool Reader::expect_or_err_pe(const char* symbol, const char* expected) {
 	if (!expect(symbol)) {
-		common::EasyVector<char> s;
-		const char* msg = "unexpected token. expected \"",
-			* but = "\", but \'";
-		s.add_copy(msg, strlen(msg));
-		s.add_copy(expected, strlen(symbol));
-		s.add_copy(but, strlen(but));
-		s.add(input.buf[readpos]);
-		s.add_copy("\'.", 2);
-		if (logger)logger->synerr(s.get_const());
+		if (logger) {
+			common::String s;
+			const char* msg = "unexpected token. expected \"",
+				* but = "\", but \'";
+			s.add_copy(msg, strlen(msg));
+			s.add_copy(expected, strlen(symbol));
+			s.add_copy(but, strlen(but));
+			s.add(input.buf[readpos]);
+			s.add_copy("\'.", 2);
+			logger->synerr(s.get_const());
+		}
 		return false;
 	}
 	return true;
