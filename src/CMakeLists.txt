@@ -15,7 +15,7 @@ include_directories("/lib/llvm-10/include")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} `llvm-config-10 --cxxflags --ldflags --libs --system-libs` -fexceptions")
 endif()
 
-add_library (JokeScript SHARED "JokeScript.h" "JokeScript.cpp" "stdcpps.h" "common_structs.cpp" "common_structs.h" "common_io.h" "common_io.cpp" "log.h" "compiler_filereader.h" "compiler_filereader.cpp" "compiler_syntax_analyzer.h" "compiler_identifier_holder.h" "compiler_syntax_analyzer.cpp" "compiler_identifier_holder.cpp" "log.cpp" "compiler_ctype.h" "compiler_ctype.cpp" "common_tools.h" "common_tools.cpp" "compiler_id_analyzer.h" "compiler_id_analyzer.cpp" "user_tools.h" "user_tools.cpp" "user_action.h" "user_action.cpp" "compiler_llvm.h" "compiler_llvm.cpp" "compiler_selfmade.h")
+add_library (JokeScript SHARED "JokeScript.h" "JokeScript.cpp" "common/stdcpps.h" "common/structs.cpp" "common/structs.h" "common/io.h" "common/io.cpp" "compiler/log.h" "compiler/filereader.h" "compiler/filereader.cpp"  "compiler/log.cpp" "common/ctype.h" "common/ctype.cpp" "common/tools.h" "common/tools.cpp"  "user/user_tools.h" "user/user_tools.cpp" "user/user_action.h" "user/user_action.cpp" "compiler/identifier.h" "compiler/syntax.h"  "compiler/maker.cpp" "compiler/identifier.cpp" "compiler/syntax.cpp" "compiler/type.cpp" "compiler/variable.cpp")
 
 
 

@@ -1,20 +1,9 @@
-﻿#    JokeScript
-#
-#    Copyright (c) 2021 on-keyday
-#
-#    This software is released under the MIT License.
-#    http://opensource.org/licenses/mit-license.php
+﻿# CMakeList.txt : 最上位の CMake プロジェクト ファイル。グローバル構成を行います
+# また、サブプロジェクトをここに含めます。
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("Joker")
+project ("Jcript")
 
-if(WIN32)
-add_subdirectory ("Joker")
-else()
-#set(CMAKE_CXX_FLAGS "-O1 -Wall")
-find_package(LLVM 10)
-set(CMAKE_BINARY_DIR "../built")
-set(CMAKE_CXX_FLAGS "-O0 -g")
-add_subdirectory("src")
-endif()
+# サブプロジェクトを含めます。
+add_subdirectory ("Jcript")

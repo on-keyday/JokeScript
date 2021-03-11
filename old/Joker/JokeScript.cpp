@@ -11,15 +11,14 @@
 #ifdef _WIN32
 #define dll_property __declspec(dllexport)
 #endif
-#include"common/stdcpps.h"
 #include"JokeScript.h"
-//#include"compiler_identifier_holder.h"
-//#include"compiler_syntax_analyzer.h"
+#include"compiler_identifier_holder.h"
+#include"compiler_syntax_analyzer.h"
 //#include"compiler_tree_to_llvm.h"
-#include"compiler/filereader.h"
-#include"user/user_tools.h"
-#include"user/user_action.h"
-//#include"compiler_llvm.h"
+#include"compiler_filereader.h"
+#include"user_tools.h"
+#include"user_action.h"
+#include"compiler_llvm.h"
 
 using namespace jokescript;
 
@@ -30,11 +29,11 @@ struct CompilerOpts {
 struct jokescript::Instance {
 	CompilerOpts opts;
 	compiler::Reader* reader;
-	//compiler::IdHolder* holder;
+	compiler::IdHolder* holder;
 	bool parsed;
 	char* printed;
 	union {
-		//compiler::LLVM* llvm;
+		compiler::LLVM* llvm;
 
 	}result;
 };
@@ -49,7 +48,7 @@ Instance* ccnv jokescript::make_instance() {
 	auto ret = common::create<Instance>();
 	if (!ret)return nullptr;
 	ret->opts = { 0 };
-	//ret->holder = nullptr;
+	ret->holder = nullptr;
 	ret->reader = nullptr;
 	ret->printed = nullptr;
 	ret->parsed = false;
@@ -59,8 +58,8 @@ Instance* ccnv jokescript::make_instance() {
 void ccnv jokescript::delete_instance(Instance* ins) {
 	if (!ins)return;
 	common::free(ins->printed);
-	//common::kill(ins->holder->logger);
-	//common::kill(ins->holder);
+	common::kill(ins->holder->logger);
+	common::kill(ins->holder);
 	common::kill(ins->reader);
 	common::kill(ins);
 	return;
@@ -69,21 +68,21 @@ void ccnv jokescript::delete_instance(Instance* ins) {
 int ccnv jokescript::set_option(Instance* ins, const char* opt, const char* value) {
 	if (!ins||!opt||!value)return 0;
 	if (strcmp(opt,"-s")==0) {
-		//if (ins->reader || ins->holder)return 0;
+		if (ins->reader || ins->holder)return 0;
 		auto hold = common::create<log::Log>();
 		if (!hold)return 0;
 		auto reader = common::create<compiler::Reader>(value,hold);
-		//auto holder = common::create<compiler::IdHolder>();
-		//if (!reader||!holder)goto Err;
-		//if (!holder->make_block())goto Err;
-		//holder->logger = hold;
+		auto holder = common::create<compiler::IdHolder>();
+		if (!reader||!holder)goto Err;
+		if (!holder->make_block())goto Err;
+		holder->logger = hold;
 		ins->reader = reader;
-		//ins->holder = holder;
+		ins->holder = holder;
 		goto Fin;
-	//Err:
+	Err:
 		common::kill(hold);
 		common::kill(reader);
-		//common::kill(holder);
+		common::kill(holder);
 		return 0;
 	}
 Fin:
@@ -92,25 +91,24 @@ Fin:
 
 int ccnv jokescript::parse(Instance* ins) {
 	if (!ins)return 0;
-	//if (!ins->holder || !ins->reader)return 0;
-	//if (!compiler::program(ins->holder, ins->reader))return 0;
+	if (!ins->holder || !ins->reader)return 0;
+	if (!compiler::program(ins->holder, ins->reader))return 0;
 	return 1;
 }
 
 int ccnv jokescript::compile(Instance* ins) {
 	if (!ins)return 0;
 	if (!ins->parsed)return 0;
-	//if (ins->opts.use_llvm && !_EXIST_LLVM) {
-		//ins->holder->logger->info("on this platform, LLVM compiler is not usable.");
-		//return 0;
-	//}
-	//if (ins->opts.use_llvm) {
-		//compiler::convert_to_llvm(ins->holder);
-	//}
-	//else {
+	if (ins->opts.use_llvm && !_EXIST_LLVM) {
+		ins->holder->logger->info("on this platform, LLVM compiler is not usable.");
+		return 0;
+	}
+	if (ins->opts.use_llvm) {
+		compiler::convert_to_llvm(ins->holder);
+	}
+	else {
 
-	//}
-	return 1;
+	}
 }
 
 int ccnv jokescript::compiler_main(int argc, char** argv) {
@@ -134,18 +132,18 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 
 const char* ccnv jokescript::to_string(Instance* ins) {
 	if (!ins)return nullptr;
-	//if (!ins->holder)return nullptr;
+	if (!ins->holder)return nullptr;
 	user_tools::JSON json;
-	//std::map<compiler::Type*,uint64_t> idmap;
-	//auto types = user_tools::print_types(&json, ins->holder,idmap);
-	//if (!types)return nullptr;
-	//auto trees = user_tools::print_trees(&json, ins->holder,idmap);
-	//if (!trees)return nullptr;
-	//auto ids = user_tools::print_ids(&json, ins->holder, idmap);
-	//if (!ids)return nullptr;
+	std::map<compiler::Type*,uint64_t> idmap;
+	auto types = user_tools::print_types(&json, ins->holder,idmap);
+	if (!types)return nullptr;
+	auto trees = user_tools::print_trees(&json, ins->holder,idmap);
+	if (!trees)return nullptr;
+	auto ids = user_tools::print_ids(&json, ins->holder, idmap);
+	if (!ids)return nullptr;
 	auto res = json.make_obj();
 	if (!res)return nullptr;
-	//res->add(json.make_pair("types", types)).add(json.make_pair("ids",ids)).add(json.make_pair("trees", trees));
+	res->add(json.make_pair("types", types)).add(json.make_pair("ids",ids)).add(json.make_pair("trees", trees));
 	common::String retstr;
 	json.get_nodestr(res, retstr, 0, 2);
 	auto ret = retstr.get_raw_z();
