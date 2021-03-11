@@ -13,12 +13,13 @@
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
+using namespace PROJECT_NAME::io;
 
-bool identifier::parse_variable_set(compiler::Reader* reader, Maker* maker) {
+bool identifier::parse_variable_set(Reader* reader, Maker* maker) {
 	return false;
 }
 
-Variable* identifier::parse_variable_detail(compiler::Reader* reader, Maker* maker, bool on_set, bool type_must) {
+Variable* identifier::parse_variable_detail(Reader* reader, Maker* maker, bool on_set, bool type_must) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;

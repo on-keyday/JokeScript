@@ -1,7 +1,7 @@
 /*licnese*/
 #pragma once
 #include"../common/structs.h"
-#include"filereader.h"
+#include"../common/filereader.h"
 #include"../common/ctype.h"
 
 namespace PROJECT_NAME {
@@ -185,7 +185,7 @@ namespace PROJECT_NAME {
 			Type* bit_t_signed = nullptr;
 			Type* bit_t_unsigned = nullptr;
 			Type* bit_t_float = nullptr;
-			compiler::ReadStatus status;
+			io::ReadStatus status;
 			common::EasyVectorP<Type*> types;
 			common::EasyVectorP<Macro*> macros;
 			common::EasyVectorP<Variable*> vars;
@@ -208,7 +208,7 @@ namespace PROJECT_NAME {
 				return res;
 			}
 
-			compiler::ReadStatus* get_read_status();
+			io::ReadStatus* get_read_status();
 
 			Type* make_type(char* name, TypeKind kind, bool name_must = true, bool hold = true);
 			Type* get_derived(Type* base, uint64_t size, TypeKind kind);
@@ -234,18 +234,18 @@ namespace PROJECT_NAME {
 		bool is_derived(TypeKind kind);
 
 
-		bool parse_type_set(compiler::Reader* reader,Maker* maker);
+		bool parse_type_set(io::Reader* reader,Maker* maker);
 
-		Type* parse_type(compiler::Reader* reader,Maker* maker);
-		Type* get_array(compiler::Reader* reader,Maker* maker);
-		Type* get_derived_common(compiler::Reader* reader, Maker* maker, TypeKind kind, uint64_t size = 0);
-		Type* get_func(compiler::Reader* reader,Maker* maker);
-		Type* get_struct(compiler::Reader* reader,Maker* maker);
-		Type* get_named(compiler::Reader* reader,Maker* maker);
-		Type* get_bit_type(compiler::Reader* reader, Maker* maker);
+		Type* parse_type(io::Reader* reader,Maker* maker);
+		Type* get_array(io::Reader* reader,Maker* maker);
+		Type* get_derived_common(io::Reader* reader, Maker* maker, TypeKind kind, uint64_t size = 0);
+		Type* get_func(io::Reader* reader,Maker* maker);
+		Type* get_struct(io::Reader* reader,Maker* maker);
+		Type* get_named(io::Reader* reader,Maker* maker);
+		Type* get_bit_type(io::Reader* reader, Maker* maker);
 
-		bool parse_variable_set(compiler::Reader* reader,Maker* maker);
-		Variable* parse_variable_detail(compiler::Reader* reader,Maker* maker,bool on_set=false,bool type_must=false);
+		bool parse_variable_set(io::Reader* reader,Maker* maker);
+		Variable* parse_variable_detail(io::Reader* reader,Maker* maker,bool on_set=false,bool type_must=false);
 
 		bool search_name(const char* name,Maker* maker,Type** type=nullptr,Variable** var=nullptr,Template** temp=nullptr,Macro** macro=nullptr);
 		

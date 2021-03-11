@@ -9,12 +9,12 @@
 */
 
 #pragma once
-#include"../common/structs.h"
-#include"../common/io.h"
+#include"structs.h"
+#include"io.h"
 #include"log.h"
 
 namespace PROJECT_NAME {
-	namespace compiler {
+	namespace io {
 		struct ReadStatus {
 			log::Log* logger;
 			common::String buf;
@@ -31,7 +31,7 @@ namespace PROJECT_NAME {
 
 		struct Reader {
 		private:
-			common::io::Input input;
+			common::io_base::Input input;
 			log::Log* logger=nullptr;
 			uint64_t readpos = 0;
 			bool iseof = false;

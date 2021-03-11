@@ -13,6 +13,7 @@
 //#include"compiler_id_analyzer.h"
 
 using namespace PROJECT_NAME;
+using namespace PROJECT_NAME::io;
 
 bool ctype::is_escapable_control(char c) {
 	return c == '\n' || c == '\t' || c == '\v' || c == '\r'|| c == '\b' || c == '\f';
@@ -59,7 +60,7 @@ bool ctype::is_unnamed(const char* c) {
 	return c[0]=='\0';
 }
 
-bool ctype::reader::Number(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::Number(const char* s, ReadStatus* status) {
 	if (!*s) {
 		status->logger->synerr("unexpected end of file.");
 		status->failed = true;
@@ -254,7 +255,7 @@ bool ctype::reader::Number(const char* s, compiler::ReadStatus* status) {
 	return true;
 }
 
-bool ctype::reader::Identifier(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::Identifier(const char* s, ReadStatus* status) {
 	if (!*s) {
 		if (status->logger){
 			status->logger->synerr("unexpected end of file.");
@@ -281,7 +282,7 @@ bool ctype::reader::Identifier(const char* s, compiler::ReadStatus* status) {
 	return true;
 }
 
-bool ctype::reader::IdentifierPDot(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::IdentifierPDot(const char* s, ReadStatus* status) {
 	if (!*s) {
 		if (status->logger) {
 			status->logger->synerr("unexpected end of file.");
@@ -308,7 +309,7 @@ bool ctype::reader::IdentifierPDot(const char* s, compiler::ReadStatus* status) 
 	return true;
 }
 
-bool ctype::reader::DigitNumber(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::DigitNumber(const char* s, ReadStatus* status) {
 	if (!*s) {
 		return false;
 	}
@@ -365,7 +366,7 @@ bool ctype::reader::DigitNumber(const char* s, compiler::ReadStatus* status) {
 	return true;
 }
 
-bool ctype::reader::Until(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::Until(const char* s, ReadStatus* status) {
 	if (!*s) {
 		return false;
 	}
@@ -374,7 +375,7 @@ bool ctype::reader::Until(const char* s, compiler::ReadStatus* status) {
 	return true;
 }
 
-bool ctype::reader::End(const char* s, compiler::ReadStatus* status) {
+bool ctype::reader::End(const char* s, ReadStatus* status) {
 	if (!*s)return false;
 	status->buf.add(*s);
 	return true;

@@ -10,16 +10,17 @@
 
 
 #include"filereader.h"
-#include"../common/ctype.h"
+#include"ctype.h"
 
 using namespace PROJECT_NAME;
+using namespace PROJECT_NAME::io;
 
-compiler::Reader::Reader(const char* filename,log::Log* logger) {
+Reader::Reader(const char* filename,log::Log* logger) {
 	this->logger = logger;
 	if (!input.readall(filename))iseof = true;;
 }
 
-compiler::Reader::Reader(const char* base, uint64_t s) {
+Reader::Reader(const char* base, uint64_t s) {
 	if (base) {
 		input.buf.add_copy(base, s);
 	}
@@ -29,14 +30,14 @@ compiler::Reader::Reader(const char* base, uint64_t s) {
 	input.name.unuse();
 }
 
-bool compiler::Reader::expect(const char* symbol) {
+bool Reader::expect(const char* symbol) {
 	if (!ahead(symbol))return false;
 	readpos += strlen(symbol);
 	prev_expect = symbol;
 	return true;
 }
 
-bool compiler::Reader::expect_p1(const char* symbol, char judge) {
+bool Reader::expect_p1(const char* symbol, char judge) {
 	if (!ahead(symbol))return false;
 	if (input.buf[readpos+strlen(symbol)]==judge) {
 		return false;
@@ -46,7 +47,7 @@ bool compiler::Reader::expect_p1(const char* symbol, char judge) {
 	return true;
 }
 
-bool compiler::Reader::expect_pf(const char* symbol, bool (*but)(char)) {
+bool Reader::expect_pf(const char* symbol, bool (*but)(char)) {
 	if (!but||!ahead(symbol))return false;
 	if (but(input.buf[readpos + strlen(symbol)])) {
 		return false;
@@ -56,7 +57,7 @@ bool compiler::Reader::expect_pf(const char* symbol, bool (*but)(char)) {
 	return true;
 }
 
-bool compiler::Reader::expect_or_err(const char* symbol) {
+bool Reader::expect_or_err(const char* symbol) {
 	if (!expect(symbol)) {
 		common::StringP s;
 		const char* msg = "unexpected token. expected \"",
@@ -72,7 +73,7 @@ bool compiler::Reader::expect_or_err(const char* symbol) {
 	return true;
 }
 
-bool compiler::Reader::expect_or_err_pe(const char* symbol, const char* expected) {
+bool Reader::expect_or_err_pe(const char* symbol, const char* expected) {
 	if (!expect(symbol)) {
 		common::EasyVector<char> s;
 		const char* msg = "unexpected token. expected \"",
@@ -88,11 +89,11 @@ bool compiler::Reader::expect_or_err_pe(const char* symbol, const char* expected
 	return true;
 }
 
-const char* compiler::Reader::prev() {
+const char* Reader::prev() {
 	return prev_expect;
 }
 
-bool compiler::Reader::ahead(const char* symbol) {
+bool Reader::ahead(const char* symbol) {
 	if (!symbol)return false;
 	common::String& str=this->input.buf;
 	while (1) {
@@ -128,7 +129,7 @@ bool compiler::Reader::ahead(const char* symbol) {
 	return strncmp(&str.get_const()[readpos], symbol,strlen(symbol))==0;
 }
 
-common::String compiler::Reader::string(bool raw) {
+common::String Reader::string(bool raw) {
 	if (input.buf[readpos] != '\"' && input.buf[readpos] != '\'')return nullptr;
 	common::String ret,& str = input.buf;
 	char start = str[readpos];
@@ -164,7 +165,7 @@ common::String compiler::Reader::string(bool raw) {
 	return ret;
 }
 
-bool compiler::Reader::readwhile(ReadStatus* status, bool (*judge)(const char*, ReadStatus*)) {
+bool Reader::readwhile(ReadStatus* status, bool (*judge)(const char*, ReadStatus*)) {
 	if (!judge)return false;
 	while (judge(&input.buf.get_const()[readpos], status)) {
 		readpos++;
@@ -172,24 +173,24 @@ bool compiler::Reader::readwhile(ReadStatus* status, bool (*judge)(const char*, 
 	return true;
 }
 
-char compiler::Reader::abyte() {
+char Reader::abyte() {
 	ahead("");
 	auto ret = input.buf[readpos];
 	return ret;
 }
 
-bool compiler::Reader::eof() {
+bool Reader::eof() {
 	ahead("");
 	return iseof;
 }
 
-bool compiler::Reader::seek(uint64_t pos) {
+bool Reader::seek(uint64_t pos) {
 	if (pos > input.buf.get_size())return false;
 	readpos = pos;
 	return true;
 }
 
-bool compiler::Reader::block(const char* start, const char* end) {
+bool Reader::block(const char* start, const char* end) {
 	if (!end||!expect(start))return false;
 	uint64_t dp = 0;
 	auto& str = input.buf;
@@ -212,20 +213,20 @@ bool compiler::Reader::block(const char* start, const char* end) {
 	return true;
 }
 
-char compiler::Reader::offset(long long ofs) {
+char Reader::offset(long long ofs) {
 	return input.buf[readpos+ofs];
 }
 
-uint64_t compiler::Reader::get_readpos() const {
+uint64_t Reader::get_readpos() const {
 	return readpos;
 }
 
-char compiler::Reader::get_const_char() const {
+char Reader::get_const_char() const {
 	return input.buf[readpos];
 }
 
 
-bool compiler::Reader::add_str(const char* str) {
+bool Reader::add_str(const char* str) {
 	if (!str)return false;
 	input.buf.add_copy(str, strlen(str));
 	iseof = false;

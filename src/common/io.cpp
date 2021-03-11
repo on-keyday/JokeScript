@@ -17,7 +17,7 @@ using namespace PROJECT_NAME;
 #define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
 #endif
 
-bool common::io::Input::readall(const char* filename) {
+bool common::io_base::Input::readall(const char* filename) {
 	FILE* fp = nullptr;
 	fopen_s(&fp,filename, "r");
 	if (!fp)return false;
@@ -28,7 +28,7 @@ bool common::io::Input::readall(const char* filename) {
 	return res;
 }
 
-bool common::io::Input::readfromfp(FILE* fp) {
+bool common::io_base::Input::readfromfp(FILE* fp) {
 	if (!fp)return false;
 	while (1) {
 		int got = fgetc(fp);
@@ -41,7 +41,7 @@ bool common::io::Input::readfromfp(FILE* fp) {
 	return true;
 }
 
-bool common::io::OutPut::writeall(const char* filename,bool bin, const char* byte, uint64_t size) {
+bool common::io_base::OutPut::writeall(const char* filename,bool bin, const char* byte, uint64_t size) {
 	FILE* fp = nullptr;
 	if (!bin) {
 		fopen_s(&fp, filename, "w");
@@ -55,7 +55,7 @@ bool common::io::OutPut::writeall(const char* filename,bool bin, const char* byt
 	return res;
 }
 
-bool common::io::OutPut::writetofp(FILE* fp,const char* byte,uint64_t size) {
+bool common::io_base::OutPut::writetofp(FILE* fp,const char* byte,uint64_t size) {
 	if (!fp)return false;
 	return (bool)fwrite(byte, size, 1, fp);
 }

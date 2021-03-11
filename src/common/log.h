@@ -9,7 +9,7 @@
 */
 
 #pragma once
-#include"../common/structs.h"
+#include"structs.h"
 namespace PROJECT_NAME {
 	namespace log {
 		struct Log {

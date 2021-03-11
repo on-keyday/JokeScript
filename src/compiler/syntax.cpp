@@ -15,6 +15,6 @@ using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
 using namespace PROJECT_NAME::syntax;
 
-SyntaxTree* syntax::parse_syntax(compiler::Reader* reader,Maker* maker) {
+SyntaxTree* syntax::parse_syntax(io::Reader* reader,Maker* maker) {
 	return nullptr;
 }

@@ -13,7 +13,7 @@
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
 
-compiler::ReadStatus* Maker::get_read_status() {
+io::ReadStatus* Maker::get_read_status() {
 	status.logger = logger;
 	status.num = 0;
 	status.begin = nullptr;

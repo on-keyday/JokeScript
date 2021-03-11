@@ -12,8 +12,9 @@
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
+using namespace PROJECT_NAME::io;
 
-bool identifier::parse_type_set(compiler::Reader* reader, Maker* maker) {
+bool identifier::parse_type_set(Reader* reader, Maker* maker) {
 	if (!reader->expect_or_err("type"))return false;
 	const char* check = nullptr;
 	if (reader->expect("{")) {
@@ -65,7 +66,7 @@ bool identifier::parse_type_set(compiler::Reader* reader, Maker* maker) {
 	return true;
 }
 
-Type* identifier::parse_type(compiler::Reader* reader, Maker* maker) {
+Type* identifier::parse_type(Reader* reader, Maker* maker) {
 	if (reader->expect("*")) {
 		return get_derived_common(reader, maker, TypeKind::pointer_t);
 	}
@@ -89,7 +90,7 @@ Type* identifier::parse_type(compiler::Reader* reader, Maker* maker) {
 	}
 }
 
-Type* identifier::get_array(compiler::Reader* reader, Maker* maker) {
+Type* identifier::get_array(Reader* reader, Maker* maker) {
 	uint64_t size = 0;
 	if (!reader->ahead("]")) {
 		auto s = maker->get_read_status();
@@ -114,13 +115,13 @@ Type* identifier::get_array(compiler::Reader* reader, Maker* maker) {
 	return get_derived_common(reader, maker, TypeKind::has_size_t, size);
 }
 
-Type* identifier::get_derived_common(compiler::Reader* reader, Maker* maker, TypeKind kind, uint64_t size) {
+Type* identifier::get_derived_common(Reader* reader, Maker* maker, TypeKind kind, uint64_t size) {
 	auto base = parse_type(reader, maker);
 	if (!base)return nullptr;
 	return maker->get_derived(base, size, kind);
 }
 
-Type* identifier::get_func(compiler::Reader* reader, Maker* maker) {
+Type* identifier::get_func(Reader* reader, Maker* maker) {
 	common::EasyVectorP<Type*> params;
 	common::EasyVectorP<TypeOption*> opts;
 	while (!reader->eof()) {
@@ -160,7 +161,7 @@ Type* identifier::get_func(compiler::Reader* reader, Maker* maker) {
 	return maker->get_function(rettype, params, opts);
 }
 
-Type* identifier::get_struct(compiler::Reader* reader, Maker* maker) {
+Type* identifier::get_struct(Reader* reader, Maker* maker) {
 	if (reader->expect_or_err("{"))return nullptr;
 	auto ret = maker->make_type(nullptr, TypeKind::struct_t, false);
 	if (!ret)return nullptr;
@@ -182,7 +183,7 @@ Type* identifier::get_struct(compiler::Reader* reader, Maker* maker) {
 	return ret;
 }
 
-Type* identifier::get_named(compiler::Reader* reader, Maker* maker) {
+Type* identifier::get_named(Reader* reader, Maker* maker) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;
@@ -241,7 +242,7 @@ Type* identifier::get_named(compiler::Reader* reader, Maker* maker) {
 	return ret;
 }
 
-Type* identifier::get_bit_type(compiler::Reader* reader, Maker* maker) {
+Type* identifier::get_bit_type(Reader* reader, Maker* maker) {
 	if (reader->expect("(")) {
 		bool is_unsigned = false, is_float = false;
 		if (reader->expect("unsigned")) {

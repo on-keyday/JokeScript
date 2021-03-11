@@ -9,14 +9,14 @@
 */
 
 #include"user_action.h"
-#include"../compiler/filereader.h"
+#include"../common/filereader.h"
 #include"../common/ctype.h"
 
 using namespace PROJECT_NAME;
-using namespace PROJECT_NAME::compiler;
+using namespace PROJECT_NAME::io;
 
 
-bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idmap,user_tools::JSON& json,compiler::Reader& reader) {
+bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idmap,user_tools::JSON& json,io::Reader& reader) {
 	ReadStatus status = { 0 };
 	reader.readwhile(&status, ctype::reader::Identifier);
 	if (status.failed)return false;
@@ -48,7 +48,7 @@ bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idma
 	return true;
 }
 
-bool interactive::json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::String& buf, compiler::Reader& reader,bool end) {
+bool interactive::json_str(std::map<std::string, user_tools::JSONNode*>& idmap, user_tools::JSON& json, common::String& buf, io::Reader& reader,bool end) {
 	reader.abyte();
 	ReadStatus ch = { 0 };
 	reader.readwhile(&ch, ctype::reader::Identifier);
@@ -151,7 +151,7 @@ int interactive::json_reader() {
 				ReadStatus status = { 0 };
 				reader.readwhile(&status, ctype::reader::End);
 				if (ctype::is_unnamed(status.buf.get_const()))break;
-				common::io::OutPut file;
+				common::io_base::OutPut file;
 				if (file.writeall(status.buf.get_const(), false, got.get_const(), got.get_size())) {
 					ok = true;
 				}

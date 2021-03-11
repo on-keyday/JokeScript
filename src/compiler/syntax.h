@@ -14,6 +14,6 @@
 
 namespace PROJECT_NAME {
 	namespace syntax {
-		identifier::SyntaxTree* parse_syntax(compiler::Reader* reader,identifier::Maker* maker);
+		identifier::SyntaxTree* parse_syntax(io::Reader* reader,identifier::Maker* maker);
 	}
 }

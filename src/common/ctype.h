@@ -9,7 +9,7 @@
 */
 
 #pragma once
-#include"../compiler/filereader.h"
+#include"filereader.h"
 
 namespace PROJECT_NAME {
 	namespace ctype{
@@ -25,12 +25,12 @@ namespace PROJECT_NAME {
 		bool is_utf8_later(char c);
 		bool is_unnamed(const char* c);
 		namespace reader {
-			bool Number(const char* s,compiler::ReadStatus* status);
-			bool Identifier(const char* s,compiler::ReadStatus* status);
-			bool IdentifierPDot(const char* s, compiler::ReadStatus* status);
-			bool DigitNumber(const char* s, compiler::ReadStatus* status);
-			bool Until(const char* s, compiler::ReadStatus* status);
-			bool End(const char* s, compiler::ReadStatus* status);
+			bool Number(const char* s,io::ReadStatus* status);
+			bool Identifier(const char* s,io::ReadStatus* status);
+			bool IdentifierPDot(const char* s, io::ReadStatus* status);
+			bool DigitNumber(const char* s, io::ReadStatus* status);
+			bool Until(const char* s, io::ReadStatus* status);
+			bool End(const char* s, io::ReadStatus* status);
 		}
 
 		bool is_utf16_surrogate_high(char16_t c);

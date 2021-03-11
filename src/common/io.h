@@ -14,7 +14,7 @@
 
 namespace PROJECT_NAME {
 	namespace common {
-		namespace io {
+		namespace io_base {
 			struct Input {
 				String name;
 				String buf;

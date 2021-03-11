@@ -10,7 +10,7 @@
 
 #pragma once
 #include"../common/structs.h"
-#include"../compiler/filereader.h"
+#include"../common/filereader.h"
 //#include"compiler_identifier_holder.h"
 
 namespace PROJECT_NAME {
@@ -53,7 +53,7 @@ namespace PROJECT_NAME {
 			common::EasyVector<JSONNode*> nodes;
 			//common::EasyVector<JSONNode*> root;
 
-			JSONNode* make_JSON_detail(compiler::Reader* reader);
+			JSONNode* make_JSON_detail(io::Reader* reader);
 			bool line(int has_line, common::String& str) const;
 
 			

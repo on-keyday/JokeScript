@@ -16,7 +16,7 @@
 //#include"compiler_identifier_holder.h"
 //#include"compiler_syntax_analyzer.h"
 //#include"compiler_tree_to_llvm.h"
-#include"compiler/filereader.h"
+#include"common/filereader.h"
 #include"user/user_tools.h"
 #include"user/user_action.h"
 //#include"compiler_llvm.h"
@@ -29,7 +29,7 @@ struct CompilerOpts {
 
 struct jokescript::Instance {
 	CompilerOpts opts;
-	compiler::Reader* reader;
+	io::Reader* reader;
 	//compiler::IdHolder* holder;
 	bool parsed;
 	char* printed;
@@ -72,7 +72,7 @@ int ccnv jokescript::set_option(Instance* ins, const char* opt, const char* valu
 		//if (ins->reader || ins->holder)return 0;
 		auto hold = common::create<log::Log>();
 		if (!hold)return 0;
-		auto reader = common::create<compiler::Reader>(value,hold);
+		auto reader = common::create<io::Reader>(value,hold);
 		//auto holder = common::create<compiler::IdHolder>();
 		//if (!reader||!holder)goto Err;
 		//if (!holder->make_block())goto Err;
