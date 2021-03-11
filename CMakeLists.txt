@@ -9,8 +9,9 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("JokeScript")
 
-if(CMAKE_BINARY_DIR EQUAL CMAKE_SOURCE_DIR)
-message(FATAL_ERROR "in source build is not allowed.")
+
+if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+message(FATAL_ERROR "in-source-build is not allowed.")
 endif()
 
 if(EXISTS Jcript)
