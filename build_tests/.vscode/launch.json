@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Joker(cl_build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/cl_build/built/src/Joker.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/cl_build/built/src",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Joker(clang_build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/clang_build/built/src/Joker.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/clang_build/built/src",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Joker(gcc_build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/gcc_build/built/src/Joker.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/gcc_build/built/src",
+            "environment": [],
+            "console": "externalTerminal"
+        }
+    ]
+}
