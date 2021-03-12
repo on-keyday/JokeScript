@@ -64,7 +64,7 @@ jobs:
         pwsh -Command Expand-Archive ninja.zip
         dir 
         dir ninja
-        set PATH=%PATH%;D:\a\JokeScript\JokeScript\
+        set PATH=%PATH%;D:\a\JokeScript\JokeScript\ninja
         cd build_tests
         config
         build
