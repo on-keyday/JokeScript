@@ -60,7 +60,7 @@ jobs:
     #    uses a compiled language
 
       run: |
-        curl -o https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
+        curl -o ninja.zip https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
         cd build_tests
         config
         build
