@@ -9,7 +9,7 @@
 */
 
 
-#include"../JokeScript.h"
+#include"../public/JokeScript.h"
 using namespace std;
 
 int main(int argc,char** argv)
