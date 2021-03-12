@@ -12,7 +12,7 @@
 
 ### common_setting
 ### PROJECT_BASE|PROJECT_BASE_PLUS_WILD_CARD: source code path. 
-#### default:..\..\src|../../src/*
+#### default: ..\..\src|../../src/*
 ### CMAKE_GENERATOR:cmake's generator name. 
 #### default:Ninja
 ### RUN_GENERATOR:running generator. 
