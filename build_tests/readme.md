@@ -15,7 +15,7 @@
 #### default: ..\\..\src|../../src/*
 ### CMAKE_GENERATOR:cmake's generator name. 
 #### default:Ninja
-### RUN_GENERATOR:running generator. 
+### RUN_GENERATOR:generator's program name. 
 #### default:ninja
 
 ## vs_setting (for Windows)
