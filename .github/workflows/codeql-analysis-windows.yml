@@ -60,11 +60,11 @@ jobs:
     #    uses a compiled language
 
       run: |
-        apt-get install ninja-build -y
+        curl -o https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
         cd build_tests
-        . config
-        . build
-      shell: bash
+        config
+        build
+      shell: cmd
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
