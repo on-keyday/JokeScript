@@ -60,7 +60,7 @@ jobs:
     #    uses a compiled language
 
       run: |
-        path
+        pwsh -Command Invoke-WebRequest -Uri https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -OutFile ninja.zip
     #    wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
     #   pwsh -Command Expand-Archive ninja-win.zip
     #    dir
