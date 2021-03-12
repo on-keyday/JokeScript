@@ -119,5 +119,6 @@ Variable* Maker::make_variable(char* name) {
 		return nullptr;
 	}
 	ret->name = name;
+	vars.add(ret);
 	return ret;
 }

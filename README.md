@@ -1,5 +1,5 @@
 # JokeScript
-###### ※this project is incomplete. You can use this code, but what can you do with this? You should look for better libraries.
+###### ※this project is incomplete. You can use this code, but what can you do with this? You must look for better libraries.
 
 ## Programing language making with Joke.
 

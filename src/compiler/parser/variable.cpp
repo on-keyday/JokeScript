@@ -8,18 +8,20 @@
 
 */
 
-#include"identifier.h"
+#include"variable.h"
 #include"syntax.h"
+#include"type.h"
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
 using namespace PROJECT_NAME::io;
+using namespace PROJECT_NAME::variable;
 
-bool identifier::parse_variable_set(Reader* reader, Maker* maker) {
+bool variable::parse_variable_set(Reader* reader, Maker* maker) {
 	return false;
 }
 
-Variable* identifier::parse_variable_detail(Reader* reader, Maker* maker, bool on_set, bool type_must) {
+Variable* variable::parse_variable_detail(Reader* reader, Maker* maker, bool on_set, bool type_must) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;
@@ -30,7 +32,7 @@ Variable* identifier::parse_variable_detail(Reader* reader, Maker* maker, bool o
 	auto ret = maker->make_variable(s->buf.get_raw_z());
 	if (!ret)return nullptr;
 	if (!reader->ahead(",") && !reader->ahead("=")) {
-		auto type = parse_type(reader, maker);
+		auto type = type::parse_type(reader, maker);
 		if (!type)return nullptr;
 		ret->type=type;
 	}

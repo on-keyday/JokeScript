@@ -1,8 +1,8 @@
 /*licnese*/
 #pragma once
-#include"../common/structs.h"
-#include"../common/filereader.h"
-#include"../common/ctype.h"
+#include"../../common/structs.h"
+#include"../../common/filereader.h"
+#include"../../common/ctype.h"
 
 namespace PROJECT_NAME {
 	namespace identifier {
@@ -174,6 +174,8 @@ namespace PROJECT_NAME {
 
 		struct ScopeStack {
 			ScopeStack(MembersP& memb) :memb(memb){}
+			ScopeStack(ScopeStack&) = delete;
+			ScopeStack(ScopeStack&&) = delete;
 			ScopeStack* prev=nullptr;
 			MembersP& memb;
 			common::EasyVectorP<SyntaxTree*>* tree=nullptr;
@@ -229,24 +231,7 @@ namespace PROJECT_NAME {
 				common::kill(bit_t_unsigned);
 			}
 		};
-
-
-		bool is_derived(TypeKind kind);
-
-
-		bool parse_type_set(io::Reader* reader,Maker* maker);
-
-		Type* parse_type(io::Reader* reader,Maker* maker);
-		Type* get_array(io::Reader* reader,Maker* maker);
-		Type* get_derived_common(io::Reader* reader, Maker* maker, TypeKind kind, uint64_t size = 0);
-		Type* get_func(io::Reader* reader,Maker* maker);
-		Type* get_struct(io::Reader* reader,Maker* maker);
-		Type* get_named(io::Reader* reader,Maker* maker);
-		Type* get_bit_type(io::Reader* reader, Maker* maker);
-
-		bool parse_variable_set(io::Reader* reader,Maker* maker);
-		Variable* parse_variable_detail(io::Reader* reader,Maker* maker,bool on_set=false,bool type_must=false);
-
+		bool is_derived(identifier::TypeKind kind);
 		bool search_name(const char* name,Maker* maker,Type** type=nullptr,Variable** var=nullptr,Template** temp=nullptr,Macro** macro=nullptr);
 		
 	}

@@ -13,11 +13,11 @@
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::identifier;
 
+#define SEARCH_T(arg,search) if(arg&&!*arg){*arg=search_T(name,scope->memb.get_base()->search);ok=false;}
+
 bool identifier::is_derived(TypeKind kind) {
 	return false;
 }
-
-#define SEARCH_T(arg,search) if(arg&&!*arg){*arg=search_T(name,scope->memb.get_base()->search);ok=false;}
 
 bool identifier::search_name(const char* name,Maker* maker, Type** type, Variable** var, Template** temp, Macro** macro) {
 	if (!name)return false;

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include"identifier.h"
+#include"../data/identifier.h"
 
 namespace PROJECT_NAME {
 	namespace syntax {
