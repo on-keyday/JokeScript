@@ -10,7 +10,7 @@
 
 ## you can edit files in ./setting
 
-### common_setting
+## common_setting
 ### PROJECT_BASE|PROJECT_BASE_PLUS_WILD_CARD: source code path. 
 #### default: ..\\..\src|../../src/*
 ### CMAKE_GENERATOR:cmake's generator name. 
@@ -18,7 +18,7 @@
 ### RUN_GENERATOR:running generator. 
 #### default:ninja
 
-### vs_setting (for Windows)
+## vs_setting (for Windows)
 ### PathToVsDevCmd:path to developer command prompt. 
 #### default:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
 ### PathToVcVars:path to vcvarsXX.bat. 
