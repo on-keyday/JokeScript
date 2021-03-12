@@ -60,6 +60,7 @@ jobs:
     #    uses a compiled language
 
       run: |
+        apt-get install 
         cd build_tests
         . config
         . build
