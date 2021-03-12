@@ -1,3 +1,3 @@
 @echo off
 set PROJECT_BASE=..\..\src
-
+set CMAKE_GENERATOR=Ninja
