@@ -22,7 +22,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze(Windows)
     runs-on: windows-latest
 
     strategy:
@@ -61,8 +61,7 @@ jobs:
 
       run: |
         curl -o ninja.zip https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
-        dir
-        powershell Expand-Archive ninja.zip
+        PATH
         cd build_tests
         config
         build
