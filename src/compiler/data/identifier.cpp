@@ -15,6 +15,15 @@ using namespace PROJECT_NAME::identifier;
 
 #define SEARCH_T(arg,search) if(arg&&!*arg){*arg=search_T(name,scope->memb.get_base()->search);ok=false;}
 
+template<>
+bool MembersP::name_conflict<Type>(const char* name) { if (!p)return true; return check_name_conflict(name, p->types); }
+template<>
+bool MembersP::name_conflict<Variable>(const char* name) { if (!p)return true; return check_name_conflict(name, p->vars); }
+template<>
+bool MembersP::name_conflict<Macro>(const char* name) { if (!p)return true; return check_name_conflict(name, p->macros); }
+template<>
+bool MembersP::name_conflict<Template>(const char* name) { if (!p)return true; return check_name_conflict(name, p->templates); }
+
 bool identifier::is_derived(TypeKind kind) {
 	return false;
 }

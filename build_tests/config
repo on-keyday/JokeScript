@@ -1,0 +1,3 @@
+cd clang_build;. reconfig
+cd ../gcc_build;. reconfig
+cd ..

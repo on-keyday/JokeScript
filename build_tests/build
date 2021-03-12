@@ -1,0 +1,3 @@
+cd clang_build;. build
+cd ../gcc_build;. build
+cd ..

@@ -1,0 +1,1 @@
+PROJECT_BASE_PLUS_WILD_CARD="../../src/*"

@@ -70,14 +70,6 @@ namespace PROJECT_NAME {
 
 			template<class T>
 			bool name_conflict(const char* name);
-			template<>
-			bool name_conflict<Type>(const char* name) { if (!p)return true; return check_name_conflict(name, p->types); }
-			template<>
-			bool name_conflict<Variable>(const char* name) { if (!p)return true; return check_name_conflict(name, p->vars); }
-			template<>
-			bool name_conflict<Macro>(const char* name) { if (!p)return true; return check_name_conflict(name, p->macros); }
-			template<>
-			bool name_conflict<Template>(const char* name) { if (!p)return true; return check_name_conflict(name, p->templates); }
 
 			bool add(Type* type) { if (!p)if (!init())return false; return p->types.add(type); }
 			bool add(Variable* var) { if (!p)if (!init())return false; return p->vars.add(var); }
