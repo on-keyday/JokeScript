@@ -1,4 +1,5 @@
 . ../common/copy_src.sh
+. ../setting/common_setting.sh
 cd built
-ninja
+$RUN_GENERATOR
 cd ..
