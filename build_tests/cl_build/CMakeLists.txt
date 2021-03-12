@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
-project ("JokeScript")
+project ("Test(cl)")
 
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
 message(FATAL_ERROR "in-source-build is not allowed.")
