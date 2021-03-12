@@ -60,7 +60,7 @@ jobs:
     #    uses a compiled language
 
       run: |
-        sudo apt-get install ninja-build -y
+        apt-get install ninja-build -y
         cd build_tests
         . config
         . build
