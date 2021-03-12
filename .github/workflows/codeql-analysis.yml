@@ -61,6 +61,7 @@ jobs:
 
       run: |
         cd build_tests
+        . config
         . build
 
     - name: Perform CodeQL Analysis
