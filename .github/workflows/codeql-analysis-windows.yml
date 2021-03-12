@@ -60,7 +60,7 @@ jobs:
     #    uses a compiled language
 
       run: |
-        wget  https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
+        wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
         pwsh -Command Expand-Archive ninja-win.zip
         dir
         dir ninja-win
