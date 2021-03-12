@@ -60,10 +60,10 @@ jobs:
     #    uses a compiled language
 
       run: |
-        cd build_tests
-        C:
-        cd C:\Program Files\PowerShell\7\
+        curl -o ninja.zip https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
+        pwsh Expand-Archive ninja.zip
         dir
+        cd build_tests
       shell: cmd
 
     - name: Perform CodeQL Analysis
