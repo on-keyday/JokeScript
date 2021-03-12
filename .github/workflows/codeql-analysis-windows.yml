@@ -61,7 +61,7 @@ jobs:
 
       run: |
         curl -o ninja.zip https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
-        pwsh Expand-Archive ninja.zip
+        pwsh -Command Expand-Archive ninja.zip
         dir
         cd build_tests
       shell: cmd
