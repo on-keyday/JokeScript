@@ -61,8 +61,9 @@ jobs:
 
       run: |
         pwsh -Command Invoke-WebRequest -Uri https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -OutFile ninja.zip
+        pwsh -Command Expand-Archive ninja.zip
     #    wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip
-    #   pwsh -Command Expand-Archive ninja-win.zip
+    #   
     #    dir
     #    dir ninja-win
     #    cd build_tests
