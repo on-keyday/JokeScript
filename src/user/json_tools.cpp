@@ -8,185 +8,280 @@
 
 */
 
-#include"user_tools.h"
+#include"json_tools.h"
 #include"../common/ctype.h"
+#include"../compiler/data/identifier.h"
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
-using namespace PROJECT_NAME::user_tools;
+using namespace PROJECT_NAME::json_tools;
+namespace PROJECT_NAME {
+	namespace json_tools {
 
-user_tools::JSONNode::JSONNode(const char* name,JSONType type,JSON* on) {
-	this->_name = common::StringFilter() = name;
-	this->_type = type;
-	this->_on = on;
-}
+		struct JSONNamed {
+			char* name = nullptr;
+			JSON* obj = nullptr;
+			~JSONNamed() {
+				common::free(name);
+				common::kill(obj);
+			}
+		};
 
-JSON* user_tools::JSONNode::parent() const {
-	return _on;
-}
+		struct JSON_detail {
+			JSON* parent;
+			JSONType type;
+			union {
+				common::EasyVectorP<JSONNamed*> object = nullptr;
+				common::EasyVectorP<JSON*> array;
+				double num_f;
+				int64_t num_i;
+				char* str;
+				bool flag;
+			};
+			JSON_detail(JSON* p) {
+				type = JSONType::null;
+				parent = p;
+			}
+			JSON_detail(bool f, JSON* p) {
+				type = JSONType::boolean;
+				flag = f;
+				parent = p;
+			}
+			JSON_detail(double num, JSON* p) {
+				type = JSONType::number_f;
+				parent = p;
+			}
+			template<class T>
+			JSON_detail(T num, JSON* p) {
+				if (num <= 0x7F'FF'FF'FF'FF'FF'FF'FF) {
+					num_i = num;
+					type = JSONType::number;
+				}
+				else {
+					type = JSONType::null;
+				}
+				parent = p;
+			}
+			JSON_detail(const char* strin, JSON* p) {
+				if (!strin) {
+					type = JSONType::null;
+				}
+				else {
+					str = common::StringFilter() = strin;
+					if (!str) {
+						type = JSONType::string;
+					}
+					else {
+						type = JSONType::string;
+					}
+				}
+				parent = p;
+			}
+			~JSON_detail()
+			{
+				if (type == JSONType::string) {
+					common::free(str);
+				}
+				else if (type == JSONType::object) {
+					object.remove_each(common::kill);
+					object.unuse();
+				}
+				else if (type == JSONType::array) {
+					array.remove_each(common::kill);
+					array.unuse();
+				}
+			}
+		};
+		/*struct JSONMaker{
+			static JSON_detail* make_null(JSON*);
+			static JSON_detail* make_string(const char* str, JSON*);
+			static JSON_detail* make_bool(bool f, JSON*);
+			static JSON_detail* make_num(double num, JSON*);
+			static JSON_detail* make_num(int64_t num, JSON*);
+			static JSON_detail* make_num(const char* num, JSON*);
+			static JSON_detail* make_obj();
+			static JSON_detail* make_array();
 
-const char* user_tools::JSONNode::name() const {
-	return _name;
-}
-
-JSONType user_tools::JSONNode::type() const {
-	return _type;
-}
-
-JSONNode* user_tools::JSONNode::idx(uint64_t n) const{
-	return this->pair[n];
-}
-
-bool user_tools::JSONNode::unuse() {
-	return this->pair.unuse();
-}
-
-bool user_tools::JSONNode::pack() {
-	return this->pair.pack();
-}
-
-user_tools::JSONNode::~JSONNode() {
-	common::free(_name);
-}
-
-JSONNode& user_tools::JSONNode::add(JSONNode* node) {
-	if (!node)return *this;
-	if (node->parent() != this->parent())return *this;
-	if (this->type() == JSONType::object) {
-		if (node->type() != JSONType::pair)return *this;
-		this->pair.add(node);
+			static bool add(JSON_detail * base, const char* name, JSON_detail * value);
+			static bool add(JSON_detail * base, JSON_detail * value);
+		};*/
 	}
-	else if(this->type()==JSONType::array){
-		if (node->type() == JSONType::pair)return *this;
-		this->pair.add(node);
+}
+
+JSON JSON::invalid;
+
+JSON_detail* make_null(JSON* p) {
+	return common::create<JSON_detail>(p);
+}
+
+JSON_detail* make_string(const char* str, JSON* p) {
+	return common::create<JSON_detail>(str,p);
+}
+
+JSON_detail* make_bool(bool f, JSON* p) {
+	return common::create<JSON_detail>(f,p);
+}
+
+JSON_detail* make_num(double num, JSON* p) {
+	return common::create<JSON_detail>(num,p);
+}
+
+JSON_detail* make_num(int64_t num, JSON* p) {
+	return common::create<JSON_detail>(num, p);
+}
+
+JSON_detail* make_num(const char* num, JSON* p) {
+	if (!num)return nullptr;
+	int ofs = 0;
+	if (num[0] == '-') {
+		ofs = 1;
 	}
-	else if (this->type()==JSONType::pair) {
-		if (node->type() == JSONType::pair)return *this;
-		if (this->idx(0))return *this;
-		this->pair.add(node);
+	uint64_t n;
+	int bit = 0;
+	bool f = false, u = false;
+	auto res=ctype::get_number_type(&num[1],n,bit,f,u);
+	if (!res||f||(u&&bit>=8)) {
+		char* end = nullptr;
+		auto fs=strtod(num, &end);
+		if (*end != '\0')return nullptr;
+		return make_num(fs,p);
+	}
+	if (ofs) {
+		return make_num(-(int64_t)n,p);
 	}
 	else {
-		return *this;
-	}
-	return *this;
-}
-
-uint64_t user_tools::JSONNode::len()const {
-	if (this->type() == JSONType::object|| this->type() == JSONType::array) {
-		return pair.get_size();
-	}
-	else {
-		return 1;
+		return make_num((int64_t)n,p);
 	}
 }
 
-uint64_t user_tools::JSONNode::cap() const {
-	return pair.get_cap();
+JSON_detail* make_obj(JSON* p) {
+	auto ret = make_null(p);
+	if (ret) {
+		ret->type = JSONType::object;
+	}
+	return ret;
 }
 
-user_tools::JSON::~JSON() {
-	nodes.remove_each(common::kill);
+JSON_detail* make_array(JSON* p) {
+	auto ret = make_null(p);
+	if (ret) {
+		ret->type = JSONType::array;
+	}
+	return ret;
 }
 
-
-bool user_tools::JSON::init() {
-	nodes.remove_each(common::kill);
+bool add(JSON_detail* base, const char* name, JSON* value) {
+	if (!base || !name || !value)return false;
+	if (base->type != JSONType::object)return false;
+	if(!identifier::check_name_conflict(name, base->object))return false;
+	auto ad = common::create<JSONNamed>();
+	if (!ad)return false;
+	auto s = common::StringFilter() = name;
+	if (!s) {
+		common::kill(ad);
+		return false;
+	}
+	ad->name = s;
+	ad->obj = value;
+	base->object.add(ad);
 	return true;
 }
-/*
-bool user_tools::JSON::add_root(JSONNode* node) {
-	return root.add_nz(node);
-}*/
 
-JSONNode* user_tools::JSON::make_null() {
-	auto ret = common::create<JSONNode>("null",JSONType::null,this);
-	if (!ret)return nullptr;
-	ret->unuse();
-	this->nodes.add(ret);
-	return ret;
+bool add(JSON_detail* base, JSON* value) {
+	if (!base || !value)return false;
+	if (base->type != JSONType::array)return false;
+	base->array.add(value);
+	return true;
 }
 
-JSONNode* user_tools::JSON::make_bool(bool b) {
-	JSONNode* ret = nullptr;
-	if (b) {
-		ret = common::create<JSONNode>("true", JSONType::boolean,this);
+JSON& JSON::operator[](const char* name) {
+	if (this == &invalid)return invalid;
+	if (!p||p->type != JSONType::object) {
+		common::kill(p);
+		p = make_obj(this);
+		if (!p)return invalid;
 	}
-	else {
-		ret = common::create<JSONNode>("false",JSONType::boolean,this);
+	else{		
+		auto s = identifier::search_T(name, p->object);
+		if (s)return *s->obj;
 	}
-	if (!ret)return nullptr;
-	ret->unuse();
-	this->nodes.add(ret);
-	return ret;
-}
-
-JSONNode* user_tools::JSON::make_number(const char* num) {
-	if (!num)return nullptr;
-	auto ret= common::create<JSONNode>(num, JSONType::number,this);
-	if (!ret)return nullptr;
-	ret->unuse();
-	this->nodes.add(ret);
-	return ret;
-}
-
-JSONNode* user_tools::JSON::make_string(const char* str) {
-	if (!str) {
-		return make_null();
+	auto ad = common::create<JSON>();
+	if (!ad)return invalid;
+	if (!add(p, name, ad)) {
+		common::kill(ad);
+		return invalid;
 	}
-	auto ret = common::create<JSONNode>(str, JSONType::string,this);
-	if (!ret)return nullptr;
-	ret->unuse();
-	this->nodes.add(ret);
-	return ret;
+	return *ad;
 }
 
-JSONNode* user_tools::JSON::make_obj() {
-	auto ret = common::create<JSONNode>("{}", JSONType::object,this);
-	if (!ret)return nullptr;
-	ret->pack();
-	this->nodes.add(ret);
-	return ret;
+JSON& JSON::operator[](uint64_t i) {
+	if (this == &invalid)return invalid;
+	if (!p || p->type != JSONType::array) {
+		common::kill(p);
+		p = make_obj(this);
+		if (!p)return invalid;
+	}
+	
+	auto ad = common::create<JSON>();
+	if (!ad)return invalid;
+	if (!add(p,ad)) {
+		common::kill(ad);
+		return invalid;
+	}
+	return *ad;
 }
 
-JSONNode* user_tools::JSON::make_array() {
-	auto ret = common::create<JSONNode>("[]", JSONType::array,this);
-	if (!ret)return nullptr;
-	ret->pack();
-	this->nodes.add(ret);
-	return ret;
-}
-
-JSONNode* user_tools::JSON::make_pair(const char* name, JSONNode* node) {
-	if (!name || !node)return nullptr;
-	if (node->parent() != this)return nullptr;
-	if (node->type() == JSONType::pair)return nullptr;
-	auto ret = common::create<JSONNode>(name, JSONType::pair,this);
-	if (!ret)return nullptr;
-	ret->add(node);
-	ret->pack();
-	this->nodes.add(ret);
-	return ret;
-}
-
-JSONNode* user_tools::JSON::get_value(JSONNode* obj, const char* name) const{
-	if (!obj || !name)return nullptr;
-	if (obj->type() != JSONType::object)return nullptr;
-	auto i = 0ull;
-	while (obj->idx(i)) {
-		if (strcmp(obj->idx(i)->name(),name) == 0) {
-			return obj->idx(i)->idx(0);
+JSON::operator const char* () {
+	if (!p)return "null";
+	if (p->type == JSONType::null) {
+		return "null";
+	}
+	else if (p->type == JSONType::string) {
+		return p->str;
+	}
+	else if (p->type==JSONType::boolean) {
+		if (p->flag) {
+			return "true";
 		}
-		i++;
+		else {
+			return "false";
+		}
+	}
+	else if (p->type == JSONType::number||p->type==JSONType::number_f) {
+		common::free(this->hold);
+		this->hold = common::StringFilter() = std::to_string(p->num_i).c_str();
+		return this->hold;
+	}
+	else if (p->type==JSONType::object) {
+		common::String s;
+		s.add('{');
+		for (auto e:p->object) {
+			s.add_copy(e->name, ctype::strlen(e->name));
+			s.add(':');
+			auto child = (const char*)*e->obj;
+			s.add_copy(child,ctype::strlen(child));
+		}
+		s.add('}');
+		common::free(this->hold);
+		this->hold = s.get_raw_z();
+		return this->hold;
+	}
+	else if (p->type==JSONType::array) {
+		common::String s;
+		s.add('[');
+		for (auto e : p->array) {
+			auto child = (const char*)*e;
+			s.add_copy(child, ctype::strlen(child));
+		}
+		s.add(']');
+		common::free(this->hold);
+		this->hold = s.get_raw_z();
+		return this->hold;
 	}
 	return nullptr;
 }
 
-JSONNode* user_tools::JSON::get_value(JSONNode* array, uint64_t index) const{
-	if (!array)return nullptr;
-	if (array->type() != JSONType::array)return nullptr;
-	return array->idx(index);
-}
-
+/*
 JSONNode* user_tools::JSON::get_nodes(JSONNode* base, const char* path) const{
 	if (!base || !path)return nullptr;
 	bool prevarray = false;
@@ -334,7 +429,9 @@ bool user_tools::JSON::line(int has_line,common::String& str) const{
 	}
 	return true;
 }
+*/
 
+/*
 JSONNode* user_tools::JSON::make_JSON(const char* jsonstr) {
 	if (!jsonstr)return nullptr;
 	io::Reader reader(jsonstr, strlen(jsonstr));
@@ -413,28 +510,7 @@ JSONNode* user_tools::JSON::make_JSON_detail(io::Reader* reader) {
 	}
 	return ret;
 }
+*/
 
-void user_tools::JSON::remove(JSONNode* node) {
-	if (!node)return;
-	if (node->parent() != this)return;
-	for (auto i = 0ull; node->idx(i);i++) {
-		remove(node->idx(i));
-	}
-	common::kill(this->nodes.remove_if(node));
-	this->nodes.pack();
-	return;
-}
 
-uint64_t user_tools::JSON::this_size() const{
-	uint64_t ret = sizeof(JSON);
-	auto i = 0ull;
-	while (nodes[i]) {
-		ret += sizeof(JSONNode);
-		ret += strlen(nodes[i]->name()) + 1;
-		ret += sizeof(JSONNode*) * nodes[i]->cap();
-		i++;
-	}
-	ret += this->nodes.get_cap()*sizeof(JSONNode*);
-	return ret;
-}
 

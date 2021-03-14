@@ -15,7 +15,7 @@
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
 
-
+/*
 bool interactive::json_assign(std::map<std::string, user_tools::JSONNode*>& idmap,user_tools::JSON& json,io::Reader& reader) {
 	ReadStatus status = { 0 };
 	reader.readwhile(&status, ctype::reader::Identifier);
@@ -179,3 +179,4 @@ int interactive::json_reader() {
 	}
 	return 0;
 }
+*/

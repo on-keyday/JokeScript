@@ -501,7 +501,7 @@ bool ctype::get_number_type(const char* num,uint64_t& numres,int& bit_size,bool&
 			is_unsigned = true;
 		}
 	}
-	if (lf)bit_size = true;
+	if (lf)bit_size = 8;
 	numres = res;
 	return true;
 }

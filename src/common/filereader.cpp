@@ -15,12 +15,17 @@
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
 
-Reader::Reader(const char* filename,log::Log* logger) {
+Reader::Reader(const char* filename,bool is_bin,log::Log* logger) {
 	this->logger = logger;
-	if (!input.readall(filename))iseof = true;;
+	this->ignore_handler = nullptr;
+	const char* mode = "r";
+	if (is_bin)mode = "rb";
+	if (!input.readall(filename,mode))iseof = true;
 }
 
-Reader::Reader(const char* base, uint64_t s) {
+Reader::Reader(const char* base, uint64_t s,log::Log* logger) {
+	this->logger = logger;
+	this->ignore_handler = nullptr;
 	if (base) {
 		input.buf.add_copy(base, s);
 	}
@@ -28,6 +33,47 @@ Reader::Reader(const char* base, uint64_t s) {
 		iseof = true;
 	}
 	input.name.unuse();
+}
+
+bool Reader::ignore() {
+	if (!ignore_handler)return ignore_default();
+	auto& buf = input.buf;
+	return ignore_handler(buf, readpos);
+}
+
+bool Reader::ignore_default() {
+	common::String& str = this->input.buf;
+	while (1) {
+		if (str[readpos] == ' ' || str[readpos] == '\n' || str[readpos] == '\t' || str[readpos] == '\v' || str[readpos] == '\r') {
+			readpos++;
+			continue;
+		}
+		else if (str[readpos] == '/' && str[readpos + 1] == '*') {
+			readpos += 2;
+			auto to = strstr(&str.get_const()[readpos], "*/");
+			if (!to) {
+				iseof = true;
+				return false;
+			}
+			readpos += (to - &str.get_const()[readpos]) + 2;
+			continue;
+		}
+		else if (str[readpos] == '/' && str[readpos + 1] == '/') {
+			auto to = strstr(&str.get_const()[readpos], "\n");
+			if (!to) {
+				iseof = true;
+				return false;
+			}
+			readpos += (to - &str.get_const()[readpos]) + 1;
+			continue;
+		}
+		else if (str[readpos] == '\0') {
+			iseof = true;
+			return false;
+		}
+		break;
+	}
+	return false;
 }
 
 bool Reader::expect(const char* symbol) {
@@ -99,38 +145,8 @@ const char* Reader::prev() {
 
 bool Reader::ahead(const char* symbol) {
 	if (!symbol)return false;
-	common::String& str=this->input.buf;
-	while (1) {
-		if (str[readpos]==' '||str[readpos]=='\n'||str[readpos]=='\t'||str[readpos]=='\v'||str[readpos]=='\r') {
-			readpos++;
-			continue;
-		}
-		else if (str[readpos]=='/'&&str[readpos+1]=='*') {
-			readpos += 2;
-			auto to=strstr(&str.get_const()[readpos],"*/");
-			if (!to) {
-				iseof = true;
-				return false;
-			}
-			readpos += (to - &str.get_const()[readpos])+2;
-			continue;
-		}
-		else if (str[readpos]=='/'&&str[readpos+1]=='/') {
-			auto to = strstr(&str.get_const()[readpos], "\n");
-			if (!to) {
-				iseof = true;
-				return false;
-			}
-			readpos += (to - &str.get_const()[readpos]) + 1;
-			continue;
-		}
-		else if (str[readpos]=='\0') {
-			iseof = true;
-			return false;
-		}
-		break;
-	}
-	return strncmp(&str.get_const()[readpos], symbol,strlen(symbol))==0;
+	if (!ignore())return false;
+	return strncmp(&input.buf.get_const()[readpos], symbol,strlen(symbol))==0;
 }
 
 common::String Reader::string(bool raw) {
@@ -178,13 +194,12 @@ bool Reader::readwhile(ReadStatus* status, bool (*judge)(const char*, ReadStatus
 }
 
 char Reader::abyte() {
-	ahead("");
-	auto ret = input.buf[readpos];
-	return ret;
+	ignore();
+	return input.buf[readpos];
 }
 
 bool Reader::eof() {
-	ahead("");
+	ignore();
 	return iseof;
 }
 
@@ -199,7 +214,7 @@ bool Reader::block(const char* start, const char* end) {
 	uint64_t dp = 0;
 	auto& str = input.buf;
 	while (!eof()) {
-		ahead("");
+		ignore();
 		if (eof())return false;
 		if (str[readpos]==start[0]) {
 			if (expect(start)) {
@@ -234,5 +249,16 @@ bool Reader::add_str(const char* str) {
 	if (!str)return false;
 	input.buf.add_copy(str, strlen(str));
 	iseof = false;
+	return true;
+}
+
+Reader::IgnoreHandler Reader::set_ignore(IgnoreHandler handler) {
+	auto ret = ignore_handler;
+	ignore_handler = handler;
+	return ret;
+}
+
+bool io::not_ignore(common::String& buf, uint64_t& readpos) {
+	if (buf.get_size() <= readpos)return false;
 	return true;
 }

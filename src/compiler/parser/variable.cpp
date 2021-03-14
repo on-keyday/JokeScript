@@ -21,7 +21,15 @@ bool variable::parse_variable_set(Reader* reader, Maker* maker) {
 	return false;
 }
 
-Variable* variable::parse_variable_detail(Reader* reader, Maker* maker, bool on_set, bool type_must) {
+bool variable::parse_variable(io::Reader* reader, identifier::Maker* maker) {
+	common::EasyVector<Variable*> vars;
+	auto t=parse_variable_detail(reader, maker,true,false);
+	if (!t)return false;
+
+	return false;
+}
+
+Variable* variable::parse_variable_detail(Reader* reader, Maker* maker, bool may_comma, bool type_must) {
 	auto s = maker->get_read_status();
 	reader->readwhile(s, ctype::reader::Identifier);
 	if (s->failed)return nullptr;
@@ -41,8 +49,11 @@ Variable* variable::parse_variable_detail(Reader* reader, Maker* maker, bool on_
 		if (!init)return nullptr;
 		ret->init = init;
 	}
-	if (on_set && !ret->type) {
-		if (!reader->expect_or_err(","))return nullptr;
+	if (may_comma && !ret->type) {
+		if (!reader->ahead(",")) {
+			maker->logger->unexpected_token(",", reader->abyte());
+			return nullptr;
+		}
 	}
 	if (type_must && !ret->type) {
 		maker->logger->synerr("on this context,type has to be explicitly specified,but is not.");

@@ -18,7 +18,7 @@ namespace PROJECT_NAME {
 			struct Input {
 				String name;
 				String buf;
-				bool readall(const char* filename);
+				bool readall(const char* filename,const char* mode="r");
 				bool readfromfp(FILE* fp);
 			};
 

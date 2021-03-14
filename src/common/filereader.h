@@ -36,10 +36,14 @@ namespace PROJECT_NAME {
 			uint64_t readpos = 0;
 			bool iseof = false;
 			const char* prev_expect = nullptr;
+			typedef bool(*IgnoreHandler)(common::String& buf, uint64_t& readpos);
+			IgnoreHandler ignore_handler;
+			bool ignore();
+			bool ignore_default();
 		public:
 			Reader()=delete;
-			Reader(const char* filename,log::Log* logger=nullptr);
-			Reader(const char* base,uint64_t s);
+			Reader(const char* filename,bool is_bin=false,log::Log* logger=nullptr);
+			Reader(const char* base,uint64_t s,log::Log* logger=nullptr);
 			bool expect(const char* symbol);
 			bool expect_p1(const char* symbol,char judge);
 			bool expect_pf(const char* symbol,bool (*judge)(char));
@@ -57,6 +61,9 @@ namespace PROJECT_NAME {
 			uint64_t get_readpos() const;
 			char get_const_char() const;
 			bool add_str(const char* str);
+			IgnoreHandler set_ignore(IgnoreHandler handler);
 		};
+
+		bool not_ignore(common::String& buf, uint64_t& readpos);
 	}
 }

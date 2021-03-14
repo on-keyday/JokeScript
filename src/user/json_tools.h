@@ -9,28 +9,59 @@
 */
 
 #pragma once
+#include"../common/stdcpps.h"
 #include"../common/structs.h"
 #include"../common/filereader.h"
+#include<vector>
 //#include"compiler_identifier_holder.h"
 
 namespace PROJECT_NAME {
-	namespace user_tools {
+	namespace json_tools {
 		enum class JSONType {
 			null,
 			number,
+			number_f,
 			boolean,
 			string,
 			array,
-			object,
-			pair
+			object
 		};
 
-		struct JSON;
+		struct JSON_detail;
 
+		struct JSONMaker;
+
+		struct JSON {
+		private:
+			JSON_detail* p=nullptr;
+			char* hold;
+			static JSON invalid;
+		public:
+			JSON() {}
+
+			JSON(JSON&& from) {
+				if (from.p != this->p) {
+					this->p = from.p;
+					from.p = nullptr;
+				}
+			}
+			JSON& operator[](const char* name);
+			JSON& operator[](uint64_t i);
+			operator const char* ();
+		};
+		
+		/*
 		struct JSONNode {
 		private:
-			common::EasyVectorP<JSONNode*> pair;
 			char* _name = nullptr;
+			union {
+				void* null = nullptr;
+				common::EasyVectorP<JSONNode*> set;
+				bool flag;
+				int64_t num;
+				double num_f;
+				char* str;
+			};
 			JSONType _type = JSONType::null;
 			JSON* _on=nullptr;
 		public:
@@ -38,13 +69,17 @@ namespace PROJECT_NAME {
 			const char* name() const;
 			JSONType type() const;
 			JSONNode() = delete;
-			JSONNode(const char* name, JSONType type,JSON* on);
+			JSONNode(JSONType type, const char* name=nullptr);
+			JSONNode(const char* str,JSON* on,const char* name=nullptr);
+			JSONNode(bool flag,JSON* on, const char* name = nullptr);
+			JSONNode(int64_t num, JSON* on, const char* name = nullptr);
+			JSONNode(double num, JSON* on, const char* name = nullptr);
 			JSONNode* idx(uint64_t n)const;
 			uint64_t len()const;
-			uint64_t cap()const;
-			bool unuse();
-			bool pack();
-			JSONNode& add(JSONNode* node);
+			//uint64_t cap()const;
+			//bool unuse();
+			//bool pack();
+			JSONNode* add(JSONNode* node);
 			~JSONNode();
 		};
 
@@ -64,10 +99,9 @@ namespace PROJECT_NAME {
 			JSONNode* make_bool(bool b);
 			template<class T>
 			JSONNode* make_number(T num) {
-				auto str = std::to_string(num);
-				auto ret = common::create<JSONNode>(str.c_str(), JSONType::number,this);
+				if (num > 0x7F'FF'FF'FF'FF'FF'FF'FF)return nullptr;
+				auto ret = common::create<JSONNode>(num,this);
 				if (!ret)return nullptr;
-				ret->unuse();
 				this->nodes.add(ret);
 				return ret;
 			}
@@ -91,27 +125,10 @@ namespace PROJECT_NAME {
 			JSONNode* make_JSON_file(const char* filename);
 
 			void remove(JSONNode* node);//dangerous
-			uint64_t this_size() const;
+			//uint64_t this_size() const;
 			~JSON();
-		};
+		};*/
 
 		
-		/*
-		JSONNode* print_types(JSON* json,compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
-
-		JSONNode* print_ids(JSON* json, compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
-
-		JSONNode* print_trees(JSON* json, compiler::IdHolder* holder, std::map<compiler::Type*, uint64_t>& idmap);
-
-
-
-		JSONNode* print_Type(JSON* json,compiler::Type* type,std::map<compiler::Type*,uint64_t>& idmap);
-		JSONNode* print_TypeType(JSON* json,compiler::TypeType ttype);
-
-		JSONNode* print_Identifier(JSON* json, compiler::Identifier* id, std::map<compiler::Type*, uint64_t>& idmap);
-
-		JSONNode* print_SyntaxTree(JSON* json,compiler::SyntaxTree* tree, std::map<compiler::Type*, uint64_t>& idmap);
-		JSONNode* print_TreeType(JSON* json,compiler::TreeType ttype);
-		*/
 	}
 }

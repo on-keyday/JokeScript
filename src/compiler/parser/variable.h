@@ -14,6 +14,7 @@
 namespace PROJECT_NAME {
 	namespace variable {
 		bool parse_variable_set(io::Reader* reader, identifier::Maker* maker);
-		identifier::Variable* parse_variable_detail(io::Reader* reader, identifier::Maker* maker, bool on_set = false, bool type_must = false);
+		bool parse_variable(io::Reader* reader, identifier::Maker* maker);
+		identifier::Variable* parse_variable_detail(io::Reader* reader, identifier::Maker* maker, bool may_comma = false, bool type_must = false);
 	}
 }

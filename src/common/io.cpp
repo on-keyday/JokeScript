@@ -17,9 +17,9 @@ using namespace PROJECT_NAME;
 #define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
 #endif
 
-bool common::io_base::Input::readall(const char* filename) {
+bool common::io_base::Input::readall(const char* filename,const char* mode) {
 	FILE* fp = nullptr;
-	fopen_s(&fp,filename, "r");
+	fopen_s(&fp,filename, mode);
 	if (!fp)return false;
 	this->name.add_copy(filename,strlen(filename));
 	this->name.pack_f();
