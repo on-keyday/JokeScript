@@ -505,3 +505,42 @@ bool ctype::get_number_type(const char* num,uint64_t& numres,int& bit_size,bool&
 	numres = res;
 	return true;
 }
+
+bool ctype::uri::is_scheme_ok(char c) {
+	if (isalnum((unsigned char)c)) {
+		return true;
+	}
+	if (c == '+' || c == '-' || c == '.') {
+		return true;
+	}
+	return false;
+}
+bool ctype::uri::is_authority_ok(char c) {
+	if (isalnum((unsigned char)c)) {
+		return true;
+	}
+	if (c == '+' || c == '-' || c == '.' || c == '@' || c == ':') {
+		return true;
+	}
+	return false;
+}
+
+bool ctype::uri::is_path_ok(char c) {
+	if (isalnum((unsigned char)c)) {
+		return true;
+	}
+	if (c == '-' || c == '_' || c == '~' || c == '.' || c == '/') {
+		return true;
+	}
+	return false;
+}
+
+bool ctype::uri::is_query_ok(char c) {
+	if (isalnum((unsigned char)c)) {
+		return true;
+	}
+	if (c == '-' || c == '_' || c == '~' || c == '=' || c == '&') {
+		return true;
+	}
+	return false;
+}

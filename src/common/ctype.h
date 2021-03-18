@@ -67,5 +67,13 @@ namespace PROJECT_NAME {
 			}
 			return true;
 		}
+
+		//from network
+		namespace uri {
+			bool is_scheme_ok(char c);
+			bool is_authority_ok(char c);
+			bool is_path_ok(char c);
+			bool is_query_ok(char c);
+		}
 	}
 }
