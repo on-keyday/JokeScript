@@ -12,20 +12,21 @@
 #include"filereader.h"
 #include"ctype.h"
 
+
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
 
-Reader::Reader(const char* filename,bool is_bin,log::Log* logger) {
+Reader::Reader(const char* filename,bool is_bin,log::Log* logger,IgnoreHandler handler) {
 	this->logger = logger;
-	this->ignore_handler = nullptr;
+	this->ignore_handler = handler;
 	const char* mode = "r";
 	if (is_bin)mode = "rb";
 	if (!input.readall(filename,mode))iseof = true;
 }
 
-Reader::Reader(const char* base, uint64_t s,log::Log* logger) {
+Reader::Reader(const char* base, uint64_t s,log::Log* logger, IgnoreHandler handler) {
 	this->logger = logger;
-	this->ignore_handler = nullptr;
+	this->ignore_handler = handler;
 	if (base) {
 		input.buf.add_copy(base, s);
 	}
@@ -247,7 +248,7 @@ char Reader::get_const_char() const {
 
 bool Reader::add_str(const char* str) {
 	if (!str)return false;
-	input.buf.add_copy(str, strlen(str));
+	input.buf.add_copy(str, ctype::strlen(str));
 	iseof = false;
 	return true;
 }

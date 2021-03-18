@@ -247,9 +247,14 @@ JSON::operator const char* () {
 			return "false";
 		}
 	}
-	else if (p->type == JSONType::number||p->type==JSONType::number_f) {
+	else if (p->type == JSONType::number) {
 		common::free(this->hold);
 		this->hold = common::StringFilter() = std::to_string(p->num_i).c_str();
+		return this->hold;
+	}
+	else if (p->type == JSONType::number_f) {
+		common::free(this->hold);
+		this->hold = common::StringFilter() = std::to_string(p->num_f).c_str();
 		return this->hold;
 	}
 	else if (p->type==JSONType::object) {
