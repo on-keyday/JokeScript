@@ -12,9 +12,9 @@
 #include"filereader.h"
 #include"ctype.h"
 
-
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
+
 
 Reader::Reader(const char* filename,bool is_bin,log::Log* logger,IgnoreHandler handler) {
 	this->logger = logger;
@@ -24,7 +24,7 @@ Reader::Reader(const char* filename,bool is_bin,log::Log* logger,IgnoreHandler h
 	if (!input.readall(filename,mode))iseof = true;
 }
 
-Reader::Reader(const char* base, uint64_t s,log::Log* logger, IgnoreHandler handler) {
+Reader::Reader(uint64_t s,const char* base,log::Log* logger, IgnoreHandler handler) {
 	this->logger = logger;
 	this->ignore_handler = handler;
 	if (base) {
@@ -74,7 +74,7 @@ bool Reader::ignore_default() {
 		}
 		break;
 	}
-	return false;
+	return true;
 }
 
 bool Reader::expect(const char* symbol) {
@@ -147,7 +147,7 @@ const char* Reader::prev() {
 bool Reader::ahead(const char* symbol) {
 	if (!symbol)return false;
 	if (!ignore())return false;
-	return strncmp(&input.buf.get_const()[readpos], symbol,strlen(symbol))==0;
+	return ctype::strneaq(&input.buf.get_const()[readpos], symbol,strlen(symbol));
 }
 
 common::String Reader::string(bool raw) {
@@ -249,6 +249,13 @@ char Reader::get_const_char() const {
 bool Reader::add_str(const char* str) {
 	if (!str)return false;
 	input.buf.add_copy(str, ctype::strlen(str));
+	iseof = false;
+	return true;
+}
+
+bool Reader::add(const char* buf, uint64_t size) {
+	if (!buf)return false;
+	input.buf.add_copy(buf, size);
 	iseof = false;
 	return true;
 }

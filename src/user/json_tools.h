@@ -34,7 +34,7 @@ namespace PROJECT_NAME {
 		struct JSON {
 		private:
 			JSON_detail* p=nullptr;
-			char* hold;
+			char* hold=nullptr;
 			static JSON invalid;
 		public:
 			JSON() {}

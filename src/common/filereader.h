@@ -42,9 +42,11 @@ namespace PROJECT_NAME {
 		T translate_byte_reverse(const char* s) {
 			T res = 0;
 			char* res_p = (char*)&res;
+			auto k = 0ull;
 			for (auto i = sizeof(T)-1;;i--) {
-				res_p[i] = s[i];
+				res_p[i] = s[k];
 				if (i == 0)break;
+				k++;
 			}
 			return res;
 		}
@@ -62,8 +64,10 @@ namespace PROJECT_NAME {
 			bool ignore_default();
 		public:
 			Reader()=delete;
+			Reader(Reader&) = delete;
+			Reader(Reader&&) = delete;
 			Reader(const char* filename,bool is_bin=false,log::Log* logger=nullptr,IgnoreHandler handler=nullptr);
-			Reader(const char* base,uint64_t s,log::Log* logger=nullptr,IgnoreHandler handler = nullptr);
+			Reader(uint64_t size,const char* base,log::Log* logger=nullptr,IgnoreHandler handler = nullptr);
 			bool expect(const char* symbol);
 			bool expect_p1(const char* symbol,char judge);
 			bool expect_pf(const char* symbol,bool (*judge)(char));
@@ -81,12 +85,13 @@ namespace PROJECT_NAME {
 			uint64_t get_readpos() const;
 			char get_const_char() const;
 			bool add_str(const char* str);
+			bool add(const char* buf,uint64_t size);
 			IgnoreHandler set_ignore(IgnoreHandler handler);
 			template<class T>
 			size_t read_byte(T* res=nullptr,T (*endian_handler)(const char*)=translate_byte_as_is,size_t size=sizeof(T)) {
-				if (size % sizeof(T) != 0)return false;
+				if (size % sizeof(T) != 0)return 0;
 				size_t pos = 0;
-				while (!eof()&&input.buf.get_size()-readpos<sizeof(T)&&pos < size / sizeof(T)) {
+				while (!eof()&&input.buf.get_size()-readpos>=sizeof(T)&&pos < size / sizeof(T)) {
 					if (res) {
 						if (!endian_handler)return false;
 						auto s = input.buf.get_const();
@@ -95,7 +100,7 @@ namespace PROJECT_NAME {
 					readpos += sizeof(T);
 					pos++;
 				}
-				return true;
+				return pos;
 			}			
 		};
 

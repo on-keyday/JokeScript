@@ -57,5 +57,15 @@ namespace PROJECT_NAME {
 			}
 			return true;
 		}
+
+		template<class Char>
+		bool strneaq(const Char* str1, const Char* str2,size_t len) {
+			if (!str1 || !str2)return false;
+			for (size_t i = 0; i < len;i++) {
+				if (str1[i] != str2[i])return false;
+				else if (!str1[i] || !str2[i])return false;
+			}
+			return true;
+		}
 	}
 }

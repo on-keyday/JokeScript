@@ -10,9 +10,10 @@
 
 
 #include"../public/JokeScript.h"
+#include"../common/filereader.h"
 using namespace std;
 
 int main(int argc,char** argv)
-{
+{	
 	return jokescript::compiler_main(argc, argv);	
 }

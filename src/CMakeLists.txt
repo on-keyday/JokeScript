@@ -17,10 +17,6 @@ endif()
 
 add_library (JokeScript SHARED "public/JokeScript.h" "public/JokeScript.cpp" "common/stdcpps.h" "common/structs.cpp" "common/structs.h" "common/io.h" "common/io.cpp" "common/log.h" "common/filereader.h" "common/filereader.cpp"  "common/log.cpp" "common/ctype.h" "common/ctype.cpp" "common/tools.h" "common/tools.cpp"  "user/json_tools.h" "user/json_tools.cpp" "user/user_action.h" "user/user_action.cpp" "compiler/data/identifier.h" "compiler/parser/syntax.h"  "compiler/data/maker.cpp" "compiler/data/identifier.cpp" "compiler/parser/syntax.cpp" "compiler/parser/type.cpp" "compiler/parser/variable.cpp" "compiler/parser/type.h" "compiler/parser/variable.h")
 
-
-
-
 add_executable (Joker "executable/main.cpp")
 
 target_link_libraries(Joker JokeScript)
-

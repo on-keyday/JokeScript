@@ -36,9 +36,12 @@ struct jokescript::Instance {
 };
 
 
+void print() {}
 
-void print(const char* s) {
+template<class T,class... Other>
+void print(T s,Other... other) {
 	std::cout << s;
+	print(other...);
 }
 
 Instance* ccnv jokescript::make_instance() {
@@ -100,6 +103,7 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	if (!parse(inst))return -3;
 	delete_instance(inst);
 	print("\n");
+	
 	OutDebugMemoryInfo(ShowGraph();)
 	return 0;
 }
