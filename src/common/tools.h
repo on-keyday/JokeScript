@@ -36,5 +36,25 @@ namespace PROJECT_NAME {
 		char32_t to_utf32(const char16_t* c, bool& suc);
 		int get_utf8bytesize(char c);
 		
+		template<class T, class Char>
+		bool check_name_conflict(const Char* name, common::EasyVectorP<T*>& vec) {
+			for (auto it : vec) {
+				if (ctype::streaq(it->name, name)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		template<class T, class Char>
+		T* search_T(const Char* name, common::EasyVectorP<T*>& vec) {
+			for (auto it : vec) {
+				if (ctype::streaq(name, it->name)) {
+					return it;
+				}
+			}
+			return nullptr;
+		}
+
 	}
 }

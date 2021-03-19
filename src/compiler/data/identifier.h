@@ -37,7 +37,7 @@ namespace PROJECT_NAME {
 			common::EasyVectorP<Variable*> vars;
 			common::EasyVectorP<Template*> templates;
 		};
-
+		/*
 		template<class T, class Char>
 		bool check_name_conflict(const Char* name, common::EasyVectorP<T*>& vec) {
 			for (auto it : vec) {
@@ -56,7 +56,7 @@ namespace PROJECT_NAME {
 				}
 			}
 			return nullptr;
-		}
+		}*/
 
 		struct MembersP {
 		private:

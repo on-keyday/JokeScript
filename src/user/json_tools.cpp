@@ -10,7 +10,7 @@
 
 #include"json_tools.h"
 #include"../common/ctype.h"
-#include"../compiler/data/identifier.h"
+#include"../common/tools.h"
 
 using namespace PROJECT_NAME;
 using namespace PROJECT_NAME::io;
@@ -173,7 +173,7 @@ JSON_detail* make_array(JSON* p) {
 bool add(JSON_detail* base, const char* name, JSON* value) {
 	if (!base || !name || !value)return false;
 	if (base->type != JSONType::object)return false;
-	if(!identifier::check_name_conflict(name, base->object))return false;
+	if(!common::check_name_conflict(name, base->object))return false;
 	auto ad = common::create<JSONNamed>();
 	if (!ad)return false;
 	auto s = common::StringFilter() = name;
@@ -202,7 +202,7 @@ JSON& JSON::operator[](const char* name) {
 		if (!p)return invalid;
 	}
 	else{		
-		auto s = identifier::search_T(name, p->object);
+		auto s = common::search_T(name, p->object);
 		if (s)return *s->obj;
 	}
 	auto ad = common::create<JSON>();
