@@ -39,7 +39,9 @@ Reader::Reader(uint64_t s,const char* base,log::Log* logger, IgnoreHandler handl
 bool Reader::ignore() {
 	if (!ignore_handler)return ignore_default();
 	auto& buf = input.buf;
-	return ignore_handler(buf, readpos);
+	auto res=ignore_handler(buf, readpos);
+	if (!res)iseof = true;
+	return res;
 }
 
 bool Reader::ignore_default() {
