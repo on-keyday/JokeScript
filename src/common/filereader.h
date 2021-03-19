@@ -101,7 +101,8 @@ namespace PROJECT_NAME {
 					pos++;
 				}
 				return pos;
-			}			
+			}
+			common::String& buf_ref() { return input.buf; }
 		};
 
 		bool not_ignore(common::String& buf, uint64_t& readpos);
