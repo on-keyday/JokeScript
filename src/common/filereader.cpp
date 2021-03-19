@@ -217,6 +217,7 @@ bool Reader::eof() {
 bool Reader::seek(uint64_t pos) {
 	if (pos > input.buf.get_size())return false;
 	readpos = pos;
+	if(input.buf.get_size()!=pos)iseof = false;
 	return true;
 }
 
@@ -258,13 +259,15 @@ char Reader::get_const_char() const {
 
 bool Reader::add_str(const char* str) {
 	if (!str)return false;
-	input.buf.add_copy(str, ctype::strlen(str));
+	auto len = ctype::strlen(str);
+	if (!len)return false;
+	input.buf.add_copy(str, len);
 	iseof = false;
 	return true;
 }
 
 bool Reader::add(const char* buf, uint64_t size) {
-	if (!buf)return false;
+	if (!buf||!size)return false;
 	input.buf.add_copy(buf, size);
 	iseof = false;
 	return true;
