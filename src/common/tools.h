@@ -47,10 +47,14 @@ namespace PROJECT_NAME {
 		}
 
 		template<class T, class Char>
-		T* search_T(const Char* name, common::EasyVectorP<T*>& vec) {
+		T* search_T(const Char* name, common::EasyVectorP<T*>& vec,uint64_t pos=0) {
+			auto count = 0ull;
 			for (auto it : vec) {
 				if (ctype::streaq(name, it->name)) {
-					return it;
+					if (count == pos) {
+						return it;
+					}
+					count++;
 				}
 			}
 			return nullptr;
