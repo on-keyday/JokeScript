@@ -36,6 +36,14 @@ Reader::Reader(uint64_t s,const char* base,log::Log* logger, IgnoreHandler handl
 	input.name.unuse();
 }
 
+Reader::Reader(common::String& buf, log::Log* logger, IgnoreHandler handler) {
+	this->logger = logger;
+	this->ignore_handler = handler;
+	input.buf = std::move(buf);
+	if (!input.buf.get_size())iseof = true;
+	input.name.unuse();
+}
+
 bool Reader::ignore() {
 	if (!ignore_handler)return ignore_default();
 	auto& buf = input.buf;

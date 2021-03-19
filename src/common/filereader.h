@@ -68,6 +68,7 @@ namespace PROJECT_NAME {
 			Reader(Reader&&) = delete;
 			Reader(const char* filename,bool is_bin=false,log::Log* logger=nullptr,IgnoreHandler handler=nullptr);
 			Reader(uint64_t size,const char* base,log::Log* logger=nullptr,IgnoreHandler handler = nullptr);
+			Reader(common::String& buf, log::Log* logger = nullptr, IgnoreHandler handler = nullptr);
 			bool expect(const char* symbol);
 			bool expect_p1(const char* symbol,char judge);
 			bool expect_pf(const char* symbol,bool (*judge)(char));
