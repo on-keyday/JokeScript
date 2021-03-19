@@ -10,6 +10,7 @@
 
 #pragma once
 #include"structs.h"
+#include"ctype.h"
 
 namespace PROJECT_NAME {
 	namespace common {
