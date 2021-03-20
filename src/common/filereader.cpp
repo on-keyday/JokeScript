@@ -283,3 +283,15 @@ bool io::not_ignore(common::String& buf, uint64_t& readpos) {
 	if (buf.get_size() <= readpos)return false;
 	return true;
 }
+
+bool io::ignore_space(common::String& buf, uint64_t& readpos) {
+	while (buf.get_size() > readpos) {
+		if (buf[readpos] == ' ') {
+			readpos++;
+			continue;
+		}
+		break;
+	}
+	if (buf.get_size() <= readpos)return false;
+	return true;
+}
