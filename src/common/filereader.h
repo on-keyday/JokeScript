@@ -108,5 +108,6 @@ namespace PROJECT_NAME {
 
 		bool not_ignore(common::String& buf, uint64_t& readpos);
 		bool ignore_space(common::String& buf, uint64_t& readpos);
+		bool ignore_space_and_line(common::String& buf, uint64_t& readpos);
 	}
 }

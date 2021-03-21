@@ -295,3 +295,16 @@ bool io::ignore_space(common::String& buf, uint64_t& readpos) {
 	if (buf.get_size() <= readpos)return false;
 	return true;
 }
+
+bool io::ignore_space_and_line(common::String& buf, uint64_t& readpos) {
+	while (buf.get_size() > readpos) {
+		auto r = buf[readpos];
+		if (r == ' '||r=='\r'||r=='\n'||r=='\t') {
+			readpos++;
+			continue;
+		}
+		break;
+	}
+	if (buf.get_size() <= readpos)return false;
+	return true;
+}
