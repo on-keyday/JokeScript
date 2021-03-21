@@ -1,2 +1,6 @@
 . ../setting/common_setting.sh
-cd built/src&&. $RUNEXECUTABLE
+if [ -e built/src/$RUNEXECUTABLE ]; then
+  cd built/src
+  ./$RUNEXECUTABLE
+  cd ../..
+fi

@@ -1,3 +1,7 @@
 @echo off
 call ..\setting\common_setting.bat
-cd built/src&&%RUNEXECUTABLE%
+if exist built\src\%RUNEXECUTABLE%.exe (
+  cd built/src
+  %RUNEXECUTABLE%
+  cd ../..
+)
