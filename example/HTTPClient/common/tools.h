@@ -1,0 +1,56 @@
+/*license*/
+#pragma once
+#include"structs.h"
+#include"ctype.h"
+
+namespace PROJECT_NAME {
+	namespace common {
+		struct Hash {
+		private:
+			uint64_t hash_count = 0;
+			StringP tmpc = nullptr;
+		public:
+			bool name_hash(String& buf,const char* name);
+			bool unname_hash(String& buf);
+			uint64_t make_hash(const char* str);
+			char* get_hash();
+			char* get_hash_with_name(const char* s);
+			const char* get_hash_const();
+		};
+
+		uint64_t count_while_f(const char* p,bool(*judge)(char));
+		uint64_t strtoull_ex(const char* str,char** p);
+
+
+		StringP to_utf8(char32_t c);
+		String16P to_utf16(char32_t c);
+		char32_t to_utf32(const char* c,bool& suc);
+		char32_t to_utf32(const char16_t* c, bool& suc);
+		int get_utf8bytesize(char c);
+		
+		template<class T, class Char,template<class U>class Vec>
+		bool check_name_conflict(const Char* name,Vec<T*>& vec) {
+			for (auto it : vec) {
+				if (ctype::streaq(it->name, name)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		template<class T, class Char,template<class U>class Vec>
+		T* search_T(const Char* name,Vec<T*>& vec,uint64_t pos = 0) {
+			auto count = 0ull;
+			for (auto it : vec) {
+				if (ctype::streaq(name, it->name)) {
+					if (count == pos) {
+						return it;
+					}
+					count++;
+				}
+			}
+			return nullptr;
+		}
+
+	}
+}
