@@ -1,6 +1,6 @@
 . ../setting/common_setting.sh
 if [ -e built/src/$RUNEXECUTABLE ]; then
   cd built/src
-  ./$RUNEXECUTABLE
+  ./$RUNEXECUTABLE %RUNCMDLINE%
   cd ../..
 fi
