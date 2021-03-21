@@ -279,6 +279,12 @@ Reader::IgnoreHandler Reader::set_ignore(IgnoreHandler handler) {
 	return ret;
 }
 
+bool Reader::release_eof() {
+	if(input.buf.get_size() <= readpos)return false;
+	iseof = false;
+	return true;
+}
+
 bool io::not_ignore(common::String& buf, uint64_t& readpos) {
 	if (buf.get_size() <= readpos)return false;
 	return true;
@@ -308,3 +314,4 @@ bool io::ignore_space_and_line(common::String& buf, uint64_t& readpos) {
 	if (buf.get_size() <= readpos)return false;
 	return true;
 }
+
