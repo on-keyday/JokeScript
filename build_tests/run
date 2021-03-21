@@ -1,0 +1,5 @@
+cd clang_build
+. run
+cd ../gcc_build
+. run
+cd ..

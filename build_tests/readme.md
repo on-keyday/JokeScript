@@ -17,6 +17,8 @@
 #### default:Ninja
 ### RUN_GENERATOR - generator's program name. 
 #### default:ninja
+### RUNEXECUTABLE - built program name.
+#### default:Joker
 
 ## vs_setting (for Windows)
 ### PathToVsDevCmd - path to developer command prompt. 
