@@ -381,6 +381,13 @@ bool ctype::reader::End(const char* s, ReadStatus* status) {
 	return true;
 }
 
+bool ctype::reader::Count(const char* s, io::ReadStatus* status) {
+	if (status->num == 0)return false;
+	status->buf.add(*s);
+	status->num--;
+	return true;
+}
+
 bool ctype::is_utf16_surrogate_high(char16_t c) {
 	return 0xD800 <= c && c < 0xDC00;
 }
