@@ -27,6 +27,8 @@ bool run_method(HTTPClient& client,const char* method,const char* uri,const char
 		std::cout << "get <url> [<filename>]:GET method\n";
 		std::cout << "head <url> :HEAD method\n";
 		std::cout << "put <url> <filename>:PUT method\n";
+		std::cout << "post <url> <filename>:POST method\n";
+		std::cout << "options <url>:OPTION method\n";
 	}
 	else if (streaq(method, "get")) {
 		auto start = std::chrono::system_clock::now();
@@ -35,6 +37,7 @@ bool run_method(HTTPClient& client,const char* method,const char* uri,const char
 			return false;
 		}
 		auto end = std::chrono::system_clock::now();
+		std::cout << "accessed address: " << client.address() << "\n";
 		if(raw)std::cout << client.raw() << "\n";
 		std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "msec\n";
 		std::cout << "status code: " << client.statuscode() << "\n";
@@ -57,6 +60,7 @@ bool run_method(HTTPClient& client,const char* method,const char* uri,const char
 			return false;
 		}
 		auto end = std::chrono::system_clock::now();
+		if (client.address())std::cout << "accessed address: " << client.address() << "\n";
 		if (raw)std::cout << client.raw() << "\n";
 		std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "msec\n";
 		std::cout << "status code: " << client.statuscode() << "\n";
@@ -69,6 +73,7 @@ bool run_method(HTTPClient& client,const char* method,const char* uri,const char
 			return false;
 		}
 		auto end = std::chrono::system_clock::now();
+		if (client.address())std::cout << "accessed address: " << client.address() << "\n";
 		if (raw)std::cout << client.raw() << "\n";
 		std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "msec\n";
 		std::cout << "status code: " << client.statuscode() << "\n";
@@ -90,6 +95,24 @@ bool run_method(HTTPClient& client,const char* method,const char* uri,const char
 			return false;
 		}
 		auto end = std::chrono::system_clock::now();
+		if(client.address())std::cout << "accessed address: " << client.address() << "\n";
+		if (raw)std::cout << client.raw() << "\n";
+		std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "msec\n";
+		std::cout << "status code: " << client.statuscode() << "\n";
+	}
+	else if (streaq(method,"post")) {
+		common::io_base::Input input;
+		if (!input.readall(filename, "rb")) {
+			std::cout << "file '" << filename << "' is unloadable!\n";
+			return false;
+		}
+		auto start = std::chrono::system_clock::now();
+		if (!client.post(uri, input.buf.get_const(), input.buf.get_size())) {
+			std::cout << "method 'POST' is faild!\n";
+			return false;
+		}
+		auto end = std::chrono::system_clock::now();
+		if (client.address())std::cout << "accessed address: " << client.address() << "\n";
 		if (raw)std::cout << client.raw() << "\n";
 		std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "msec\n";
 		std::cout << "status code: " << client.statuscode() << "\n";
@@ -208,7 +231,7 @@ int interactive_mode(HTTPClient& client,bool inraw,bool inredirect,BodyFlag inef
 			}
 			run_method(client, cmdline.prev(), url.get_const(), nullptr, raw,redirect,effort);
 		}
-		else if (cmdline.expect_pf("put",j)) {
+		else if (cmdline.expect_pf("put",j)||cmdline.expect_pf("post",j)) {
 			common::String url = nullptr, file = nullptr;
 			if(!read_cmdline(cmdline, url)) {
 				std::cout << "two argument is required.\n";
@@ -218,7 +241,7 @@ int interactive_mode(HTTPClient& client,bool inraw,bool inredirect,BodyFlag inef
 				std::cout << "two argument is required.\n";
 				continue;
 			}
-			run_method(client, "put", url.get_const(), file.get_const(), raw,redirect,effort);
+			run_method(client, cmdline.prev(), url.get_const(), file.get_const(), raw,redirect,effort);
 		}
 		else if (cmdline.expect_pf("raw",j)) {
 			set_trueorfalse(cmdline, raw, true, false);

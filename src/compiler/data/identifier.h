@@ -71,10 +71,10 @@ namespace PROJECT_NAME {
 			template<class T>
 			bool name_conflict(const char* name);
 
-			bool add(Type* type) { if (!p)if (!init())return false; return p->types.add(type); }
-			bool add(Variable* var) { if (!p)if (!init())return false; return p->vars.add(var); }
-			bool add(Macro* macro) { if (!p)if (!init())return false; return p->macros.add(macro); }
-			bool add(Template* temp) { if (!p)if (!init())return false; return p->templates.add(temp); }
+			template<class T>
+			bool add(T* t);
+
+			
 			Members* get_base() { return p; };
 		};
 

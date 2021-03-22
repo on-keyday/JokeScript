@@ -61,20 +61,31 @@ bool HTTPClient::set_up_socket(const char* protocol,const char* hostname,unsigne
 	if (this->socket>=0) {
 		clean_up_socket();
 	}
+	common::free(this->addr_str);
+	this->addr_str = nullptr;
 	addrinfo hint = { 0 }, * res = nullptr;
 	hint.ai_socktype = SOCK_STREAM;
 	auto num = getaddrinfo(hostname,protocol,&hint,&res);
 	if (num != 0)return false;
 	auto port_net= htons(port);
 	for (auto p = res; p; p = p->ai_next) {
+		auto tmpaddr4 = (sockaddr_in*)p->ai_addr;
+		auto tmpaddr6 = (sockaddr_in6*)p->ai_addr;
 		if (port) {
-			auto tmpaddr = (sockaddr_in*)p->ai_addr;
-			tmpaddr->sin_port = port_net;
+			tmpaddr4->sin_port = port_net;
 		}
 		auto sock = ::socket(p->ai_family,p->ai_socktype,p->ai_protocol);
 		if (sock < 0)continue;
 		if (::connect(sock, p->ai_addr, p->ai_addrlen) == 0) {
 			this->socket = sock;
+			char buf[67] = "";
+			if (p->ai_family==AF_INET6) {
+				inet_ntop(p->ai_family,&tmpaddr6->sin6_addr,buf,sizeof(buf));
+			}
+			else {
+				inet_ntop(p->ai_family, &tmpaddr4->sin_addr, buf, sizeof(buf));
+			}
+			this->addr_str = common::StringFilter() = buf;
 			break;
 		}
 	}
@@ -150,10 +161,14 @@ bool HTTPClient::clean_up_secure() {
 	return true;
 }
 
+
 bool HTTPClient::clean_up_socket() {
 	if (this->socket == invalid)return false;
 	shutdown(this->socket, SD_SEND);
 	shutdown(this->socket, SD_RECEIVE);
+#ifndef _WIN32
+#define closesocket(x) close(x)
+#endif
 	closesocket(this->socket);
 	this->socket = invalid;
 	return true;
@@ -490,7 +505,13 @@ bool HTTPClient::read_by_content_type(io::Reader& reader, common::String& read, 
 		if (reader.ahead("{")) {
 			while (!reader.block("{","}")) {
 				this->recv(reader.buf_ref());
-				reader.release_eof();
+				reader.seek(base_readpos);
+			}
+		}
+		else if (reader.ahead("[")) {
+			while (!reader.block("[", "]")) {
+				this->recv(reader.buf_ref());
+				reader.seek(base_readpos);
 			}
 		}
 	}

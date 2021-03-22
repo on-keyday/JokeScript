@@ -6,6 +6,7 @@
 #include<openssl/ssl.h>
 #include<openssl/err.h>
 
+
 namespace network {
 	struct Header {
 		char* name=nullptr;
@@ -79,6 +80,7 @@ namespace network {
 		common::EasyVector<Cookie*> cookies;
 		char* _body = nullptr;
 		uint64_t body_len=0;
+		char* addr_str = nullptr;
 		bool set_cookie();
 		void invoke_errcb() { if (errcb)ERR_print_errors_cb(errcb,nullptr); }
 		bool set_up_socket(const char* protocol,const char* hostname, unsigned short port);
@@ -105,8 +107,9 @@ namespace network {
 		bool trace(const char* uri);
 		bool post(const char* uri,const char* body, size_t bodysize);
 		bool put(const char* uri, const char* body, size_t bodysize);
+		const char* address()const { return addr_str; }
 		const char* body() const{ return _body; }
-		uint64_t len() const { return body_len; };
+		uint64_t len() const { return body_len; }
 		const char* raw() const { if (!headers)return nullptr; return headers->raw(); }
 		const char* header(const char* name,uint64_t pos=0) { if (!headers)return nullptr; return headers->idx(name,pos); };
 		unsigned short statuscode()const{ if (!headers)return 0; return headers->code(); }
@@ -121,4 +124,16 @@ namespace network {
 			}	
 		}
 	};
+
+	/*
+	template<class... Args>
+	struct is_callable_detail {
+		template<class F>
+		static std::true_type check(decltype(std::declval<F>()(std::declval<Args...>()...),(void)0)*){}
+		template<class F>
+		static std::false_type check(...){}
+	};
+
+	template <class F, class... Args>
+	struct is_callable: decltype(is_callable_detail<Args...>::template check<F>(nullptr)) {};*/
 }

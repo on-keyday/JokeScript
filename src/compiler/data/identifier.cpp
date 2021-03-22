@@ -25,6 +25,15 @@ bool MembersP::name_conflict<Macro>(const char* name) { if (!p)return true; retu
 template<>
 bool MembersP::name_conflict<Template>(const char* name) { if (!p)return true; return common::check_name_conflict(name, p->templates); }
 
+template<>
+bool MembersP::add(Type* type) { if (!p)if (!init())return false; return p->types.add(type); }
+template<>
+bool MembersP::add(Variable* var) { if (!p)if (!init())return false; return p->vars.add(var); }
+template<>
+bool MembersP::add(Macro* macro) { if (!p)if (!init())return false; return p->macros.add(macro); }
+template<>
+bool MembersP::add(Template* temp) { if (!p)if (!init())return false; return p->templates.add(temp); }
+
 bool identifier::is_derived(TypeKind kind) {
 	return false;
 }
