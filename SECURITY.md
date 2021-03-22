@@ -5,4 +5,4 @@
 ### indev 0.0.0 - not supported
 ## Reporting a Vulnerability
 ### ・by GitHub Issues on this repositories
-### no worth returns to you, now
+## no profits returns to you, now
