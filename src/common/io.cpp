@@ -13,7 +13,7 @@
 
 using namespace PROJECT_NAME;
 
-#ifndef _WIN32
+#ifndef _WIN32||defined GCC
 #define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
 #endif
 
