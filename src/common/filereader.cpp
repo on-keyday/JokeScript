@@ -315,7 +315,7 @@ bool io::ignore_space_and_line(common::String& buf, size_t& readpos) {
 	return true;
 }
 
-size_t Reader::readable() {
+size_t Reader::readable_size() {
 	if (eof())return 0;
 	return input.buf.get_size() - readpos;
 }
