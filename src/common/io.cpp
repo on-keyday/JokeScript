@@ -13,7 +13,9 @@
 
 using namespace PROJECT_NAME;
 
-#ifndef _WIN32||defined GCC
+#ifndef _WIN32
+#define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
+#elif defined __GNUC__
 #define fopen_s(fp,filename,mode) ((*fp)=fopen(filename,mode))
 #endif
 
