@@ -24,7 +24,7 @@ Reader::Reader(const char* filename,bool is_bin,log::Log* logger,IgnoreHandler h
 	if (!input.readall(filename,mode))iseof = true;
 }
 
-Reader::Reader(uint64_t s,const char* base,log::Log* logger, IgnoreHandler handler) {
+Reader::Reader(size_t s,const char* base,log::Log* logger, IgnoreHandler handler) {
 	this->logger = logger;
 	this->ignore_handler = handler;
 	if (base) {
@@ -214,7 +214,7 @@ bool Reader::eof() {
 	return iseof;
 }
 
-bool Reader::seek(uint64_t pos) {
+bool Reader::seek(size_t pos) {
 	if (pos > input.buf.get_size())return false;
 	readpos = pos;
 	if(input.buf.get_size()!=pos)iseof = false;
@@ -223,7 +223,7 @@ bool Reader::seek(uint64_t pos) {
 
 bool Reader::block(const char* start, const char* end) {
 	if (!end||!expect(start))return false;
-	uint64_t dp = 0;
+	size_t dp = 0;
 	auto& str = input.buf;
 	while (!eof()) {
 		ignore();
@@ -248,7 +248,7 @@ char Reader::offset(long long ofs) {
 	return input.buf[readpos+ofs];
 }
 
-uint64_t Reader::get_readpos() const {
+size_t Reader::get_readpos() const {
 	return readpos;
 }
 
@@ -266,7 +266,7 @@ bool Reader::add_str(const char* str) {
 	return true;
 }
 
-bool Reader::add(const char* buf, uint64_t size) {
+bool Reader::add(const char* buf, size_t size) {
 	if (!buf||!size)return false;
 	input.buf.add_copy(buf, size);
 	iseof = false;
@@ -285,12 +285,12 @@ bool Reader::release_eof() {
 	return true;
 }
 
-bool io::not_ignore(common::String& buf, uint64_t& readpos) {
+bool io::not_ignore(common::String& buf, size_t& readpos) {
 	if (buf.get_size() <= readpos)return false;
 	return true;
 }
 
-bool io::ignore_space(common::String& buf, uint64_t& readpos) {
+bool io::ignore_space(common::String& buf, size_t& readpos) {
 	while (buf.get_size() > readpos) {
 		if (buf[readpos] == ' ') {
 			readpos++;
@@ -302,7 +302,7 @@ bool io::ignore_space(common::String& buf, uint64_t& readpos) {
 	return true;
 }
 
-bool io::ignore_space_and_line(common::String& buf, uint64_t& readpos) {
+bool io::ignore_space_and_line(common::String& buf, size_t& readpos) {
 	while (buf.get_size() > readpos) {
 		auto r = buf[readpos];
 		if (r == ' '||r=='\r'||r=='\n'||r=='\t') {
@@ -315,3 +315,7 @@ bool io::ignore_space_and_line(common::String& buf, uint64_t& readpos) {
 	return true;
 }
 
+size_t Reader::readable() {
+	if (eof())return 0;
+	return input.buf.get_size() - readpos;
+}
