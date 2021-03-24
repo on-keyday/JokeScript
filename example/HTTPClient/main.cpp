@@ -2,6 +2,8 @@
 #include"common/io.h"
 #include"json_tools.h"
 #include"HTTPClient.h"
+#include<locale.h>
+#include<direct.h>
 using namespace network;
 using namespace ctype;
 
@@ -11,6 +13,7 @@ bool (*j)(char) = ctype::is_usable_for_identifier;
 #define INPUT_SIZE 3
 
 struct flags_t {
+	bool locale = false;
 	bool raw = false;
 	bool redirect = false;
 	bool payload = false;
@@ -463,6 +466,10 @@ int command_intepreter(const char* filename,HTTPClient& client,flags_t& flags,in
 		error("file'", filename, "' unloadable\n");
 		return -1;
 	}
+	if (!flags.locale) {
+		setlocale(LC_ALL, ".utf-8");
+		flags.locale = true;
+	}
 	while (!file.eof()) {
 		io::ReadStatus rs;
 		rs.num = '\n';
@@ -644,7 +651,7 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			print("one argument is required.\n");
 			return result_t::error;
 		}
-		if (!SetCurrentDirectoryA(dir.get_const())) {
+		if (_chdir(dir.get_const())) {
 			print(dir.get_const(), ":no such dirctry");
 			return result_t::error;
 		}
@@ -806,7 +813,11 @@ int main(int argc, char** argv){
 	}
 	if (interactive) {
 		nomsg = false;
-		//SetConsoleCP(CP_UTF8);
+		SetConsoleCP(CP_UTF8);
+		if (!flags.locale) {
+			setlocale(LC_ALL, ".utf8");
+			flags.locale = true;
+		}
 		res=interactive_mode(client,flags);
 	}
 	WSACleanup();
