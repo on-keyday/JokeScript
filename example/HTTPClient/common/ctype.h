@@ -22,6 +22,7 @@ namespace PROJECT_NAME {
 			bool DigitNumber(const char* s, io::ReadStatus* status);
 			bool Until(const char* s, io::ReadStatus* status);
 			bool End(const char* s, io::ReadStatus* status);
+			bool Count(const char* s, io::ReadStatus* status);
 		}
 
 		bool is_utf16_surrogate_high(char16_t c);

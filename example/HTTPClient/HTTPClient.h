@@ -63,12 +63,21 @@ namespace network {
 		effort
 	};
 
+	struct HTTPClient;
+
+	void default_header_callback(const HTTPClient* self, common::String& buf);
+
+	bool recv_common(common::String& str,int sock,SSL* ssl,bool secure);
+	bool send_common(common::String& str,int sock,SSL* ssl, bool secure);
+
 	struct HTTPClient {
 	private:
 		typedef void (*InfoCallback)(const SSL* ssl,int type,int val);
 		typedef int (*ErrorCallback)(const char* str,size_t len,void* opt);
+		typedef void (*HeaderCallback)(const HTTPClient* self,common::String& buf);
 		InfoCallback infocb = nullptr;
 		ErrorCallback errcb=nullptr;
+		HeaderCallback headercb = nullptr;
 		static const int invalid = ~0;
 		const char* cacert_file="cacert.pem";
 		int socket=invalid;
@@ -94,24 +103,27 @@ namespace network {
 		bool parse_httpresponse(common::String& httpresponce, BodyFlag bodyf);
 		bool read_body(io::Reader& reader, BodyFlag bodyf);
 		bool read_by_content_type(io::Reader& reader, common::String& read,const char* type);
-		bool method_detail(const char* uri,const char* method,BodyFlag bodyf,const char* defaultpath,const char* body,size_t bodysize);
+		bool method_detail(const char* uri,const char* method,BodyFlag bodyf,const char* defaultpath,const char* body,size_t bodysize,bool fullpath);
 	public:
 		HTTPClient() = default;
 		HTTPClient(HTTPClient&) = delete;
-		HTTPClient(const char* file):cacert_file(file){}
+		HTTPClient(const char* file) :cacert_file(file) { set_headercb(default_header_callback); }
 		InfoCallback set_infocb(InfoCallback cb);
 		ErrorCallback set_errcb(ErrorCallback cb);
-		bool method(const char* method, const char* uri,const char* body=nullptr,size_t bodysize=0,bool redirect = false, unsigned char depth = 255,const char* defaultpath="/",BodyFlag bodyf=BodyFlag::onheader);
+		HeaderCallback set_headercb(HeaderCallback cb);
+		bool method(const char* method, const char* uri,const char* body=nullptr,size_t bodysize=0,bool redirect = false, unsigned char depth = 255,const char* defaultpath="/",BodyFlag bodyf=BodyFlag::onheader,bool fullpath=false);
 		bool get(const char* uri, bool redirect = false,unsigned char depth=255,bool head = false,BodyFlag flag=BodyFlag::onheader);
 		bool options(const char* uri);
 		bool trace(const char* uri);
 		bool post(const char* uri,const char* body, size_t bodysize);
 		bool put(const char* uri, const char* body, size_t bodysize);
+		bool patch(const char* uri,const char* body,size_t bodysize);
+		bool _delete(const char* uri);
 		const char* address()const { return addr_str; }
 		const char* body() const{ return _body; }
 		uint64_t len() const { return body_len; }
 		const char* raw() const { if (!headers)return nullptr; return headers->raw(); }
-		const char* header(const char* name,uint64_t pos=0) { if (!headers)return nullptr; return headers->idx(name,pos); };
+		const char* header(const char* name,uint64_t pos=0) const { if (!headers)return nullptr; return headers->idx(name,pos); };
 		unsigned short statuscode()const{ if (!headers)return 0; return headers->code(); }
 		~HTTPClient(){
 			common::free(_body);
@@ -136,4 +148,45 @@ namespace network {
 
 	template <class F, class... Args>
 	struct is_callable: decltype(is_callable_detail<Args...>::template check<F>(nullptr)) {};*/
+
+	union FrameFlag {
+		unsigned char byte;
+		struct {
+			bool f0 : 1;
+			bool f1 : 1;
+			bool f2 : 1;
+			bool f3 : 1;
+			bool f4 : 1;
+			bool f5 : 1;
+			bool f6 : 1;
+			bool f7 : 1;
+		}bit;
+	};
+
+	struct Frame {
+	private:
+		int len;
+		unsigned char type;
+		FrameFlag flag;
+		int id;
+	public:
+		Frame() = delete;
+		Frame(Frame&) = delete;
+		Frame(Frame&&) = delete;
+		explicit Frame(int len,unsigned char type, FrameFlag flag,int id):len(len),type(type),flag(flag),id(id){}
+	};
+
+	struct HeaderFrame : Frame{
+		char* data;
+		HeaderFrame(char* data,int len,FrameFlag flag,int id):data(data),Frame(len,1,flag,id){}
+	};
+
+	struct HTTP2Client {
+		bool recv(common::String& buf);
+		bool send(common::String& buf);
+		bool send_error(unsigned char errorcode);
+		bool read_frameheader(io::Reader& reader,int& len, unsigned char& type, FrameFlag& flag, int& id);
+		HeaderFrame* read_header(io::Reader& reader,FrameFlag flag,int id,int len);
+		bool read_continuation(io::Reader& reader,common::String& buf,int id);
+	};
 }

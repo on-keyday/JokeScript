@@ -46,10 +46,10 @@ namespace PROJECT_NAME {
 		private:
 			common::io_base::Input input;
 			log::Log* logger=nullptr;
-			uint64_t readpos = 0;
+			size_t readpos = 0;
 			bool iseof = false;
 			const char* prev_expect = nullptr;
-			typedef bool(*IgnoreHandler)(common::String& buf, uint64_t& readpos);
+			typedef bool(*IgnoreHandler)(common::String& buf, size_t& readpos);
 			IgnoreHandler ignore_handler;
 			bool ignore();
 			bool ignore_default();
@@ -58,7 +58,7 @@ namespace PROJECT_NAME {
 			Reader(Reader&) = delete;
 			Reader(Reader&&) = delete;
 			Reader(const char* filename,bool is_bin=false,log::Log* logger=nullptr,IgnoreHandler handler=nullptr);
-			Reader(uint64_t size,const char* base,log::Log* logger=nullptr,IgnoreHandler handler = nullptr);
+			Reader(size_t size,const char* base,log::Log* logger=nullptr,IgnoreHandler handler = nullptr);
 			Reader(common::String& buf, log::Log* logger = nullptr, IgnoreHandler handler = nullptr);
 			bool expect(const char* symbol);
 			bool expect_p1(const char* symbol,char judge);
@@ -71,13 +71,13 @@ namespace PROJECT_NAME {
 			bool readwhile(ReadStatus* status,bool (*judge)(const char*,ReadStatus*));
 			char abyte();
 			bool eof();
-			bool seek(uint64_t pos);
+			bool seek(size_t pos);
 			bool block(const char* start,const char* end);
 			char offset(long long ofs);
-			uint64_t get_readpos() const;
+			size_t get_readpos() const;
 			char get_const_char() const;
 			bool add_str(const char* str);
-			bool add(const char* buf,uint64_t size);
+			bool add(const char* buf,size_t size);
 			IgnoreHandler set_ignore(IgnoreHandler handler);
 			template<class T>
 			size_t read_byte(T* res=nullptr,T (*endian_handler)(const char*)=translate_byte_as_is,size_t size=sizeof(T)) {
@@ -96,10 +96,11 @@ namespace PROJECT_NAME {
 			}
 			common::String& buf_ref() { return input.buf; }
 			bool release_eof();
+			size_t readable_size();
 		};
 
-		bool not_ignore(common::String& buf, uint64_t& readpos);
-		bool ignore_space(common::String& buf, uint64_t& readpos);
-		bool ignore_space_and_line(common::String& buf, uint64_t& readpos);
+		bool not_ignore(common::String& buf, size_t& readpos);
+		bool ignore_space(common::String& buf, size_t& readpos);
+		bool ignore_space_and_line(common::String& buf, size_t& readpos);
 	}
 }

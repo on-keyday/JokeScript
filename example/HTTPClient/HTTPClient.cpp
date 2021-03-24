@@ -3,6 +3,8 @@
 #include"common/ctype.h"
 using namespace network;
 
+
+
 bool HTTPHeaders::add(char* name, char* value) {
 	if (!name || !value)return false;
 	auto len = ctype::strlen(name);
@@ -40,6 +42,69 @@ Err:
 	return false;
 }
 
+
+void network::default_header_callback(const HTTPClient* self, common::String& buf) {
+	buf.add_copy("user-agent: client\r\naccept: */*\r\n", 33);
+}
+
+bool network::recv_common(common::String& str, int sock, SSL* ssl, bool secure) {
+	while (true) {
+		size_t size = 0;
+		char tmpbuf[1024] = { 0 };
+		if (secure) {
+			if (!ssl)return false;
+			while (true) {
+				bool retry = false;
+				if (!SSL_read_ex(ssl, tmpbuf, 1024, &size)) {
+					auto reason = SSL_get_error(ssl, 0);
+					switch (reason)
+					{
+					case(SSL_ERROR_WANT_READ):
+					case(SSL_ERROR_WANT_WRITE):
+						retry = true;
+						break;
+					default:
+						break;
+					}
+					if (retry)continue;
+					return false;
+				}
+				break;
+			}
+		}
+		else {
+			auto res = ::recv(sock, tmpbuf, 1024, 0);
+			if (res <= 0) {
+				return false;
+			}
+			size = res;
+		}
+		str.add_copy(tmpbuf, size);
+		if (size == 1024) {
+			continue;
+		}
+		break;
+	}
+	return true;
+}
+
+bool network::send_common(common::String& str, int sock, SSL* ssl, bool secure) {
+	if (sock < 0)return false;
+	int res = 0;
+	if (secure) {
+		if (!ssl)return false;
+		size_t written = 0;
+		if (!SSL_write_ex(ssl, str.get_const(), str.get_size(), &written)) {
+			return false;
+		}
+		return true;
+	}
+	else {
+		res = ::send(sock, str.get_const(), str.get_size(), 0);
+		return res >= 0;
+	}
+	return true;
+}
 
 bool HTTPClient::set_cookie() {
 	for (auto i = 0u;;i++) {
@@ -275,12 +340,16 @@ bool HTTPClient::make_request(common::String& res,const char* method, const char
 	res.add(' ');
 	res.add_copy("HTTP/1.1\r\nhost: ", 16);
 	res.add_copy(host,ctype::strlen(host));
-	res.add_copy("\r\nuser-agent: client\r\naccept: */*\r\n",35);
+	res.add_copy("\r\n", 2);
+	//res.add_copy("user-agent: client\r\naccept: */*\r\n", 33);
 	if (body&&bodysize) {
 		res.add_copy("content-length: ", 16);
 		auto lenstr = std::to_string(bodysize);
 		res.add_copy(lenstr.c_str(), lenstr.size());
 		res.add_copy("\r\n", 2);
+	}
+	if (headercb) {
+		headercb(this, res);
 	}
 	res.add_copy("\r\n",2);
 	if (body&&bodysize) {
@@ -290,24 +359,15 @@ bool HTTPClient::make_request(common::String& res,const char* method, const char
 }
 
 bool HTTPClient::send(common::String& str) {
-	if (this->socket < 0)return false;
-	int res = 0;
-	if (secure) {
-		if (!ssl)return false;
-		size_t written = 0;
-		if (!SSL_write_ex(ssl, str.get_const(), str.get_size(), &written)) {
-			invoke_errcb();
-			return false;
-		}
-		return true;
+	if (!send_common(str,this->socket,this->ssl,this->secure)) {
+		if (this->secure)invoke_errcb();
+		return false;
 	}
-	else {
-		res =::send(this->socket, str.get_const(), str.get_size(), 0);
-		return res >= 0;
-	}
+	return true;
 }
 
 bool HTTPClient::recv(common::String& str) {
+	/*
 	while (true) {
 		size_t size = 0;
 		char tmpbuf[1024] = { 0 };
@@ -345,6 +405,10 @@ bool HTTPClient::recv(common::String& str) {
 			continue;
 		}
 		break;
+	}*/
+	if (!recv_common(str, this->socket, this->ssl, this->secure)) {
+		if (this->secure)invoke_errcb();
+		return false;
 	}
 	return true;
 }
@@ -368,7 +432,9 @@ bool HTTPClient::parse_httpresponse(common::String& httpresponse, BodyFlag bodyf
 	reader.readwhile(&s, ctype::reader::Until);
 	reader.expect("\r\n");
 	while (!this->headers->parse(reader)) {
-		this->recv(reader.buf_ref());
+		if (!this->recv(reader.buf_ref())) {
+			return false;
+		}
 	}
 	this->read_body(reader,bodyf);
 	this->headers->set_raw(reader.buf_ref());
@@ -404,7 +470,10 @@ bool HTTPClient::read_body(io::Reader& reader, BodyFlag bodyf) {
 		}
 	}
 	if (chunked) {
-		this->recv(reader.buf_ref());
+		if (!ctype::is_hexnumber(reader.abyte())) {
+			if (!this->recv(reader.buf_ref()))return false;
+			reader.release_eof();
+		}
 		while (1) {
 			io::ReadStatus rs{0};
 			rs.num = '\r';
@@ -414,7 +483,7 @@ bool HTTPClient::read_body(io::Reader& reader, BodyFlag bodyf) {
 			len = strtoull(rs.buf.get_const(), nullptr, 16);
 			if (len == 0)break;
 			while (reader.buf_ref().get_size() - reader.get_readpos() <= len+2) {
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.release_eof();
 			}
 			for (auto i = 0ull; i < len;i++) {
@@ -423,18 +492,18 @@ bool HTTPClient::read_body(io::Reader& reader, BodyFlag bodyf) {
 				read.add(tmp2);
 			}
 			while(!reader.expect("\r\n")){
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.release_eof();
 			}
 			if (!ctype::is_hexnumber(reader.abyte())) {
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.release_eof();
 			}
 		}
 	}
 	else if(has_len){
-		while (reader.buf_ref().get_size() - reader.get_readpos() < len) {
-			this->recv(reader.buf_ref());
+		while (reader.readable_size() < len) {
+			if (!this->recv(reader.buf_ref()))return false;
 			reader.release_eof();
 		}
 		for (auto i = 0ull; i < len; i++) {
@@ -479,19 +548,19 @@ bool HTTPClient::read_by_content_type(io::Reader& reader, common::String& read, 
 		}
 		while (html) {
 			if (reader.eof()) {
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.release_eof();
 			}
 			char tmp = 0;
 			reader.read_byte(&tmp);
 			if (tmp == '<') {
 				if (reader.eof()) {
-					this->recv(reader.buf_ref());
+					if (!this->recv(reader.buf_ref()))return false;
 					reader.release_eof();
 				}
 				if (reader.expect("/")) {
 					if (reader.eof()) {
-						this->recv(reader.buf_ref());
+						if (!this->recv(reader.buf_ref()))return false;
 						reader.release_eof();
 					}
 					if (reader.expect("html") || reader.expect("HTML")) {
@@ -504,13 +573,13 @@ bool HTTPClient::read_by_content_type(io::Reader& reader, common::String& read, 
 	else if (strstr(type,"json")) {
 		if (reader.ahead("{")) {
 			while (!reader.block("{","}")) {
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.seek(base_readpos);
 			}
 		}
 		else if (reader.ahead("[")) {
 			while (!reader.block("[", "]")) {
-				this->recv(reader.buf_ref());
+				if (!this->recv(reader.buf_ref()))return false;
 				reader.seek(base_readpos);
 			}
 		}
@@ -525,18 +594,25 @@ bool HTTPClient::read_by_content_type(io::Reader& reader, common::String& read, 
 	return true;
 }
 
-bool HTTPClient::method_detail(const char* uri,const char* method,BodyFlag bodyf,const char* defaultpath,const char* body,size_t bodysize) {
+bool HTTPClient::method_detail(const char* uri,const char* method,BodyFlag bodyf,const char* defaultpath,const char* body,size_t bodysize,bool fullpath) {
 	uint16_t port = 0;
 	common::String protocol, host, path;
 	if (!parse_uri(uri, protocol, host, port, path,defaultpath))return false;
 	common::String request,hostwithport,responce;
+	const char* passpath = nullptr;
 	hostwithport.add_copy(host.get_const(), host.get_size());
 	if (port) {
 		auto portstr = std::to_string(port);
 		hostwithport.add(':');
 		hostwithport.add_copy(portstr.c_str(), portstr.size());
 	}
-	if (!make_request(request, method, path.get_const(), hostwithport.get_const(),body,bodysize))return false;
+	if (fullpath) {
+		passpath = uri;
+	}
+	else {
+		passpath = path.get_const();
+	}
+	if (!make_request(request, method, passpath, hostwithport.get_const(),body,bodysize))return false;
 	if (!set_up_socket(protocol.get_const(), host.get_const(), port))return false;
 	bool res = false;
 	if (ctype::streaq(protocol.get_const(), "https"))
@@ -570,9 +646,25 @@ HTTPClient::ErrorCallback HTTPClient::set_errcb(ErrorCallback cb) {
 	return ret;
 }
 
-bool HTTPClient::method(const char* method, const char* uri,const char* body,size_t bodysize,bool redirect, unsigned char depth,const char* defaultpath, BodyFlag bodyf) {
+HTTPClient::HeaderCallback HTTPClient::set_headercb(HeaderCallback cb) {
+	auto ret = this->headercb;
+	if (cb&&ret!=cb) {
+		HTTPHeaders testh;
+		common::String test;
+		cb(this, test);
+		test.add_copy("\r\n", 2);
+		io::Reader testr(test,nullptr,io::not_ignore);
+		if (!testh.parse(testr))return cb;
+		if (!testr.eof())return cb;
+		if (testh.idx("content-length") || testh.idx("host"))return cb;
+	}
+	this->headercb = cb;
+	return ret;
+}
+
+bool HTTPClient::method(const char* method, const char* uri,const char* body,size_t bodysize,bool redirect, unsigned char depth,const char* defaultpath, BodyFlag bodyf, bool fullpath) {
 	if (!method)return false;
-	if (!method_detail(uri, method, bodyf, defaultpath,body,bodysize))return false;
+	if (!method_detail(uri, method, bodyf, defaultpath,body,bodysize,fullpath))return false;
 	if (redirect) {
 		if (depth == 0)return true;
 		auto code = this->headers->code();
@@ -625,3 +717,90 @@ bool HTTPClient::put(const char* uri, const char* body,size_t bodysize) {
 	return method("PUT", uri, body,bodysize);
 }
 
+bool HTTPClient::patch(const char* uri, const char* body, size_t bodysize) {
+	return method("PATCH", uri, body, bodysize);
+}
+
+bool HTTPClient::_delete(const char* uri) {
+	return method("DELETE", uri);
+}
+
+bool HTTP2Client::recv(common::String& buf) {
+	return false;
+}
+
+bool HTTP2Client::send(common::String& buf) {
+	return false;
+}
+
+bool HTTP2Client::send_error(unsigned char errorcode) {
+	return false;
+}
+
+bool HTTP2Client::read_frameheader(io::Reader& reader,int& len,unsigned char& type,FrameFlag& flag,int& id) {
+	auto base = reader.get_readpos();
+	char len_p[4] = { 0 };
+	unsigned char flag_b = 0;
+	if (reader.read_byte(&len_p[1], io::translate_byte_as_is, 3) != 3)goto Err;
+	len = io::translate_byte_reverse<int>(len_p);
+	if(reader.read_byte(&type)!=1)goto Err;
+	if(reader.read_byte(&flag_b)!=1)goto Err;
+	if(reader.read_byte(&id,io::translate_byte_reverse)!=4)goto Err;
+	flag.byte = flag_b;
+	return true;
+Err:
+	reader.seek(base);
+	return false;
+}
+
+HeaderFrame* HTTP2Client::read_header(io::Reader& reader, FrameFlag flag, int id, int len) {
+	unsigned char padded = 0,weight=0,more=0;
+	int depended=-1;
+	bool exclusive = false;
+	if (flag.bit.f3) {
+		more+=1;
+		reader.read_byte(&padded);
+	}
+	if (flag.bit.f5) {
+		reader.read_byte(&depended, io::translate_byte_reverse);
+		if (depended<0) {
+			exclusive = true;
+			depended &= 0x7F'FF'FF'FF;
+		}
+		reader.read_byte(&weight);
+		more += 5;
+	}
+	common::String databuf=nullptr;
+	int size = len - padded - more;
+	if (size < 0)return nullptr;
+	while (reader.readable_size()<size) {
+		this->recv(reader.buf_ref());
+		reader.release_eof();
+	}
+	io::ReadStatus rs{ 0 };
+	rs.num = size;
+	reader.readwhile(&rs,ctype::reader::Count);
+	databuf = std::move(rs.buf);
+	if (padded) {
+		rs.buf.init();
+		rs.num = padded;
+		reader.readwhile(&rs, ctype::reader::Count);
+	}
+	auto data = databuf.get_raw();
+	return common::create<HeaderFrame>(data,id,flag,size);
+}
+
+bool HTTP2Client::read_continuation(io::Reader& reader, common::String& buf, int id) {
+	int len=0;
+	unsigned char type = 0;
+	FrameFlag flag;
+	int cmpid = 0;
+	if (!read_frameheader(reader, len, type, flag, cmpid)) {
+		if (!this->recv(reader.buf_ref()))return false;
+	}
+	if (cmpid != id||type!=0x9) {
+		this->send_error(0x1);
+		return false;
+	}
+
+}
