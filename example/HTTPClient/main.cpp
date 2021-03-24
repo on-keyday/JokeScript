@@ -392,10 +392,15 @@ int addtional_command(io::Reader& cmdline,common::String& hostinfo,HTTPClient& c
 				print("one argument is required.\n");
 				return -1;
 			}
-			common::io_base::Input input;
-			input.readall(file.get_const());
-			if (input.buf.get_size()) {
-				flags.input[idx] = std::move(input.buf);
+			if (flags.payload) {
+				flags.input[idx] = std::move(file);
+			}
+			else {
+				common::io_base::Input input;
+				input.readall(file.get_const());
+				if (input.buf.get_size()) {
+					flags.input[idx] = std::move(input.buf);
+				}
 			}
 			ret = result_t::succeed_f;
 		}
@@ -466,12 +471,6 @@ int command_intepreter(const char* filename,HTTPClient& client,flags_t& flags,in
 		if (!rs.buf.get_size())continue;
 		io::Reader cmdline(rs.buf, nullptr, io::ignore_space_and_line);
 		if (cmdline.expect("#"))continue;
-		if (cmdline.expect(":")) {
-			io::ReadStatus rs{ 0 };
-			rs.num = ' ';
-			cmdline.readwhile(&rs, ctype::reader::Until);
-
-		}
 		auto res = addtional_command(cmdline,hostinfo,client,flags,safety);
 		if (res <0)return res;
 		if (res == 2)return 0;
@@ -636,6 +635,17 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			set_ssl_cb(client, all);
 		}
 		else {
+			return result_t::error;
+		}
+	}
+	else if (cmdline.expect_pf("cd", j)) {
+		common::String dir;
+		if (!read_cmdline(cmdline, dir, flags)) {
+			print("one argument is required.\n");
+			return result_t::error;
+		}
+		if (!SetCurrentDirectoryA(dir.get_const())) {
+			print(dir.get_const(), ":no such dirctry");
 			return result_t::error;
 		}
 	}
