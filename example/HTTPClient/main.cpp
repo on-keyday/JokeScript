@@ -8,6 +8,7 @@ using namespace network;
 using namespace ctype;
 
 bool nomsg = false;
+bool laudly = false;
 bool (*j)(char) = ctype::is_usable_for_identifier;
 
 #define INPUT_SIZE 3
@@ -37,7 +38,12 @@ void print() {}
 template<class Now,class... Args>
 void print(Now now,Args... other) {
 	if (nomsg)return;
-	std::cout << now;
+	if (laudly) {
+		std::cerr << now;
+	}
+	else {
+		std::cout << now;
+	}
 	print(other...);
 }
 
@@ -548,6 +554,8 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			"other command\n",
 			"exit:finish interactive mode\n",
 			"help:show this help\n",
+			"cd <dirname>:change current directory\n",
+			"print <arg>:print arg\n",
 			"clear:clear cmdline buffer\n",
 			"sslinfo:show OpenSSL info\n",
 			"global [refresh]:get global ip address and info from the Internet\n",
@@ -656,6 +664,14 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			return result_t::error;
 		}
 	}
+	else if (cmdline.expect_pf("print", j)) {
+		common::String toprint;
+		if (!read_cmdline(cmdline, toprint, flags)) {
+			print("one argument is required.\n");
+			return result_t::error;
+		}
+		print(toprint.get_const());
+	}
 	else {
 		if (flags.addtional)return result_t::notfound;
 		io::ReadStatus rs{ 0 };
@@ -727,6 +743,11 @@ int main(int argc, char** argv){
 		}
 		else if (streaq(arg[ofs],"-p")) {
 			use_for_payload = true;
+			ofs++;
+			continue;
+		}
+		else if (streaq(arg[ofs], "-l")) {
+			laudly = true;
 			ofs++;
 			continue;
 		}
@@ -803,6 +824,7 @@ int main(int argc, char** argv){
 				"-p:if use 'post' or 'put' method, second argument will be used as data payload\n",
 				"-s <file>:set CAcert file. default:./cacert.pem\n"
 				"-m <file>:interpreter mode\n",
+				"-l:all output to stderr",
 				"Usage\n"
 				"httpclient <options> <method> <args>\n"
 			);
