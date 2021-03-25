@@ -59,7 +59,9 @@ void error(Now now, Args... other) {
 template<class Time>
 void common_info(HTTPClient& client,bool raw,Time time) {
 	if(client.address())print("accessed address: ", client.address(), "\n");
-	if (raw)print(client.raw(), "\n");
+	if (raw) {
+		print(client.raw(), "\n");
+	}
 	print("time:", time, "msec\n");
 	print("status code: ", client.statuscode(), "\n");
 }
@@ -410,6 +412,9 @@ int addtional_command(io::Reader& cmdline,common::String& hostinfo,HTTPClient& c
 				if (input.buf.get_size()) {
 					flags.input[idx] = std::move(input.buf);
 				}
+				else {
+					flags.input[idx].init();
+				}
 			}
 			ret = result_t::succeed_f;
 		}
@@ -498,7 +503,7 @@ int command_intepreter(const char* filename,HTTPClient& client,flags_t& flags,in
 				flag_do(flag, is_success(client.statuscode()), suc, cmdline, hostinfo, client, flags, safety);
 				if (suc < 0)return suc;
 				if (suc == 2)return 0;
-				if (res == 3)file.seek(0);
+				if (suc == 3)file.seek(0);
 			}
 			else if (cmdline.expect_pf("less", j)) {
 				common::String num;
@@ -511,7 +516,7 @@ int command_intepreter(const char* filename,HTTPClient& client,flags_t& flags,in
 					auto suc = addtional_command(cmdline, hostinfo, client, flags, safety);
 					if (suc < 0)return suc;
 					if (suc == 2)return 0;
-					if (res == 3)file.seek(0);
+					if (suc == 3)file.seek(0);
 				}
 			}
 			else if (cmdline.expect_pf("inbuf",j)) {
@@ -527,7 +532,7 @@ int command_intepreter(const char* filename,HTTPClient& client,flags_t& flags,in
 				flag_do(flag, flags.input[idx].get_size(), suc, cmdline, hostinfo, client, flags, safety);
 				if (suc < 0)return suc;
 				if (suc == 2)return 0;
-				if (res == 3)file.seek(0);
+				if (suc == 3)file.seek(0);
 			}
 			else {
 				io::ReadStatus rs{ 0 };
@@ -559,6 +564,7 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			"clear:clear cmdline buffer\n",
 			"sslinfo:show OpenSSL info\n",
 			"global [refresh]:get global ip address and info from the Internet\n",
+			"cacert <filepath>:set cacert file\n",
 			"raw <true|false>:set flag of visibility of HTTP Headers\n",
 			"redirect <true|false>:set flag to redirect request\n",
 			"effort <true|false>:set flag of behavior when 'GET' method response has no 'content-length' or 'transfer-encoding'\n",
@@ -660,9 +666,16 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			return result_t::error;
 		}
 		if (_chdir(dir.get_const())) {
-			print(dir.get_const(), ":no such dirctry");
+			print(dir.get_const(), ":no such dirctry\n");
 			return result_t::error;
 		}
+	}
+	else if (cmdline.expect_pf("cwd", j)) {
+		auto cwd = _getcwd(nullptr,1000);
+		if (cwd) {
+			print(cwd, "\n");
+		}
+		std::free(cwd);
 	}
 	else if (cmdline.expect_pf("print", j)) {
 		common::String toprint;
@@ -670,7 +683,18 @@ result_t command(HTTPClient& client, io::Reader& cmdline,flags_t& flags,common::
 			print("one argument is required.\n");
 			return result_t::error;
 		}
-		print(toprint.get_const());
+		print(toprint.get_const(),"\n");
+	}
+	else if (cmdline.expect_pf("cacert",j)) {
+		common::String cafile;
+		if (!read_cmdline(cmdline, cafile, flags)) {
+			print("one argument is required.\n");
+			return result_t::error;
+		}
+		if (!client.set_cacert(cafile.get_const())) {
+			print("'",cafile.get_const(), "' is not cacert file.\n");
+			return result_t::error;
+		}
 	}
 	else {
 		if (flags.addtional)return result_t::notfound;
@@ -834,7 +858,9 @@ int main(int argc, char** argv){
 		res = command_intepreter(interpret, client, flags);
 	}
 	if (interactive) {
+		flags.addtional = false;
 		nomsg = false;
+		laudly = false;
 		SetConsoleCP(CP_UTF8);
 		if (!flags.locale) {
 			setlocale(LC_ALL, ".utf8");

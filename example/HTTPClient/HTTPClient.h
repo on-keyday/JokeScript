@@ -79,7 +79,7 @@ namespace network {
 		ErrorCallback errcb=nullptr;
 		HeaderCallback headercb = nullptr;
 		static const int invalid = ~0;
-		const char* cacert_file="cacert.pem";
+		char* cacert_file=nullptr;
 		int socket=invalid;
 		SSL_CTX* ctx = nullptr;
 		SSL* ssl=nullptr;
@@ -107,10 +107,11 @@ namespace network {
 	public:
 		HTTPClient() = default;
 		HTTPClient(HTTPClient&) = delete;
-		HTTPClient(const char* file) :cacert_file(file) { set_headercb(default_header_callback); }
+		HTTPClient(const char* file) { set_headercb(default_header_callback); set_cacert(file); }
 		InfoCallback set_infocb(InfoCallback cb);
 		ErrorCallback set_errcb(ErrorCallback cb);
 		HeaderCallback set_headercb(HeaderCallback cb);
+		bool set_cacert(const char* cacert);
 		bool method(const char* method, const char* uri,const char* body=nullptr,size_t bodysize=0,bool redirect = false, unsigned char depth = 255,const char* defaultpath="/",BodyFlag bodyf=BodyFlag::onheader,bool fullpath=false);
 		bool get(const char* uri, bool redirect = false,unsigned char depth=255,bool head = false,BodyFlag flag=BodyFlag::onheader);
 		bool options(const char* uri);
@@ -126,7 +127,9 @@ namespace network {
 		const char* header(const char* name,uint64_t pos=0) const { if (!headers)return nullptr; return headers->idx(name,pos); };
 		unsigned short statuscode()const{ if (!headers)return 0; return headers->code(); }
 		~HTTPClient(){
+			common::free(cacert_file);
 			common::free(_body);
+			common::free(addr_str);
 			common::kill(headers);
 			if (ssl) {
 				SSL_free(ssl);

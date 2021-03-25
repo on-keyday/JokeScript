@@ -33,9 +33,26 @@ void Record(const char* locate,void* p1,void* p2) {
     graph4.push_back(p2);
 }
 void ShowGraph() {
-    out << "\n";
+    out << "count,loacte,size,pointer1,pointer2,leaks\n";
     for (auto i = 0; i < graph1.size(); i++) {
-        out << i << "," << graph2[i] << "," << graph1[i] << "," << graph3[i] << "," << graph4[i] << "\n";
+        out << i << "," << graph2[i] << "," << graph1[i] << "," << graph3[i] << "," << graph4[i] << ",";
+        if (strcmp(graph2[i], "realloc")==0) {
+            if (sizeinfo[graph4[i]]) {
+                out << "true";
+            }
+            else {
+                out << "false";
+            }
+        }
+        else {
+            if (sizeinfo[graph3[i]]) {
+                out << "true";
+            }
+            else {
+                out << "false";
+            }
+        }
+        out << "\n";
     }
 }
 )

@@ -662,6 +662,23 @@ HTTPClient::HeaderCallback HTTPClient::set_headercb(HeaderCallback cb) {
 	return ret;
 }
 
+bool HTTPClient::set_cacert(const char* cacert) {
+	if (ctx) {
+		if (!SSL_CTX_load_verify_locations(ctx, cacert, nullptr)) {
+			SSL_CTX_load_verify_locations(ctx, this->cacert_file, nullptr);
+			return false;
+		}
+	}
+	common::free(this->cacert_file);
+	if (cacert) {
+		this->cacert_file = common::StringFilter() = cacert;
+	}
+	else {
+		this->cacert_file = nullptr;
+	}
+	return true;
+}
+
 bool HTTPClient::method(const char* method, const char* uri,const char* body,size_t bodysize,bool redirect, unsigned char depth,const char* defaultpath, BodyFlag bodyf, bool fullpath) {
 	if (!method)return false;
 	if (!method_detail(uri, method, bodyf, defaultpath,body,bodysize,fullpath))return false;
