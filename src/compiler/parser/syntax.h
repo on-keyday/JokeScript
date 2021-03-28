@@ -71,10 +71,10 @@ namespace PROJECT_NAME {
 
 			TreeType* invoke_bin() {
 				if (move_list()) {
-					ret = binary();
+					 return binary();
 				}
 				else {
-					ret = unary();
+					return  unary();
 				}
 			}
 
