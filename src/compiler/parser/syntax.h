@@ -64,7 +64,7 @@ namespace PROJECT_NAME {
 				}
 				else {
 					if (current == begin)return false;
-					current = curren - 1;
+					current = current - 1;
 				}
 				return true;
 			}
@@ -74,7 +74,7 @@ namespace PROJECT_NAME {
 					ret = binary();
 				}
 				else {
-					ret = unary()
+					ret = unary();
 				}
 			}
 
@@ -107,7 +107,7 @@ namespace PROJECT_NAME {
 			}
 
 			TreeType* unary() {
-
+				return nullptr;
 			}
 		public:
 			bool set(TreeMaker* maker, Reader* reader, ExpectList* begin, ExpectList* end) {
