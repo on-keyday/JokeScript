@@ -19,7 +19,10 @@ namespace PROJECT_NAME {
 	namespace syntax {
 
 		struct Expect {
-			common::EasyVectorP<const char*> chars;
+			union {
+				void* p=nullptr;
+				common::EasyVectorP<const char*> chars;
+			};
 			Expect(std::initializer_list<const char*> init) {
 				chars.add_copy(init.begin(), init.size());
 			}
@@ -29,7 +32,7 @@ namespace PROJECT_NAME {
 			}
 
 			Expect& operator=(std::nullptr_t) {
-				this->chars.unuse();
+				p = nullptr;
 				return *this;
 			}
 		};
