@@ -51,7 +51,7 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            bool add_detail(PType p) {
+            bool add_detail(const PType& p) {
                 if (!ps)return false;
                 if (!expand_region())return false;
                 ps[toadd] = p;
@@ -171,6 +171,22 @@ namespace PROJECT_NAME {
                 return true;
             }
 
+            bool add_copy_ref(const PType* base, uint64_t size) {
+                if (!ps || !base)return false;
+                for (auto i = 0ull; i < size; i++) {
+                    add_ref(base[i]);
+                }
+                return true;
+            }
+
+            bool add_move(PType* base,uint64_t size) {
+                if (!ps || !base)return false;
+                for (auto i = 0ull; i < size; i++) {
+                    add_mov(base[i]);
+                }
+            }
+
+
             bool add(PType p) {
                 return add_detail(p);
             }
@@ -180,6 +196,17 @@ namespace PROJECT_NAME {
                 return add_detail(p);
             }
 
+            bool add_ref(const PType& p) {
+                return add_detail(p);
+            }
+
+            bool add_mov(PType& p) {
+                if (!ps)return false;
+                if (!expand_region())return false;
+                ps[toadd] = std::move(p);
+                toadd++;
+                return true;
+            }
 
             PType remove(uint64_t pos) {
                 if (!ps)return 0;
@@ -363,6 +390,16 @@ namespace PROJECT_NAME {
                 uint64_t ret = sizeof(EasyVector);
                 ret += len * sizeof(PType);
                 return ret;
+            }
+
+            bool for_each(void(*func)(PType&)) {
+                if (!ps)return false;
+                unsigned long long i = 0;
+                while (i < toadd) {
+                    func(ps[i]);
+                    i++;
+                }
+                return true;
             }
 
             ~EasyVector() {
@@ -553,12 +590,32 @@ namespace PROJECT_NAME {
 
             bool add_nz(PType a) {
                 if (!allocate())return false;
-                return p->add(a);
+                return p->add_nz(a);
+            }
+
+            bool add_ref(const PType& a) {
+                if (!allocate())return false;
+                return p->add_ref(a);
+            }
+
+            bool add_mov(PType& a) {
+                if (!allocate())return false;
+                return p->add_mov(a);
             }
             
             bool add_copy(const PType* base, uint64_t size) {
                 if (!allocate())return false;
                 return p->add_copy(base, size);
+            }
+
+            bool add_copy_ref(const PType* base, uint64_t size) {
+                if (!allocate())return false;
+                return p->add_copy_ref(base, size);
+            }
+
+            bool add_move(PType* base, uint64_t size) {
+                if (!allocate())return false;
+                return p->add_move(base, size);
             }
 
             PType* get_raw() {
@@ -661,6 +718,11 @@ namespace PROJECT_NAME {
             uint64_t memused() const {
                 if (!p)return sizeof(EasyVectorP);
                 return sizeof(EasyVectorP) + p->memused();
+            }
+
+            bool for_each(void (*func)(PType&)) {
+                if (!p)return false;
+                return p->for_each(func);
             }
 
             ~EasyVectorP(){
