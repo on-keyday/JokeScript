@@ -42,8 +42,9 @@ namespace PROJECT_NAME {
                     if (!hold) {
                         return false;
                     }
-                    for (auto i = len; i < len * 2; i++) {
-                        hold[i] = 0;
+                    char* tmp = (char*)hold;
+                    for (auto i = len*sizeof(PType); i < sizeof(PType)*len * 2; i++) {
+                        tmp[i] = 0;
                     }
                     ps = hold;
                     len *= 2;
@@ -114,6 +115,12 @@ namespace PROJECT_NAME {
             PType operator[](uint64_t pos) const {
                 if (!ps)return 0;
                 if (pos >= toadd)return 0;
+                return ps[pos];
+            }
+
+            PType& idx_ref(uint64_t pos) {
+                if (!ps)throw "error";
+                if (pos >= toadd)throw "error";
                 return ps[pos];
             }
 
@@ -443,6 +450,7 @@ namespace PROJECT_NAME {
             return ret;
         }*/
 
+
         template<class T, class ...Args>
         T* create(Args... args) {
             T* ret = nullptr;
@@ -516,6 +524,11 @@ namespace PROJECT_NAME {
             PType operator[](uint64_t pos) const {
                 if (!p)return 0;
                 return p->operator[](pos);
+            }
+
+            PType& idx_ref(uint64_t pos) {
+                if (!p)throw "error";
+                return p->idx_ref(pos);
             }
 
             EasyVectorP& operator=(EasyVectorP&& from) noexcept {

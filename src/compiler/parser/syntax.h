@@ -9,21 +9,16 @@
 */
 
 #pragma once
-
-#include"../data/identifier.h"
 #include"../../common/structs.h"
 #include"../../common/filereader.h"
-#include<initializer_list>
+#include"parser.h"
 
 namespace PROJECT_NAME {
 	namespace syntax {
-
 		struct Expect {
-			union {
-				void* p=nullptr;
-				common::EasyVectorP<const char*> chars;
-			};
-
+			common::EasyVectorP<const char*> chars;
+			bool boolean = false;
+			bool assign = false;
 			Expect(std::initializer_list<const char*> init) {
 				chars.add_copy(init.begin(), init.size());
 			}
@@ -32,116 +27,61 @@ namespace PROJECT_NAME {
 				return *this;
 			}
 
-			Expect& operator=(std::nullptr_t) {
-				p = nullptr;
-				return *this;
-			}
-			~Expect(){
+			~Expect() {
 				chars.unuse();
 			}
 		};
 
 		struct Expects {
+		private:
 			common::EasyVectorP<Expect> expects;
+		public:
 			Expects(std::initializer_list<Expect> init) {
 				expects.add_copy_ref(init.begin(), init.size());
 			}
-			Expect* begin(){
+			Expect* begin() {
 				return expects.begin();
 			}
 			Expect* end() {
 				return expects.end();
 			}
-		};
 
-		
-		template<class Char,class Reader,class TreeMaker,class TreeType,class ExpectList>
-		struct Parser {
-		private:
-			TreeMaker* maker=nullptr;
-			Reader* reader = nullptr;
-			ExpectList* begin = nullptr;
-			ExpectList* end = nullptr;
-			ExpectList* current = nullptr;
-			
-			bool move_list(bool forward=true) {
-				if (forward) {
-					if (current == end)return false;
-					current = current+1;
-				}
-				else {
-					if (current == begin)return false;
-					current = current - 1;
-				}
-				return true;
-			}
-
-			TreeType* invoke_bin() {
-				if (move_list()) {
-					 return binary();
-				}
-				else {
-					return  unary();
-				}
-			}
-
-			TreeType* binary() {
-				TreeType* ret = invoke_bin();
-				if (!ret)return nullptr;
-				bool ok = false;
-				while (true) {
-					if (current) {
-						auto& expects = *current;
-						for (auto now : expects) {
-							if (reader->expect(now)) {
-								TreeType* tree = invoke_bin();
-								if (!tree)return nullptr;
-								ret = maker->binary(now, ret, tree);
-								if (!ret)return nullptr;
-								ok = true;
-								break;
-							}
-						}
-					}
-					if (ok) {
-						ok = false;
-						continue;
-					}
-					break;
-				}
-				move_list(false);
-				return ret;
-			}
-
-			TreeType* unary() {
-				return nullptr;
-			}
-		public:
-			bool set(TreeMaker* maker, Reader* reader, ExpectList* begin, ExpectList* end) {
-				this->maker = maker;
-				this->reader = reader;
-				this->begin = begin;
-				this->end = end;
-				return true;
-			}
-
-			bool parse() {
-				current = begin;
+			Expect& operator[](size_t pos) {
+				return expects.idx_ref(pos);
 			}
 		};
 
-		struct ReaderOverWrap {
-			io::Reader* reader;
-			bool expect();
+		identifier::SyntaxTree* parse_syntax(io::Reader*, identifier::Maker*);
+
+		struct ReaderOverWrap : parser::IReader<char>{
+			io::Reader* reader=nullptr;
+			bool expect(const char* str);
+			bool unary(bool& err);
+			bool brackets(bool begin);
+			bool keyword();
+			bool number();
+			bool string();
 			bool identifier();
-			bool brackets(bool end=false);
+			bool after();
 		};
 
+		struct MakerOverWrap : parser::IMaker<identifier::SyntaxTree, char, Expect, ReaderOverWrap> {
+			identifier::Maker* maker=nullptr;
+			identifier::SyntaxTree* binary(const char* symbol, identifier::SyntaxTree* left, identifier::SyntaxTree* right, Expect* flags);
+			identifier::SyntaxTree* unary(ReaderOverWrap* reader, identifier::SyntaxTree* tree);
+			identifier::SyntaxTree* keyword(ReaderOverWrap* reader);
+			identifier::SyntaxTree* number(ReaderOverWrap* reader);
+			identifier::SyntaxTree* string(ReaderOverWrap* reader);
+			identifier::SyntaxTree* identifier(ReaderOverWrap* reader);
+			identifier::SyntaxTree* after(ReaderOverWrap* reader);
+			
 
-		identifier::SyntaxTree* parse_syntax(io::Reader*,identifier::Maker*);
+			bool assignable(identifier::SyntaxTree* tree);
+		};
 
-		using BasicParser = Parser<char,ReaderOverWrap,identifier::Maker,identifier::SyntaxTree,Expects>;
+		using BasicParser = parser::Parser<char, ReaderOverWrap, MakerOverWrap, identifier::SyntaxTree, Expect>;
 
-		BasicParser* make_parser();
+		BasicParser* make_parser(io::Reader* reader, identifier::Maker* maker);
 	}
 }
+

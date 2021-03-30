@@ -29,13 +29,13 @@ io::ReadStatus* Maker::get_read_status() {
 
 Type* Maker::make_type(char* name, TypeKind kind, bool name_must,bool hold) {
 	if (name_must&&!name) {
-		logger->syserr("memory is full.");
+		logger->memoryfull();
 		return nullptr;
 	}
 	auto ret = common::create<Type>();
 	if (!ret) {
 		common::free(name);
-		logger->syserr("memory is full.");
+		logger->memoryfull();
 		return nullptr;
 	}
 	ret->name = name;
@@ -107,18 +107,38 @@ Type* Maker::get_bit_t(bool is_unsigned, bool is_float) {
 	}
 }
 
+Type* Maker::get_bool() {
+	return get_derived(get_bit_t(true), 1, TypeKind::has_size_t);
+}
+
 Variable* Maker::make_variable(char* name) {
 	if(!name) {
-		logger->syserr("memory is full.");
+		logger->memoryfull();
 		return nullptr;
 	}
 	auto ret = common::create<Variable>();
 	if (!ret) {
 		common::free(name);
-		logger->syserr("memory is full.");
+		logger->memoryfull();
 		return nullptr;
 	}
 	ret->name = name;
 	vars.add(ret);
+	return ret;
+}
+
+SyntaxTree* Maker::make_tree(char* symbol,TreeKind kind) {
+	if (!symbol) {
+		logger->memoryfull();
+		return nullptr;
+	}
+	auto ret = common::create<SyntaxTree>();
+	if (!ret) {
+		common::free(symbol);
+		logger->memoryfull();
+		return nullptr;
+	}
+	ret->symbol = symbol;
+	ret->kind = kind;
 	return ret;
 }

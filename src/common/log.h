@@ -21,6 +21,7 @@ namespace PROJECT_NAME {
 			bool semerr_val(const char* message,const char* val);
 			bool unexpected_token(const char* expected,char but);
 			bool unimplemented(const char* message);
+			bool memoryfull();
 		};
 	}
 }

@@ -44,3 +44,8 @@ bool log::Log::unexpected_token(const char* expected, char but) {
 bool log::Log::unimplemented(const char* message) {
 	return false;
 }
+
+bool log::Log::memoryfull()
+{
+	return false;
+}

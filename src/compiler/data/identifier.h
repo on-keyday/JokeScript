@@ -151,7 +151,9 @@ namespace PROJECT_NAME {
 		};
 
 		enum class TreeKind {
-			block
+			block,
+			binary,
+			unary
 		};
 
 		struct SyntaxTree {
@@ -197,7 +199,7 @@ namespace PROJECT_NAME {
 				}
 				auto res=scope->memb.add(member);
 				if (!res) {
-					logger->syserr("memory is full.");
+					logger->memoryfull();
 				}
 				return res;
 			}
@@ -209,8 +211,11 @@ namespace PROJECT_NAME {
 			Type* get_function(Type* rettype, common::EasyVectorP<Type*>& params, common::EasyVectorP<TypeOption*>& opts);
 			Type* get_void();
 			Type* get_bit_t(bool is_unsigned=false,bool is_float=false);
+			Type* get_bool();
 
 			Variable* make_variable(char* name);
+
+			SyntaxTree* make_tree(char* symbol,TreeKind kind);
 
 			~Maker() {
 				types.remove_each(common::kill);

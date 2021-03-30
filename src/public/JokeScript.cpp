@@ -16,6 +16,7 @@
 #include"../common/filereader.h"
 #include"../user/json_tools.h"
 #include"../user/user_action.h"
+#include"../compiler/parser/syntax.h"
 
 using namespace jokescript;
 
@@ -97,13 +98,15 @@ int ccnv jokescript::compiler_main(int argc, char** argv) {
 	else {
 		name = "joke.jok";
 	}
-	auto inst = make_instance();
+	/*auto inst = make_instance();
 	if (!inst)return -1;
 	if(!set_option(inst, "-s", name))return -2;
 	if (!parse(inst))return -3;
 	delete_instance(inst);
-	print("\n");
+	print("\n");*/
 	
+	
+	auto parser=syntax::make_parser(nullptr,nullptr);
 	OutDebugMemoryInfo(ShowGraph();)
 	return 0;
 }
