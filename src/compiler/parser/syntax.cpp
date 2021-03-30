@@ -96,7 +96,7 @@ identifier::SyntaxTree* syntax::parse_syntax(io::Reader*, identifier::Maker*) {
 }
 
 BasicParser* syntax::make_parser(io::Reader* reader, identifier::Maker* maker) {
-	if (!init_operators())return false;
+	if (!init_operators())return nullptr;
 	auto ret = common::create<BasicParser>();
 	if (!ret)return nullptr;
 	auto makerover = common::create<syntax::MakerOverWrap>();
@@ -189,7 +189,10 @@ SyntaxTree* MakerOverWrap::unary(ReaderOverWrap* reader, SyntaxTree* tree) {
 	auto cmp = reader->reader->prev();
 	SyntaxTree* ret = nullptr;
 	if (ctype::streaq("+",cmp)||ctype::streaq("-",cmp)) {
-		tree->type;
+		tree->type=tree->type;
+	}
+	else if (ctype::streaq("++",cmp)||ctype::streaq("--",cmp)||ctype::streaq("~",cmp)) {
+		
 	}
 	return nullptr;
 }
